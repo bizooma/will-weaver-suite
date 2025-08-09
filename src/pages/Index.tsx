@@ -24,12 +24,12 @@ const Index = () => {
         </script>
       </Helmet>
 
-      <section className="relative overflow-hidden min-h-[70vh]">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <img src={heroBg} alt="Light legal tech background with code and documents" className="h-full w-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/20 to-transparent" />
         </div>
-        <div className="container py-16 md:py-24 grid gap-10 md:grid-cols-2 items-center">
+        <div className="container pt-12 md:pt-20 grid gap-10 md:grid-cols-2 items-center">
           <div>
             <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
