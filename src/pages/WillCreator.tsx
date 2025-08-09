@@ -1275,6 +1275,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
           data={data}
           draft={draft}
           tone={tone}
+          onToneChange={(t)=> setTone(t)}
+          currentStep={step}
           onPropose={(text, target, index)=> setPendingSuggestion({ target, index, suggestion: text })}
           seedPrompt={seedPrompt}
         />

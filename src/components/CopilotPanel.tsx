@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
 export type CopilotTarget = 'funeral' | 'pet' | 'guardian' | 'altGuardian' | 'gift';
 
 interface CopilotPanelProps {
@@ -17,11 +17,13 @@ interface CopilotPanelProps {
   data: any;
   draft: string;
   tone: 'plain' | 'formal' | 'compassionate' | 'concise';
+  onToneChange?: (tone: 'plain' | 'formal' | 'compassionate' | 'concise') => void;
   onPropose: (text: string, target: CopilotTarget, index?: number) => void;
   seedPrompt?: string;
+  currentStep?: number;
 }
 
-const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose, seedPrompt }: CopilotPanelProps) => {
+const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onToneChange, onPropose, seedPrompt, currentStep }: CopilotPanelProps) => {
   const [messages, setMessages] = useState<{ role: 'user'|'assistant'; content: string }[]>([
     { role: 'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }
   ]);
@@ -30,39 +32,146 @@ const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose, seedPr
   const [insertTarget, setInsertTarget] = useState<CopilotTarget>('funeral');
   const [giftIndex, setGiftIndex] = useState<number>(0);
   const endRef = useRef<HTMLDivElement>(null);
-
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [redact, setRedact] = useState<boolean>(() => {
+    try { return localStorage.getItem('copilot.redact') === '1'; } catch { return false; }
+  });
+  const initializedRef = useRef(false);
+  const seededRef = useRef(false);
   useEffect(()=>{ endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
 
-  useEffect(() => {
-    if (open && seedPrompt) {
+useEffect(() => {
+  if (open) {
+    // Initialize from localStorage once
+    if (!initializedRef.current) {
+      try {
+        const saved = localStorage.getItem('copilot.chat');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) setMessages(parsed);
+        }
+      } catch { /* ignore */ }
+      initializedRef.current = true;
+    }
+    // Focus input
+    inputRef.current?.focus();
+    // Seed prompt (once per open)
+    if (seedPrompt && !seededRef.current) {
       setInput(seedPrompt);
+      seededRef.current = true;
+      setTimeout(() => send(seedPrompt), 0);
     }
-  }, [open, seedPrompt]);
+  } else {
+    // Allow reseeding next time it opens
+    seededRef.current = false;
+  }
+}, [open, seedPrompt]);
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text) return;
-    const next = [...messages, { role: 'user' as const, content: text }];
-    setMessages(next);
-    setInput("");
-    setSending(true);
-    try {
-      const { data: res, error } = await supabase.functions.invoke('ai-copilot', {
-        body: { messages: next, data, draft, tone }
-      });
-      if (error) throw error;
-      const reply = res?.reply || 'Sorry, I could not generate a response.';
-      setMessages([...next, { role: 'assistant', content: reply }]);
-    } catch (e) {
-      console.error(e);
-      toast.error('Co‑pilot error');
-      setMessages([...next, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
-    } finally {
-      setSending(false);
+useEffect(() => {
+  try { localStorage.setItem('copilot.chat', JSON.stringify(messages.slice(-20))); } catch { /* ignore */ }
+}, [messages]);
+
+useEffect(() => {
+  try { localStorage.setItem('copilot.redact', redact ? '1' : '0'); } catch { /* ignore */ }
+}, [redact]);
+
+function redactText(text: string): string {
+  if (!text) return text;
+  let t = text;
+  // Emails
+  t = t.replace(/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.[A-Z]{2,}/gi, '[EMAIL]');
+  // Phones
+  t = t.replace(/\+?\d[\d\s().-]{7,}\d/g, '[PHONE]');
+  // Dates
+  t = t.replace(/\b\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}\b/g, '[DATE]');
+  // SSN-like
+  t = t.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
+  // Addresses (rough)
+  t = t.replace(/\b\d{1,6}\s+[A-Za-z0-9\s]+(Street|St\.|Avenue|Ave\.|Road|Rd\.|Boulevard|Blvd\.|Lane|Ln\.|Drive|Dr\.)\b/gi, '[ADDRESS]');
+  return t;
+}
+
+function deepRedact(obj: any): any {
+  if (obj == null) return obj;
+  if (typeof obj === 'string') return redactText(obj);
+  if (Array.isArray(obj)) return obj.map(deepRedact);
+  if (typeof obj === 'object') {
+    const out: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (/name|address|email|phone|dob|ssn|social|city|street|zip|postal/i.test(k)) {
+        out[k] = typeof v === 'string' ? `[${k.toUpperCase()}]` : deepRedact(v);
+      } else {
+        out[k] = deepRedact(v);
+      }
     }
-  };
+    return out;
+  }
+  return obj;
+}
 
-  const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
+const send = async (overrideText?: string) => {
+  const text = (overrideText ?? input).trim();
+  if (!text) return;
+  const next = [...messages, { role: 'user' as const, content: text }];
+  setMessages(next);
+  setInput("");
+  setSending(true);
+  try {
+    const payload = {
+      messages: redact ? next.map(m => ({ ...m, content: redactText(m.content) })) : next,
+      data: redact ? deepRedact(data) : data,
+      draft: redact ? redactText(draft) : draft,
+      tone,
+    };
+    const { data: res, error } = await supabase.functions.invoke('ai-copilot', { body: payload });
+    if (error) throw error;
+    const reply = (res as any)?.reply || 'Sorry, I could not generate a response.';
+    setMessages([...next, { role: 'assistant', content: reply }]);
+  } catch (e) {
+    console.error(e);
+    toast.error('Co‑pilot error');
+    setMessages([...next, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
+  } finally {
+    setSending(false);
+  }
+};
+
+function getQuickPrompts(step?: number): string[] {
+  switch (step) {
+    case 5:
+      return ['Draft primary guardian clause', 'Draft alternate guardian clause', 'Explain guardian responsibilities'];
+    case 6:
+      return ['Draft a specific gift clause', 'Suggest clearer gift wording'];
+    case 8:
+      return ['Draft a pet care clause'];
+    case 9:
+      return ['Draft funeral instructions'];
+    case 11:
+      return ['Summarize my draft', 'List potential ambiguities'];
+    default:
+      return ['Summarize my draft', 'Improve clarity of executor clause', 'List potential ambiguities'];
+  }
+}
+
+useEffect(() => {
+  const la = [...messages].reverse().find(m => m.role === 'assistant');
+  if (!la) return;
+  const t = la.content.toLowerCase();
+  if (t.includes('funeral') || t.includes('burial') || t.includes('cremat')) {
+    setInsertTarget('funeral');
+  } else if (t.includes('pet')) {
+    setInsertTarget('pet');
+  } else if (t.includes('guardian')) {
+    if (t.includes('alternate') || t.includes('alt')) setInsertTarget('altGuardian');
+    else setInsertTarget('guardian');
+  } else if (t.includes('gift') || t.includes('bequest') || t.includes('specific')) {
+    setInsertTarget('gift');
+    const len = Array.isArray((data as any)?.gifts) ? (data as any).gifts.length : 0;
+    setGiftIndex(Math.max(0, len - 1));
+  }
+}, [messages, data]);
+
+const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -70,6 +179,39 @@ const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose, seedPr
         <SheetHeader>
           <SheetTitle>Conversational Co‑pilot</SheetTitle>
         </SheetHeader>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">Tone</Label>
+              <Select value={tone} onValueChange={(v)=> onToneChange?.(v as any)}>
+                <SelectTrigger className="w-36"><SelectValue placeholder="Select tone"/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="plain">Plain</SelectItem>
+                  <SelectItem value="formal">Formal</SelectItem>
+                  <SelectItem value="compassionate">Compassionate</SelectItem>
+                  <SelectItem value="concise">Concise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">Redact personal details</Label>
+              <Switch checked={redact} onCheckedChange={(v)=> setRedact(!!v)} />
+              <Button size="sm" variant="outline" onClick={()=>{
+                const la = lastAssistant; if (!la) return; navigator.clipboard.writeText(la.content).then(()=> toast.success('Copied')).catch(()=> toast.error('Copy failed'));
+              }} disabled={!lastAssistant}>Copy last</Button>
+              <Button size="sm" variant="ghost" onClick={()=>{
+                setMessages([{ role:'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }]);
+                toast.success('Chat cleared');
+              }}>Clear</Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {getQuickPrompts(currentStep).map((p, idx)=> (
+              <Button key={idx} size="sm" variant="outline" onClick={()=>{ setInput(p); send(p); }}>{p}</Button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-col h-full gap-3">
           <ScrollArea className="flex-1 rounded-md border p-3 bg-card">
             <div className="space-y-3">
@@ -108,8 +250,8 @@ const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose, seedPr
           )}
 
           <div className="flex items-center gap-2">
-            <Input placeholder="Ask a question or request a clause…" value={input} onChange={(e)=> setInput(e.target.value)} onKeyDown={(e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-            <Button onClick={send} disabled={sending}>{sending ? 'Sending…' : 'Send'}</Button>
+            <Input ref={inputRef} placeholder="Ask a question or request a clause…" value={input} onChange={(e)=> setInput(e.target.value)} onKeyDown={(e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+            <Button onClick={() => send()} disabled={sending}>{sending ? 'Sending…' : 'Send'}</Button>
           </div>
         </div>
       </SheetContent>
