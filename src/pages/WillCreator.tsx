@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createDraft, getDraftBySlug } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
 import { useNavigate } from "react-router-dom";
+import VoiceButton from "@/components/VoiceButton";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -874,15 +875,18 @@ import { useNavigate } from "react-router-dom";
                          <Label>Address</Label>
                          <Textarea value={data.guardian?.address || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
                        </div>
-                       <div className="md:col-span-2">
-                         <div className="flex items-center justify-between">
-                           <Label>Guardian clause (optional)</Label>
-                           <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('primary')} disabled={guardianLoadingPrimary}>
-                             {guardianLoadingPrimary ? 'Drafting…' : 'Ask AI'}
-                           </Button>
-                         </div>
-                         <Textarea value={data.guardianInstructions || ''} onChange={(e)=>setData({...data, guardianInstructions:e.target.value})} />
-                       </div>
+                        <div className="md:col-span-2">
+                          <div className="flex items-center justify-between">
+                            <Label>Guardian clause (optional)</Label>
+                            <div className="flex items-center gap-2">
+                              <VoiceButton onResult={(t)=> setData({ ...data, guardianInstructions: (data.guardianInstructions ? data.guardianInstructions + ' ' : '') + t })} />
+                              <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('primary')} disabled={guardianLoadingPrimary}>
+                                {guardianLoadingPrimary ? 'Drafting…' : 'Ask AI'}
+                              </Button>
+                            </div>
+                          </div>
+                          <Textarea value={data.guardianInstructions || ''} onChange={(e)=>setData({...data, guardianInstructions:e.target.value})} />
+                        </div>
                    </div>
                    <h3 className="text-xl font-serifBrand">Alternate Guardian (optional)</h3>
                    <div className="grid gap-4 md:grid-cols-2">
@@ -898,15 +902,18 @@ import { useNavigate } from "react-router-dom";
                          <Label>Address</Label>
                          <Textarea value={data.altGuardian?.address || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
                        </div>
-                       <div className="md:col-span-2">
-                         <div className="flex items-center justify-between">
-                           <Label>Alternate guardian clause (optional)</Label>
-                           <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('alternate')} disabled={guardianLoadingAlt}>
-                             {guardianLoadingAlt ? 'Drafting…' : 'Ask AI'}
-                           </Button>
-                         </div>
-                         <Textarea value={data.altGuardianInstructions || ''} onChange={(e)=>setData({...data, altGuardianInstructions:e.target.value})} />
-                       </div>
+                        <div className="md:col-span-2">
+                          <div className="flex items-center justify-between">
+                            <Label>Alternate guardian clause (optional)</Label>
+                            <div className="flex items-center gap-2">
+                              <VoiceButton onResult={(t)=> setData({ ...data, altGuardianInstructions: (data.altGuardianInstructions ? data.altGuardianInstructions + ' ' : '') + t })} />
+                              <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('alternate')} disabled={guardianLoadingAlt}>
+                                {guardianLoadingAlt ? 'Drafting…' : 'Ask AI'}
+                              </Button>
+                            </div>
+                          </div>
+                          <Textarea value={data.altGuardianInstructions || ''} onChange={(e)=>setData({...data, altGuardianInstructions:e.target.value})} />
+                        </div>
                    </div>
                  </div>
                )}
@@ -921,17 +928,23 @@ import { useNavigate } from "react-router-dom";
                  {data.gifts.map((g, idx) => (
                    <div key={idx} className="grid gap-3 md:grid-cols-2">
                     <div>
-                       <div className="flex items-center justify-between">
-                         <Label>Item or amount</Label>
-                         <Button variant="outline" size="sm" onClick={()=>generateGiftClause(idx)} disabled={giftLoadingIdx===idx}>
-                           {giftLoadingIdx===idx ? 'Drafting…' : 'Ask AI'}
-                         </Button>
-                       </div>
+                        <div className="flex items-center justify-between">
+                          <Label>Item or amount</Label>
+                          <div className="flex items-center gap-2">
+                            <VoiceButton onResult={(t)=>{ const list=[...data.gifts]; list[idx] = { ...g, description: t }; setData({ ...data, gifts: list }); }} />
+                            <Button variant="outline" size="sm" onClick={()=>generateGiftClause(idx)} disabled={giftLoadingIdx===idx}>
+                              {giftLoadingIdx===idx ? 'Drafting…' : 'Ask AI'}
+                            </Button>
+                          </div>
+                        </div>
                        <Input value={g.description} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, description:e.target.value}; setData({...data, gifts:list}); }} />
                      </div>
                      <div>
-                       <Label>Beneficiary name</Label>
-                       <Input value={g.beneficiary} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, beneficiary:e.target.value}; setData({...data, gifts:list}); }} />
+                        <div className="flex items-center justify-between">
+                          <Label>Beneficiary name</Label>
+                          <VoiceButton onResult={(t)=>{ const list=[...data.gifts]; list[idx] = { ...g, beneficiary: t }; setData({ ...data, gifts: list }); }} />
+                        </div>
+                        <Input value={g.beneficiary} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, beneficiary:e.target.value}; setData({...data, gifts:list}); }} />
                      </div>
                      <div className="md:col-span-2 flex justify-end">
                        <Button variant="outline" onClick={()=>{ const list=data.gifts.filter((_,i)=>i!==idx); setData({...data, gifts:list}); }}>Remove</Button>
@@ -979,25 +992,37 @@ import { useNavigate } from "react-router-dom";
              <div className="grid gap-4">
                <h2 className="text-2xl font-serifBrand">8. Pet Care Provisions (optional)</h2>
                <div className="grid gap-4 md:grid-cols-3">
-                 <div>
-                   <Label>Pet name</Label>
-                   <Input value={data.petName || ''} onChange={(e)=>setData({...data, petName:e.target.value})} />
-                 </div>
-                 <div>
-                   <Label>Type</Label>
-                   <Input value={data.petType || ''} onChange={(e)=>setData({...data, petType:e.target.value})} />
-                 </div>
                   <div>
-                     <Label>Caregiver</Label>
-                     <Input value={data.petCaregiver || ''} onChange={(e)=>setData({...data, petCaregiver:e.target.value})} />
-                   </div>
+                    <div className="flex items-center justify-between">
+                      <Label>Pet name</Label>
+                      <VoiceButton onResult={(t)=> setData({ ...data, petName: t })} />
+                    </div>
+                    <Input value={data.petName || ''} onChange={(e)=>setData({...data, petName:e.target.value})} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Label>Type</Label>
+                      <VoiceButton onResult={(t)=> setData({ ...data, petType: t })} />
+                    </div>
+                    <Input value={data.petType || ''} onChange={(e)=>setData({...data, petType:e.target.value})} />
+                  </div>
+                   <div>
+                      <div className="flex items-center justify-between">
+                        <Label>Caregiver</Label>
+                        <VoiceButton onResult={(t)=> setData({ ...data, petCaregiver: t })} />
+                      </div>
+                      <Input value={data.petCaregiver || ''} onChange={(e)=>setData({...data, petCaregiver:e.target.value})} />
+                    </div>
                    <div className="md:col-span-3">
-                     <div className="flex items-center justify-between">
-                       <Label>Pet care clause (optional)</Label>
-                       <Button variant="outline" size="sm" onClick={generatePetClause} disabled={petLoading}>
-                         {petLoading ? 'Drafting…' : 'Ask AI'}
-                       </Button>
-                     </div>
+                      <div className="flex items-center justify-between">
+                        <Label>Pet care clause (optional)</Label>
+                        <div className="flex items-center gap-2">
+                          <VoiceButton onResult={(t)=> setData({ ...data, petInstructions: (data.petInstructions ? data.petInstructions + ' ' : '') + t })} />
+                          <Button variant="outline" size="sm" onClick={generatePetClause} disabled={petLoading}>
+                            {petLoading ? 'Drafting…' : 'Ask AI'}
+                          </Button>
+                        </div>
+                      </div>
                      <Textarea value={data.petInstructions || ''} onChange={(e)=>setData({...data, petInstructions:e.target.value})} />
                    </div>
                </div>
@@ -1023,9 +1048,12 @@ import { useNavigate } from "react-router-dom";
                   <div className="md:col-span-2">
                     <div className="flex items-center justify-between">
                       <Label>Special instructions</Label>
-                      <Button variant="outline" size="sm" onClick={generateFuneralInstructionsWithAI} disabled={funeralLoading}>
-                        {funeralLoading ? 'Drafting…' : 'Ask AI to draft'}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <VoiceButton onResult={(t)=> setData({ ...data, funeralInstructions: (data.funeralInstructions ? data.funeralInstructions + ' ' : '') + t })} />
+                        <Button variant="outline" size="sm" onClick={generateFuneralInstructionsWithAI} disabled={funeralLoading}>
+                          {funeralLoading ? 'Drafting…' : 'Ask AI to draft'}
+                        </Button>
+                      </div>
                     </div>
                     <Textarea value={data.funeralInstructions} onChange={(e)=>setData({...data, funeralInstructions:e.target.value})} />
                     <p className="text-xs text-muted-foreground mt-1">AI can suggest a concise, respectful clause based on your info.</p>
