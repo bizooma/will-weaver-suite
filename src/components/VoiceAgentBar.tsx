@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Mic, PhoneOff, Loader2 } from "lucide-react";
-import { useConversation } from "@11labs/react";
+import { useConversation } from "@elevenlabs/react";
 
 interface VoiceAgentBarProps {
   agentId: string;
@@ -15,16 +15,11 @@ const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgent
   const [connecting, setConnecting] = useState(false);
 
   const conversation = useConversation({
-    overrides: {
-      tts: { voiceId },
-    },
-    onConnect: () => {
-      toast({ title: "Voice connected", description: "You can start talking now." });
-    },
-    onDisconnect: () => {
-      toast({ title: "Voice disconnected" });
-    },
+    overrides: { tts: { voiceId } },
+    onConnect: () => toast({ title: "Voice connected", description: "You can start talking now." }),
+    onDisconnect: () => toast({ title: "Voice disconnected" }),
     onError: (error) => {
+      console.error("ElevenLabs conversation error:", error);
       toast({ title: "Voice error", description: String(error), variant: "destructive" });
     },
   });
@@ -33,11 +28,19 @@ const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgent
     if (connecting) return;
     try {
       setConnecting(true);
-      // Request mic permission up front to provide a clearer UX
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      await conversation.startSession({ agentId });
+
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase.functions.invoke("eleven-signed-url", { body: { agentId } });
+      if (error || !data?.signed_url) {
+        throw new Error(error?.message || "Failed to get signed URL from server");
+      }
+
+      await conversation.startSession({ signedUrl: data.signed_url });
     } catch (err) {
-      toast({ title: "Microphone or connection failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+      console.error("startConversation failed", err);
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ title: "Microphone or connection failed", description: message, variant: "destructive" });
     } finally {
       setConnecting(false);
     }
@@ -46,9 +49,7 @@ const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgent
   const endConversation = async () => {
     try {
       await conversation.endSession();
-    } catch (err) {
-      // no-op
-    }
+    } catch {}
   };
 
   const connected = conversation.status === "connected";

@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.text-to-voice]
 verify_jwt = false
+
+[functions.eleven-signed-url]
+verify_jwt = false
