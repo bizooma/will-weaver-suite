@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,8 @@ import Contact from "./pages/Contact";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
+import DraftSave from "./pages/DraftSave";
+import DraftView from "./pages/DraftView";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,8 @@ const App = () => (
             <Route path="/mobile-app" element={<MobileApp />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/drafts/save" element={<DraftSave />} />
+            <Route path="/drafts/:slug" element={<DraftView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
