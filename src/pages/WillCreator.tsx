@@ -12,6 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
 import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
 import CopilotPanel from "@/components/CopilotPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createDraft, getDraftBySlug } from "@/hooks/useWillDrafts";
+import { exportWillDocx } from "@/utils/docxExport";
+import { useNavigate } from "react-router-dom";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -150,6 +153,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
     const [fixingKey, setFixingKey] = useState<string | null>(null);
     const [undoAction, setUndoAction] = useState<(() => void) | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const navigate = useNavigate();
+    const [saving, setSaving] = useState(false);
 
     const validationIssues = useMemo(() => {
       const issues: string[] = [];
@@ -213,6 +218,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
     useEffect(() => {
       try { localStorage.setItem('willCreator.tone', tone); } catch (_) {}
     }, [tone]);
+
+    // Load from shared draft via ?slug=
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const sharedSlug = params.get('slug');
+      if (!sharedSlug) return;
+      (async () => {
+        try {
+          const d = await getDraftBySlug(sharedSlug);
+          if (d?.data) {
+            setData({ ...defaultData, ...(d.data as any) });
+            if (d.step) setStep(d.step);
+            if (d.tone) setTone(d.tone as any);
+            toast.success('Loaded shared draft');
+          } else {
+            toast.error('Draft not found');
+          }
+        } catch (e) {
+          console.error(e);
+          toast.error('Failed to load draft');
+        }
+      })();
+    }, []);
 
     const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
  
@@ -573,15 +601,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
      }
    }
 
-   // UI bits
+    async function handleExportDocx() {
+      try {
+        await exportWillDocx({
+          title: 'Last Will and Testament (Draft)',
+          content: draft,
+          filename: `will-draft-${Date.now()}.docx`
+        });
+        toast.success('DOCX downloaded');
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to export DOCX');
+      }
+    }
+
+    async function handleSaveShare() {
+      try {
+        setSaving(true);
+        const slug = await createDraft({ data, tone, step });
+        const url = `${window.location.origin}/drafts/${slug}`;
+        try { await navigator.clipboard.writeText(url); } catch (_) {}
+        toast.success('Draft saved & link copied');
+        navigate(`/drafts/${slug}`);
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to save draft');
+      } finally {
+        setSaving(false);
+      }
+    }
+
+    // UI bits
    const StepActions = (
      <div className="mt-6 flex items-center justify-between">
        <Button variant="outline" onClick={prev} disabled={step===1}>Back</Button>
-       {step < TOTAL_STEPS ? (
-         <Button variant="hero" onClick={next}>Next</Button>
-       ) : (
-         <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
-       )}
+        {step < TOTAL_STEPS ? (
+          <Button variant="hero" onClick={next}>Next</Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
+            <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
+            <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
+          </div>
+        )}
      </div>
    );
 
@@ -1175,7 +1237,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
                  <div className="flex items-center justify-between">
                    <Button variant="outline" onClick={()=> setStep(1)}>Edit from Start</Button>
-                   <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
+                   <div className="flex gap-2">
+                     <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
+                     <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
+                     <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
+                   </div>
                  </div>
                </div>
              </div>

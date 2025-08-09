@@ -7,12 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import { getDraftBySlug, WillDraft } from "@/hooks/useWillDrafts";
 import { Input } from "@/components/ui/input";
 import { exportWillDocx } from "@/utils/docxExport";
+import { Helmet } from "react-helmet-async";
 
 const DraftView = () => {
   const { slug } = useParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<WillDraft | null>(null);
+  const canonical = typeof window !== 'undefined' ? `${window.location.origin}/drafts/${slug ?? ''}` : `/drafts/${slug ?? ''}`;
 
   useEffect(() => {
     if (!slug) return;
@@ -52,6 +54,11 @@ const DraftView = () => {
 
   return (
     <div className="container mx-auto max-w-4xl py-10">
+      <Helmet>
+        <title>View Will Draft | Shareable Link</title>
+        <meta name="description" content="View and share this will draft. Open in editor or export DOCX." />
+        <link rel="canonical" href={canonical} />
+      </Helmet>
       <Card>
         <CardHeader>
           <CardTitle>Will Draft</CardTitle>
@@ -67,6 +74,9 @@ const DraftView = () => {
             <Button onClick={onExportDocx} disabled={!draft || loading}>
               Export DOCX
             </Button>
+            <a href={`/will-creator?slug=${slug}`}>
+              <Button variant="secondary" disabled={!slug}>Open in Editor</Button>
+            </a>
           </div>
 
           <div className="rounded border p-4 overflow-auto max-h-[60vh]">
