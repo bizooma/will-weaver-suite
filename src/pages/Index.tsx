@@ -1,7 +1,8 @@
-import heroImage from "@/assets/hero-legal-saas.jpg";
+import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
+import HeroDemoFrame from "@/components/HeroDemoFrame";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/" : "/";
 
@@ -23,20 +24,26 @@ const Index = () => {
         </script>
       </Helmet>
 
-      <section className="container pt-12 md:pt-20 grid gap-10 md:grid-cols-2 items-center">
-        <div>
-          <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            A clean, conversion‑focused demo of our real‑time Will & Trust Creator, Alexa skill, and mobile app integrations.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
-            <a href="/alexa"><Button variant="outline" size="lg">Try Alexa Demo</Button></a>
-            <a href="/mobile-app"><Button variant="secondary" size="lg">Download Our App</Button></a>
-          </div>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <img src={heroBg} alt="Light legal tech background with code and documents" className="h-full w-full object-cover" loading="eager" />
+          <div className="absolute inset-0 bg-background/60" />
         </div>
-        <div>
-          <img src={heroImage} alt="Professional legal tech SaaS hero" className="rounded-xl shadow" loading="eager" />
+        <div className="container pt-12 md:pt-20 grid gap-10 md:grid-cols-2 items-center">
+          <div>
+            <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              A clean, conversion‑focused demo of our real‑time Will & Trust Creator, Alexa skill, and mobile app integrations.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
+              <a href="/alexa"><Button variant="outline" size="lg">Try Alexa Demo</Button></a>
+              <a href="/mobile-app"><Button variant="secondary" size="lg">Download Our App</Button></a>
+            </div>
+          </div>
+          <div>
+            <HeroDemoFrame />
+          </div>
         </div>
       </section>
 

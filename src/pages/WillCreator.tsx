@@ -156,6 +156,9 @@ import VoiceButton from "@/components/VoiceButton";
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
+    const isDemo = useMemo(() => {
+      try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
+    }, []);
 
     const validationIssues = useMemo(() => {
       const issues: string[] = [];
@@ -199,6 +202,7 @@ import VoiceButton from "@/components/VoiceButton";
 
     // Load persisted state (if any)
     useEffect(() => {
+      if (isDemo) return; // skip persistence in demo mode
       try {
         const saved = localStorage.getItem('willCreator.data');
         if (saved) setData(JSON.parse(saved));
@@ -207,21 +211,25 @@ import VoiceButton from "@/components/VoiceButton";
         const savedTone = localStorage.getItem('willCreator.tone');
         if (savedTone) setTone(savedTone as any);
       } catch (_) { /* ignore */ }
-    }, []);
+    }, [isDemo]);
 
     // Persist state
     useEffect(() => {
+      if (isDemo) return;
       try { localStorage.setItem('willCreator.data', JSON.stringify(data)); } catch (_) {}
-    }, [data]);
+    }, [data, isDemo]);
     useEffect(() => {
+      if (isDemo) return;
       try { localStorage.setItem('willCreator.step', String(step)); } catch (_) {}
-    }, [step]);
+    }, [step, isDemo]);
     useEffect(() => {
+      if (isDemo) return;
       try { localStorage.setItem('willCreator.tone', tone); } catch (_) {}
-    }, [tone]);
+    }, [tone, isDemo]);
 
     // Load from shared draft via ?slug=
     useEffect(() => {
+      if (isDemo) return; // skip network in demo
       const params = new URLSearchParams(window.location.search);
       const sharedSlug = params.get('slug');
       if (!sharedSlug) return;
@@ -241,7 +249,36 @@ import VoiceButton from "@/components/VoiceButton";
           toast.error('Failed to load draft');
         }
       })();
-    }, []);
+    }, [isDemo]);
+
+    useEffect(() => {
+      if (!isDemo) return;
+      // Seed sample data and auto-advance a few steps
+      setData({
+        ...defaultData,
+        fullName: "Alex Morgan",
+        dob: "1985-04-12",
+        address: "123 Main St, Springfield",
+        state: "CA",
+        maritalStatus: "married",
+        spouse: { name: "Jamie Morgan", dob: "1986-09-07", address: "", relationship: "Spouse" },
+        beneficiaries: [{ name: "Sam Morgan", dob: "2014-06-02", relationship: "Child" }],
+        executor: { name: "Taylor Reed", address: "456 Oak Ave", relationship: "Friend" },
+        gifts: [{ description: "Rolex Submariner", beneficiary: "Taylor Reed" }],
+        residue: [{ beneficiary: "Jamie Morgan", percentage: "100" }],
+        funeralPreference: "no_preference",
+        funeralInstructions: "Celebrate life with a small memorial.",
+        witnesses: ["Jordan A.", "Riley B."]
+      });
+      setStep(1);
+      const id = setInterval(() => {
+        setStep((s) => {
+          if (s >= 6) { clearInterval(id); return s; }
+          return s + 1;
+        });
+      }, 1200);
+      return () => clearInterval(id);
+    }, [isDemo]);
 
     const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
  
@@ -278,8 +315,8 @@ import VoiceButton from "@/components/VoiceButton";
    const progressValue = (step / TOTAL_STEPS) * 100;
 
    async function generateFuneralInstructionsWithAI() {
+     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
      try {
-       setFuneralLoading(true);
         const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
           body: {
             field: 'funeral_instructions',
@@ -308,6 +345,7 @@ import VoiceButton from "@/components/VoiceButton";
    }
  
    async function generateGiftClause(idx: number) {
+     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
      try {
        setGiftLoadingIdx(idx);
        const g = data.gifts[idx];
@@ -338,6 +376,7 @@ import VoiceButton from "@/components/VoiceButton";
    }
  
    async function generateGuardianClause(which: 'primary' | 'alternate') {
+     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
      try {
        if (which === 'primary') setGuardianLoadingPrimary(true); else setGuardianLoadingAlt(true);
         const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
@@ -368,6 +407,7 @@ import VoiceButton from "@/components/VoiceButton";
    }
  
    async function generatePetClause() {
+     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
      try {
        setPetLoading(true);
         const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
@@ -398,6 +438,7 @@ import VoiceButton from "@/components/VoiceButton";
    }
  
    async function runAIReview() {
+     if (isDemo) { toast.info('Demo mode: AI review is disabled.'); return; }
      try {
        setReviewLoading(true);
        const { data: res, error } = await supabase.functions.invoke('ai-review-will', {
@@ -476,12 +517,14 @@ import VoiceButton from "@/components/VoiceButton";
 
     // Auto-run review on Review step
     useEffect(() => {
+      if (isDemo) return; // do not auto-run in demo
       if (step === 11 && !aiReview && !reviewLoading) {
         runAIReview();
       }
-    }, [step, aiReview, reviewLoading]);
+    }, [step, aiReview, reviewLoading, isDemo]);
   
    async function handleExportPDF() {
+      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
       if (validationIssues.length) {
         const proceed = window.confirm(`There are ${validationIssues.length} validation issue(s). Proceed to download anyway?`);
         if (!proceed) return;
@@ -603,6 +646,7 @@ import VoiceButton from "@/components/VoiceButton";
    }
 
     async function handleExportDocx() {
+      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
       try {
         await exportWillDocx({
           title: 'Last Will and Testament (Draft)',
@@ -617,6 +661,7 @@ import VoiceButton from "@/components/VoiceButton";
     }
 
     async function handleSaveShare() {
+      if (isDemo) { toast.info('Demo mode: Saving is disabled.'); return; }
       try {
         setSaving(true);
         const slug = await createDraft({ data, tone, step });

@@ -22,34 +22,37 @@ import DraftView from "./pages/DraftView";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <HelmetProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <SiteHeader />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/will-creator" element={<WillCreator />} />
-            <Route path="/alexa" element={<Alexa />} />
-            <Route path="/mobile-app" element={<MobileApp />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/drafts/save" element={<DraftSave />} />
-            <Route path="/drafts/:slug" element={<DraftView />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <SiteFooter />
-          <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />
-          <ChatbotWidget />
-        </BrowserRouter>
-      </TooltipProvider>
-    </HelmetProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const isEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1';
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            {!isEmbed && <SiteHeader />}
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/will-creator" element={<WillCreator />} />
+              <Route path="/alexa" element={<Alexa />} />
+              <Route path="/mobile-app" element={<MobileApp />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/drafts/save" element={<DraftSave />} />
+              <Route path="/drafts/:slug" element={<DraftView />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            {!isEmbed && <SiteFooter />}
+            {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
+            {!isEmbed && <ChatbotWidget />}
+          </BrowserRouter>
+        </TooltipProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
