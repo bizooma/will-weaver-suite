@@ -107,9 +107,24 @@ import { supabase } from "@/integrations/supabase/client";
 
  const TOTAL_STEPS = 11; // 10 data steps + Review/Generate
 
- const usStates = [
-   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
- ];
+  const usStates = [
+    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
+  ];
+
+  function guessStepForText(text: string): number {
+    const t = text.toLowerCase();
+    if (t.includes('beneficiar') || t.includes('child')) return 3;
+    if (t.includes('executor')) return 4;
+    if (t.includes('guardian')) return 5;
+    if (t.includes('gift') || t.includes('bequest') || t.includes('specific')) return 6;
+    if (t.includes('residu') || t.includes('remainder')) return 7;
+    if (t.includes('pet')) return 8;
+    if (t.includes('funeral') || t.includes('burial') || t.includes('cremat') || t.includes('preference')) return 9;
+    if (t.includes('witness')) return 10;
+    if (t.includes('address') || t.includes('state') || t.includes('dob') || t.includes('marital') || t.includes('name')) return 1;
+    if (t.includes('spouse')) return 2;
+    return 11;
+  }
 
  const WillCreator = () => {
    const [step, setStep] = useState(1);
@@ -117,14 +132,15 @@ import { supabase } from "@/integrations/supabase/client";
    const [brand, setBrand] = useState<string | null>(null);
    const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-   const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
-   const [reviewLoading, setReviewLoading] = useState(false);
-   const [funeralLoading, setFuneralLoading] = useState(false);
-   const [giftLoadingIdx, setGiftLoadingIdx] = useState<number | null>(null);
-   const [guardianLoadingPrimary, setGuardianLoadingPrimary] = useState(false);
-   const [guardianLoadingAlt, setGuardianLoadingAlt] = useState(false);
-   const [petLoading, setPetLoading] = useState(false);
- 
+    const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [funeralLoading, setFuneralLoading] = useState(false);
+    const [giftLoadingIdx, setGiftLoadingIdx] = useState<number | null>(null);
+    const [guardianLoadingPrimary, setGuardianLoadingPrimary] = useState(false);
+    const [guardianLoadingAlt, setGuardianLoadingAlt] = useState(false);
+    const [petLoading, setPetLoading] = useState(false);
+    const [tone, setTone] = useState<'plain' | 'formal' | 'compassionate' | 'concise'>('plain');
+  
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
  
@@ -154,9 +170,32 @@ import { supabase } from "@/integrations/supabase/client";
    // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
-   const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
+    // Load persisted state (if any)
+    useEffect(() => {
+      try {
+        const saved = localStorage.getItem('willCreator.data');
+        if (saved) setData(JSON.parse(saved));
+        const savedStep = localStorage.getItem('willCreator.step');
+        if (savedStep) setStep(parseInt(savedStep, 10) || 1);
+        const savedTone = localStorage.getItem('willCreator.tone');
+        if (savedTone) setTone(savedTone as any);
+      } catch (_) { /* ignore */ }
+    }, []);
 
-   // Draft text
+    // Persist state
+    useEffect(() => {
+      try { localStorage.setItem('willCreator.data', JSON.stringify(data)); } catch (_) {}
+    }, [data]);
+    useEffect(() => {
+      try { localStorage.setItem('willCreator.step', String(step)); } catch (_) {}
+    }, [step]);
+    useEffect(() => {
+      try { localStorage.setItem('willCreator.tone', tone); } catch (_) {}
+    }, [tone]);
+
+    const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
+ 
+    // Draft text
    const draft = useMemo(() => {
      const bList = data.beneficiaries.filter(b=>b.name).map((b,i)=>`${i+1}) ${b.name}${b.dob?` (b. ${b.dob})`:''} – ${b.relationship}`).join("\n");
      const gList = data.gifts.map((g,i)=>`${i+1}) ${g.description} → ${g.beneficiary}`).join("\n");
@@ -191,18 +230,19 @@ import { supabase } from "@/integrations/supabase/client";
    async function generateFuneralInstructionsWithAI() {
      try {
        setFuneralLoading(true);
-       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-         body: {
-           field: 'funeral_instructions',
-           data: {
-             fullName: data.fullName,
-             spouse: data.spouse?.name,
-             state: data.state,
-             preference: data.funeralPreference,
-             notes: data.funeralInstructions,
-           }
-         }
-       });
+        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+          body: {
+            field: 'funeral_instructions',
+            data: {
+              fullName: data.fullName,
+              spouse: data.spouse?.name,
+              state: data.state,
+              preference: data.funeralPreference,
+              notes: data.funeralInstructions,
+            },
+            tone,
+          }
+        });
        if (error) throw error;
        if (res?.result) {
          setData({ ...data, funeralInstructions: res.result });
@@ -222,17 +262,18 @@ import { supabase } from "@/integrations/supabase/client";
      try {
        setGiftLoadingIdx(idx);
        const g = data.gifts[idx];
-       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-         body: {
-           field: 'specific_gift',
-           data: {
-             fullName: data.fullName,
-             state: data.state,
-             description: g?.description,
-             beneficiary: g?.beneficiary,
-           }
-         }
-       });
+        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+          body: {
+            field: 'specific_gift',
+            data: {
+              fullName: data.fullName,
+              state: data.state,
+              description: g?.description,
+              beneficiary: g?.beneficiary,
+            },
+            tone,
+          }
+        });
        if (error) throw error;
        if (res?.result) {
          const list = [...data.gifts];
@@ -254,18 +295,19 @@ import { supabase } from "@/integrations/supabase/client";
    async function generateGuardianClause(which: 'primary' | 'alternate') {
      try {
        if (which === 'primary') setGuardianLoadingPrimary(true); else setGuardianLoadingAlt(true);
-       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-         body: {
-           field: 'guardian_clause',
-           data: {
-             fullName: data.fullName,
-             state: data.state,
-             guardian: data.guardian,
-             altGuardian: data.altGuardian,
-             addGuardians: data.addGuardians,
-           }
-         }
-       });
+        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+          body: {
+            field: 'guardian_clause',
+            data: {
+              fullName: data.fullName,
+              state: data.state,
+              guardian: data.guardian,
+              altGuardian: data.altGuardian,
+              addGuardians: data.addGuardians,
+            },
+            tone,
+          }
+        });
        if (error) throw error;
        if (res?.result) {
          if (which === 'primary') {
@@ -290,18 +332,19 @@ import { supabase } from "@/integrations/supabase/client";
    async function generatePetClause() {
      try {
        setPetLoading(true);
-       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-         body: {
-           field: 'pet_care',
-           data: {
-             fullName: data.fullName,
-             state: data.state,
-             petName: data.petName,
-             petType: data.petType,
-             caregiver: data.petCaregiver,
-           }
-         }
-       });
+        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+          body: {
+            field: 'pet_care',
+            data: {
+              fullName: data.fullName,
+              state: data.state,
+              petName: data.petName,
+              petType: data.petType,
+              caregiver: data.petCaregiver,
+            },
+            tone,
+          }
+        });
        if (error) throw error;
        if (res?.result) {
          const val = data.petInstructions ? `${data.petInstructions}\n${res.result}` : res.result;
@@ -343,7 +386,14 @@ import { supabase } from "@/integrations/supabase/client";
        setReviewLoading(false);
      }
    }
- 
+  
+    // Auto-run review on Review step
+    useEffect(() => {
+      if (step === 11 && !aiReview && !reviewLoading) {
+        runAIReview();
+      }
+    }, [step, aiReview, reviewLoading]);
+  
    async function handleExportPDF() {
      try {
        const pdfDoc = await PDFDocument.create();
@@ -355,13 +405,28 @@ import { supabase } from "@/integrations/supabase/client";
        const margin = 50;
        let cursorY = 742;
 
-       // Header (brand)
-       const header = brand || 'Legally Innovative';
-       page.drawText(header, { x: margin, y: cursorY, size: 16, font: times, color: rgb(0.06, 0.23, 0.39) });
-       cursorY -= 10;
-       // Divider
-       page.drawLine({ start: { x: margin, y: cursorY }, end: { x: width - margin, y: cursorY }, thickness: 1, color: rgb(0.88, 0.69, 0.29) });
-       cursorY -= 24;
+        // Header (brand)
+        const header = brand || 'Legally Innovative';
+        // Try to embed logo if provided
+        try {
+          if (logoUrl) {
+            const imgBytes = await fetch(logoUrl).then(r => r.arrayBuffer());
+            let logoEmbed: any = null;
+            try { logoEmbed = await pdfDoc.embedPng(imgBytes); } catch (_) { logoEmbed = await pdfDoc.embedJpg(imgBytes); }
+            if (logoEmbed) {
+              const targetW = 80;
+              const scale = targetW / (logoEmbed.width || targetW);
+              const drawnW = (logoEmbed.width || targetW) * scale;
+              const drawnH = (logoEmbed.height || targetW) * scale;
+              page.drawImage(logoEmbed, { x: width - margin - drawnW, y: cursorY - drawnH + 4, width: drawnW, height: drawnH });
+            }
+          }
+        } catch (_) { /* ignore logo errors */ }
+        page.drawText(header, { x: margin, y: cursorY, size: 16, font: times, color: rgb(0.06, 0.23, 0.39) });
+        cursorY -= 10;
+        // Divider
+        page.drawLine({ start: { x: margin, y: cursorY }, end: { x: width - margin, y: cursorY }, thickness: 1, color: rgb(0.88, 0.69, 0.29) });
+        cursorY -= 24;
 
        // Title
        const title = 'Last Will and Testament (Draft)';
@@ -485,10 +550,24 @@ import { supabase } from "@/integrations/supabase/client";
          </header>
 
          <div className="rounded-lg border p-6 bg-card">
-           <div className="mb-4">
-            <Progress value={progressValue} />
-            <div className="mt-2 text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
-           </div>
+          <div className="mb-4">
+             <Progress value={progressValue} />
+             <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+               <div className="text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
+               <div className="flex items-center gap-2">
+                 <Label className="text-sm">AI tone</Label>
+                 <Select value={tone} onValueChange={(v)=>setTone(v as any)}>
+                   <SelectTrigger className="w-40"><SelectValue placeholder="Select tone"/></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="plain">Plain</SelectItem>
+                     <SelectItem value="formal">Formal</SelectItem>
+                     <SelectItem value="compassionate">Compassionate</SelectItem>
+                     <SelectItem value="concise">Concise</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+             </div>
+            </div>
 
            {/* Steps */}
            {step === 1 && (
@@ -923,8 +1002,47 @@ import { supabase } from "@/integrations/supabase/client";
                       {aiReview && <span className="text-sm text-muted-foreground">Review ready</span>}
                     </div>
                     {aiReview && (
-                      <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
+                      <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md space-y-3">
                         <div className="mb-2"><strong>Summary:</strong> {aiReview.summary}</div>
+                        {aiReview.issues?.length ? (
+                          <div>
+                            <strong>Potential issues:</strong>
+                            <ul className="list-disc pl-5">
+                              {aiReview.issues.map((item, i)=> (
+                                <li key={i} className="flex items-start justify-between gap-3">
+                                  <span className="flex-1">{item}</span>
+                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {aiReview.risks?.length ? (
+                          <div>
+                            <strong>Risks:</strong>
+                            <ul className="list-disc pl-5">
+                              {aiReview.risks.map((item, i)=> (
+                                <li key={i} className="flex items-start justify-between gap-3">
+                                  <span className="flex-1">{item}</span>
+                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {aiReview.missing?.length ? (
+                          <div>
+                            <strong>Missing info:</strong>
+                            <ul className="list-disc pl-5">
+                              {aiReview.missing.map((item, i)=> (
+                                <li key={i} className="flex items-start justify-between gap-3">
+                                  <span className="flex-1">{item}</span>
+                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
                         {aiReview.checklist?.length ? (
                           <div>
                             <strong>Checklist:</strong>
