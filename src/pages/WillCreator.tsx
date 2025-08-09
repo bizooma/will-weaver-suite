@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { supabase } from "@/integrations/supabase/client";
 import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
+import CopilotPanel from "@/components/CopilotPanel";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -127,11 +128,12 @@ import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
     return 11;
   }
 
- const WillCreator = () => {
-   const [step, setStep] = useState(1);
-   const [data, setData] = useState<WizardData>(defaultData);
-   const [brand, setBrand] = useState<string | null>(null);
-   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const WillCreator = () => {
+    const [step, setStep] = useState(1);
+    const [data, setData] = useState<WizardData>(defaultData);
+    const [brand, setBrand] = useState<string | null>(null);
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
+    const [openCopilot, setOpenCopilot] = useState(false);
 
     const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
     const [reviewLoading, setReviewLoading] = useState(false);
@@ -1191,6 +1193,17 @@ import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
             toast.success('Inserted');
           }}
           onClose={() => setPendingSuggestion(null)}
+        />
+
+        {/* Floating Co‑pilot button */}
+        <Button className="fixed bottom-6 right-6 z-40" variant="hero" onClick={()=> setOpenCopilot(true)}>Co‑pilot</Button>
+        <CopilotPanel
+          open={openCopilot}
+          onOpenChange={setOpenCopilot}
+          data={data}
+          draft={draft}
+          tone={tone}
+          onPropose={(text, target, index)=> setPendingSuggestion({ target, index, suggestion: text })}
         />
       </main>
     );
