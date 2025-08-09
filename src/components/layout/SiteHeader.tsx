@@ -8,8 +8,15 @@ const SiteHeader = () => {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <NavLink to="/" className="font-serifBrand text-xl">
-          LexiTech Demo
+        <NavLink to="/" className="flex items-center gap-2" aria-label="Amicus Edge - Law Firm Technology Home">
+          <img
+            src="/lovable-uploads/5e631c94-fd90-4ebb-83cc-cc5005831375.png"
+            alt="Amicus Edge - Law Firm Technology logo"
+            className="h-8 w-auto"
+            width={120}
+            height={48}
+          />
+          <span className="sr-only">Amicus Edge</span>
         </NavLink>
         <nav className="hidden md:flex items-center gap-1">
           <NavLink to="/about" className={navLinkCls}>

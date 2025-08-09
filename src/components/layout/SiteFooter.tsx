@@ -3,7 +3,7 @@ const SiteFooter = () => {
     <footer className="border-t bg-secondary/50">
       <div className="container py-10 grid gap-8 md:grid-cols-3">
         <div>
-          <h3 className="font-serifBrand text-lg mb-2">LexiTech Demo</h3>
+          <img src="/lovable-uploads/5e631c94-fd90-4ebb-83cc-cc5005831375.png" alt="Amicus Edge - Law Firm Technology logo" className="h-8 w-auto mb-2" width={160} height={64} />
           <p className="text-sm text-muted-foreground">
             Legal tech solutions for modern law practices.
           </p>
@@ -24,7 +24,7 @@ const SiteFooter = () => {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} LexiTech Demo. All rights reserved.
+        © {new Date().getFullYear()} Amicus Edge. All rights reserved.
       </div>
     </footer>
   );
