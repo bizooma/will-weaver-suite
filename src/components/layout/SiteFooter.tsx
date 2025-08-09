@@ -3,7 +3,7 @@ const SiteFooter = () => {
     <footer className="border-t bg-secondary/50">
       <div className="container py-10 grid gap-8 md:grid-cols-3">
         <div>
-          <img src="/lovable-uploads/5e631c94-fd90-4ebb-83cc-cc5005831375.png" alt="Amicus Edge - Law Firm Technology logo" className="h-8 w-auto mb-2" width={160} height={64} />
+          <img src="/lovable-uploads/5e631c94-fd90-4ebb-83cc-cc5005831375.png" alt="Amicus Edge - Law Firm Technology logo" className="h-14 md:h-16 w-auto mb-3" width={360} height={96} />
           <p className="text-sm text-muted-foreground">
             Legal tech solutions for modern law practices.
           </p>

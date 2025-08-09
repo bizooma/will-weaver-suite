@@ -12,9 +12,9 @@ const SiteHeader = () => {
           <img
             src="/lovable-uploads/5e631c94-fd90-4ebb-83cc-cc5005831375.png"
             alt="Amicus Edge - Law Firm Technology logo"
-            className="h-8 w-auto"
-            width={120}
-            height={48}
+            className="h-12 md:h-14 w-auto"
+            width={240}
+            height={56}
           />
           <span className="sr-only">Amicus Edge</span>
         </NavLink>
