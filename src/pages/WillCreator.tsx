@@ -34,6 +34,9 @@ import { supabase } from "@/integrations/supabase/client";
    addGuardians: boolean;
    guardian?: Person;
    altGuardian?: Person;
+   // Guardian clauses (optional)
+   guardianInstructions?: string;
+   altGuardianInstructions?: string;
    // 6 Gifts
    gifts: Gift[];
    // 7 Residue
@@ -42,6 +45,8 @@ import { supabase } from "@/integrations/supabase/client";
    petName?: string;
    petType?: string;
    petCaregiver?: string;
+   // Pet clause (optional)
+   petInstructions?: string;
    // 9 Funeral
    funeralPreference: "burial" | "cremation" | "no_preference" | "";
    funeralInstructions: string;
@@ -65,11 +70,14 @@ import { supabase } from "@/integrations/supabase/client";
    addGuardians: false,
    guardian: { ...emptyPerson(), relationship: "" },
    altGuardian: { ...emptyPerson(), relationship: "" },
+   guardianInstructions: "",
+   altGuardianInstructions: "",
    gifts: [],
    residue: [{ beneficiary: "", percentage: "100" }],
    petName: "",
    petType: "",
    petCaregiver: "",
+   petInstructions: "",
    funeralPreference: "",
    funeralInstructions: "",
    witnesses: ["", ""],
@@ -112,6 +120,10 @@ import { supabase } from "@/integrations/supabase/client";
    const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
    const [reviewLoading, setReviewLoading] = useState(false);
    const [funeralLoading, setFuneralLoading] = useState(false);
+   const [giftLoadingIdx, setGiftLoadingIdx] = useState<number | null>(null);
+   const [guardianLoadingPrimary, setGuardianLoadingPrimary] = useState(false);
+   const [guardianLoadingAlt, setGuardianLoadingAlt] = useState(false);
+   const [petLoading, setPetLoading] = useState(false);
  
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -161,13 +173,13 @@ import { supabase } from "@/integrations/supabase/client";
 `Article III – Appointment of Executor\n` +
 `I appoint ${data.executor.name || '[Executor Name]'}${data.executor.relationship?`, my ${data.executor.relationship}`:''}, of ${data.executor.address || '[Executor Address]'}, to serve as Executor of this Will.${data.altExecutor?.name ? ` If ${data.executor.name || 'the Executor'} is unable or unwilling to serve, I appoint ${data.altExecutor.name}${data.altExecutor.relationship?`, my ${data.altExecutor.relationship}`:''} as alternate.`:''}\n\n` +
 `Article IV – Guardians for Minor Children\n` +
-`${data.addGuardians ? `I appoint ${data.guardian?.name || '[Guardian]'}${data.guardian?.relationship?`, my ${data.guardian?.relationship}`:''} of ${data.guardian?.address || '[Address]'} as Guardian of my minor children.${data.altGuardian?.name ? ` If unable or unwilling, I appoint ${data.altGuardian?.name} as alternate.`:''}` : '[If applicable, designate guardians]'}\n\n` +
+`${data.addGuardians ? `I appoint ${data.guardian?.name || '[Guardian]'}${data.guardian?.relationship?`, my ${data.guardian?.relationship}`:''} of ${data.guardian?.address || '[Address]'} as Guardian of my minor children.${data.altGuardian?.name ? ` If unable or unwilling, I appoint ${data.altGuardian?.name} as alternate.`:''}` : '[If applicable, designate guardians]'}${data.guardianInstructions ? ` ${data.guardianInstructions}` : ''}${data.altGuardianInstructions ? ` ${data.altGuardianInstructions}` : ''}\n\n` +
 `Article V – Specific Gifts\n` +
 `${gList || '[Itemize specific bequests]'}\n\n` +
 `Article VI – Residue of Estate\n` +
 `I give the remainder of my estate as follows: ${rList || '[e.g., 100% to Spouse]'}\n\n` +
 `Article VII – Pet Care Provisions\n` +
-`${data.petName ? `${data.petName} (${data.petType || 'pet'}) to be cared for by ${data.petCaregiver || '[Caregiver]'}.` : '[Optional – designate caregiver for pets]'}\n\n` +
+`${data.petName ? `${data.petName} (${data.petType || 'pet'}) to be cared for by ${data.petCaregiver || '[Caregiver]'}.` : '[Optional – designate caregiver for pets]'}${data.petInstructions ? ` ${data.petInstructions}` : ''}\n\n` +
 `Article VIII – Funeral & Burial Wishes\n` +
 `Preference: ${data.funeralPreference || '[No preference]'}${data.funeralInstructions ? `; Instructions: ${data.funeralInstructions}` : ''}.\n\n` +
 `Article IX – Execution\n` +
@@ -205,7 +217,107 @@ import { supabase } from "@/integrations/supabase/client";
        setFuneralLoading(false);
      }
    }
-
+ 
+   async function generateGiftClause(idx: number) {
+     try {
+       setGiftLoadingIdx(idx);
+       const g = data.gifts[idx];
+       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+         body: {
+           field: 'specific_gift',
+           data: {
+             fullName: data.fullName,
+             state: data.state,
+             description: g?.description,
+             beneficiary: g?.beneficiary,
+           }
+         }
+       });
+       if (error) throw error;
+       if (res?.result) {
+         const list = [...data.gifts];
+         const current = list[idx] || { description: '', beneficiary: '' };
+         list[idx] = { ...current, description: current.description ? `${current.description} ${res.result}` : res.result };
+         setData({ ...data, gifts: list });
+         toast.success('AI draft added');
+       } else {
+         toast.error('AI did not return content');
+       }
+     } catch (e) {
+       console.error(e);
+       toast.error('AI drafting failed');
+     } finally {
+       setGiftLoadingIdx(null);
+     }
+   }
+ 
+   async function generateGuardianClause(which: 'primary' | 'alternate') {
+     try {
+       if (which === 'primary') setGuardianLoadingPrimary(true); else setGuardianLoadingAlt(true);
+       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+         body: {
+           field: 'guardian_clause',
+           data: {
+             fullName: data.fullName,
+             state: data.state,
+             guardian: data.guardian,
+             altGuardian: data.altGuardian,
+             addGuardians: data.addGuardians,
+           }
+         }
+       });
+       if (error) throw error;
+       if (res?.result) {
+         if (which === 'primary') {
+           const val = data.guardianInstructions ? `${data.guardianInstructions}\n${res.result}` : res.result;
+           setData({ ...data, guardianInstructions: val });
+         } else {
+           const val = data.altGuardianInstructions ? `${data.altGuardianInstructions}\n${res.result}` : res.result;
+           setData({ ...data, altGuardianInstructions: val });
+         }
+         toast.success('AI draft added');
+       } else {
+         toast.error('AI did not return content');
+       }
+     } catch (e) {
+       console.error(e);
+       toast.error('AI drafting failed');
+     } finally {
+       if (which === 'primary') setGuardianLoadingPrimary(false); else setGuardianLoadingAlt(false);
+     }
+   }
+ 
+   async function generatePetClause() {
+     try {
+       setPetLoading(true);
+       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+         body: {
+           field: 'pet_care',
+           data: {
+             fullName: data.fullName,
+             state: data.state,
+             petName: data.petName,
+             petType: data.petType,
+             caregiver: data.petCaregiver,
+           }
+         }
+       });
+       if (error) throw error;
+       if (res?.result) {
+         const val = data.petInstructions ? `${data.petInstructions}\n${res.result}` : res.result;
+         setData({ ...data, petInstructions: val });
+         toast.success('AI draft added');
+       } else {
+         toast.error('AI did not return content');
+       }
+     } catch (e) {
+       console.error(e);
+       toast.error('AI drafting failed');
+     } finally {
+       setPetLoading(false);
+     }
+   }
+ 
    async function runAIReview() {
      try {
        setReviewLoading(true);
@@ -537,10 +649,19 @@ import { supabase } from "@/integrations/supabase/client";
                        <Label>Relationship</Label>
                        <Input value={data.guardian?.relationship || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), relationship:e.target.value}})} />
                      </div>
-                     <div className="md:col-span-2">
-                       <Label>Address</Label>
-                       <Textarea value={data.guardian?.address || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
-                     </div>
+                      <div className="md:col-span-2">
+                         <Label>Address</Label>
+                         <Textarea value={data.guardian?.address || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
+                       </div>
+                       <div className="md:col-span-2">
+                         <div className="flex items-center justify-between">
+                           <Label>Guardian clause (optional)</Label>
+                           <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('primary')} disabled={guardianLoadingPrimary}>
+                             {guardianLoadingPrimary ? 'Drafting…' : 'Ask AI'}
+                           </Button>
+                         </div>
+                         <Textarea value={data.guardianInstructions || ''} onChange={(e)=>setData({...data, guardianInstructions:e.target.value})} />
+                       </div>
                    </div>
                    <h3 className="text-xl font-serifBrand">Alternate Guardian (optional)</h3>
                    <div className="grid gap-4 md:grid-cols-2">
@@ -552,10 +673,19 @@ import { supabase } from "@/integrations/supabase/client";
                        <Label>Relationship</Label>
                        <Input value={data.altGuardian?.relationship || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), relationship:e.target.value}})} />
                      </div>
-                     <div className="md:col-span-2">
-                       <Label>Address</Label>
-                       <Textarea value={data.altGuardian?.address || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
-                     </div>
+                      <div className="md:col-span-2">
+                         <Label>Address</Label>
+                         <Textarea value={data.altGuardian?.address || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
+                       </div>
+                       <div className="md:col-span-2">
+                         <div className="flex items-center justify-between">
+                           <Label>Alternate guardian clause (optional)</Label>
+                           <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('alternate')} disabled={guardianLoadingAlt}>
+                             {guardianLoadingAlt ? 'Drafting…' : 'Ask AI'}
+                           </Button>
+                         </div>
+                         <Textarea value={data.altGuardianInstructions || ''} onChange={(e)=>setData({...data, altGuardianInstructions:e.target.value})} />
+                       </div>
                    </div>
                  </div>
                )}
@@ -569,8 +699,13 @@ import { supabase } from "@/integrations/supabase/client";
                <div className="space-y-4">
                  {data.gifts.map((g, idx) => (
                    <div key={idx} className="grid gap-3 md:grid-cols-2">
-                     <div>
-                       <Label>Item or amount</Label>
+                    <div>
+                       <div className="flex items-center justify-between">
+                         <Label>Item or amount</Label>
+                         <Button variant="outline" size="sm" onClick={()=>generateGiftClause(idx)} disabled={giftLoadingIdx===idx}>
+                           {giftLoadingIdx===idx ? 'Drafting…' : 'Ask AI'}
+                         </Button>
+                       </div>
                        <Input value={g.description} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, description:e.target.value}; setData({...data, gifts:list}); }} />
                      </div>
                      <div>
@@ -631,10 +766,19 @@ import { supabase } from "@/integrations/supabase/client";
                    <Label>Type</Label>
                    <Input value={data.petType || ''} onChange={(e)=>setData({...data, petType:e.target.value})} />
                  </div>
-                 <div>
-                   <Label>Caregiver</Label>
-                   <Input value={data.petCaregiver || ''} onChange={(e)=>setData({...data, petCaregiver:e.target.value})} />
-                 </div>
+                  <div>
+                     <Label>Caregiver</Label>
+                     <Input value={data.petCaregiver || ''} onChange={(e)=>setData({...data, petCaregiver:e.target.value})} />
+                   </div>
+                   <div className="md:col-span-3">
+                     <div className="flex items-center justify-between">
+                       <Label>Pet care clause (optional)</Label>
+                       <Button variant="outline" size="sm" onClick={generatePetClause} disabled={petLoading}>
+                         {petLoading ? 'Drafting…' : 'Ask AI'}
+                       </Button>
+                     </div>
+                     <Textarea value={data.petInstructions || ''} onChange={(e)=>setData({...data, petInstructions:e.target.value})} />
+                   </div>
                </div>
                {StepActions}
              </div>
