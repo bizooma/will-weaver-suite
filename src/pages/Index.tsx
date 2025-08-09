@@ -27,7 +27,7 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <img src={heroBg} alt="Light legal tech background with code and documents" className="h-full w-full object-cover" loading="eager" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/25 via-background/10 to-transparent" />
         </div>
         <div className="container pt-12 md:pt-20 grid gap-10 md:grid-cols-2 items-center">
           <div>
