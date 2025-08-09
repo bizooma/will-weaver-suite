@@ -143,7 +143,7 @@ import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
     const [tone, setTone] = useState<'plain' | 'formal' | 'compassionate' | 'concise'>('plain');
     type PendingSuggestion = { target: 'funeral' | 'gift' | 'guardian' | 'altGuardian' | 'pet'; index?: number; suggestion: string };
     const [pendingSuggestion, setPendingSuggestion] = useState<PendingSuggestion | null>(null);
-    const [undoAction, setUndoAction] = useState<null | (() => void)>>(null);
+    const [undoAction, setUndoAction] = useState<(() => void) | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const validationIssues = useMemo(() => {
@@ -152,9 +152,10 @@ import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
       if (!data.state) issues.push('Missing state of residence');
       if (!data.executor.name) issues.push('Missing executor name');
       if (data.addGuardians && !data.guardian?.name) issues.push('Guardian name required when guardians are enabled');
-      if (Math.round(residueSum) !== 100) issues.push('Residue total must equal 100%');
+      const sum = data.residue.reduce((sum, r)=> sum + (parseFloat(r.percentage||'0') || 0), 0);
+      if (Math.round(sum) !== 100) issues.push('Residue total must equal 100%');
       return issues;
-    }, [data, /* residueSum will be defined later via useMemo but captured when used */]);
+    }, [data]);
   
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
