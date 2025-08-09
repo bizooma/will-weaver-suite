@@ -1,1 +1,7 @@
 project_id = "fmcgsxdtyvssvwtxufll"
+
+[functions.ai-generate-clause]
+verify_jwt = false
+
+[functions.ai-review-will]
+verify_jwt = false

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { supabase } from "@/integrations/supabase/client";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -108,9 +109,13 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
    const [brand, setBrand] = useState<string | null>(null);
    const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
+   const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
+   const [reviewLoading, setReviewLoading] = useState(false);
+   const [funeralLoading, setFuneralLoading] = useState(false);
+ 
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
-
+ 
    // White-label + default brand colors from legallyinnovative.com (navy + gold)
    useEffect(() => {
      const params = new URLSearchParams(window.location.search);
@@ -171,6 +176,62 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
    const progressValue = (step / TOTAL_STEPS) * 100;
 
+   async function generateFuneralInstructionsWithAI() {
+     try {
+       setFuneralLoading(true);
+       const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
+         body: {
+           field: 'funeral_instructions',
+           data: {
+             fullName: data.fullName,
+             spouse: data.spouse?.name,
+             state: data.state,
+             preference: data.funeralPreference,
+             notes: data.funeralInstructions,
+           }
+         }
+       });
+       if (error) throw error;
+       if (res?.result) {
+         setData({ ...data, funeralInstructions: res.result });
+         toast.success('AI draft added');
+       } else {
+         toast.error('AI did not return content');
+       }
+     } catch (e) {
+       console.error(e);
+       toast.error('AI drafting failed');
+     } finally {
+       setFuneralLoading(false);
+     }
+   }
+
+   async function runAIReview() {
+     try {
+       setReviewLoading(true);
+       const { data: res, error } = await supabase.functions.invoke('ai-review-will', {
+         body: { draft, state: data.state }
+       });
+       if (error) throw error;
+       if (res) {
+         const normalized = {
+           issues: (res as any).issues || [],
+           risks: (res as any).risks || [],
+           missing: (res as any).missing || (res as any).missingInfo || [],
+           summary: (res as any).summary || '',
+           checklist: (res as any).checklist || [],
+         };
+         setAiReview(normalized);
+         toast.success('AI review ready');
+       }
+     } catch (e) {
+       console.error(e);
+       toast.error('AI review failed');
+     } finally {
+       setReviewLoading(false);
+     }
+   }
+ 
    async function handleExportPDF() {
      try {
        const pdfDoc = await PDFDocument.create();
@@ -230,16 +291,43 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
          cursorY -= 16;
        }
 
-       const pdfBytes = await pdfDoc.save();
-       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-       const url = URL.createObjectURL(blob);
-       const a = document.createElement('a');
-       a.href = url;
-       a.download = `Will_Draft_${data.fullName?.split(' ').slice(-1)[0] || 'Preview'}.pdf`;
-       a.click();
-       URL.revokeObjectURL(url);
+        // Append AI review summary & checklist if available
+        if (aiReview) {
+          let p = pdfDoc.addPage([612, 792]);
+          let y = 742;
+          const maxWidth = width - margin * 2;
+          p.drawText('AI Review Summary', { x: margin, y, size: 16, font: times });
+          y -= 24;
+          for (const line of wrapText(aiReview.summary || '', maxWidth, 12)) {
+            if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+            p.drawText(line, { x: margin, y, size: 12, font: times });
+            y -= 16;
+          }
+          y -= 10;
+          if (aiReview.checklist?.length) {
+            if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+            p.drawText('Checklist', { x: margin, y, size: 14, font: times });
+            y -= 20;
+            for (const item of aiReview.checklist) {
+              for (const line of wrapText(`• ${item}`, maxWidth, 12)) {
+                if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+                p.drawText(line, { x: margin, y, size: 12, font: times });
+                y -= 16;
+              }
+            }
+          }
+        }
 
-       toast.success('PDF downloaded');
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Will_Draft_${data.fullName?.split(' ').slice(-1)[0] || 'Preview'}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        toast.success('PDF downloaded');
      } catch (e) {
        console.error(e);
        toast.error('Failed to generate PDF');
@@ -567,10 +655,16 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
                      </SelectContent>
                    </Select>
                  </div>
-                 <div className="md:col-span-2">
-                   <Label>Special instructions</Label>
-                   <Textarea value={data.funeralInstructions} onChange={(e)=>setData({...data, funeralInstructions:e.target.value})} />
-                 </div>
+                  <div className="md:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Special instructions</Label>
+                      <Button variant="outline" size="sm" onClick={generateFuneralInstructionsWithAI} disabled={funeralLoading}>
+                        {funeralLoading ? 'Drafting…' : 'Ask AI to draft'}
+                      </Button>
+                    </div>
+                    <Textarea value={data.funeralInstructions} onChange={(e)=>setData({...data, funeralInstructions:e.target.value})} />
+                    <p className="text-xs text-muted-foreground mt-1">AI can suggest a concise, respectful clause based on your info.</p>
+                  </div>
                </div>
                {StepActions}
              </div>
@@ -676,10 +770,33 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
                    <div className="text-sm leading-7">{data.witnesses.filter(Boolean).length ? data.witnesses.filter(Boolean).join(', ') : '—'}</div>
                  </div>
 
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Draft Preview</h3>
-                   <pre className="whitespace-pre-wrap bg-secondary/60 p-4 rounded-md text-sm">{draft}</pre>
-                 </div>
+                  <div>
+                    <h3 className="text-xl font-serifBrand">AI Review</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Button variant="secondary" onClick={runAIReview} disabled={reviewLoading}>
+                        {reviewLoading ? 'Reviewing…' : 'Run AI Review'}
+                      </Button>
+                      {aiReview && <span className="text-sm text-muted-foreground">Review ready</span>}
+                    </div>
+                    {aiReview && (
+                      <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
+                        <div className="mb-2"><strong>Summary:</strong> {aiReview.summary}</div>
+                        {aiReview.checklist?.length ? (
+                          <div>
+                            <strong>Checklist:</strong>
+                            <ul className="list-disc pl-5">
+                              {aiReview.checklist.map((item, i)=> (<li key={i}>{item}</li>))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-serifBrand">Draft Preview</h3>
+                    <pre className="whitespace-pre-wrap bg-secondary/60 p-4 rounded-md text-sm">{draft}</pre>
+                  </div>
 
                  <div className="flex items-center justify-between">
                    <Button variant="outline" onClick={()=> setStep(1)}>Edit from Start</Button>
