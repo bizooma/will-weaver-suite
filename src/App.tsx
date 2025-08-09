@@ -16,6 +16,7 @@ import Contact from "./pages/Contact";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
+import VoiceAgentBar from "./components/VoiceAgentBar";
 import DraftSave from "./pages/DraftSave";
 import DraftView from "./pages/DraftView";
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <SiteFooter />
+          <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />
           <ChatbotWidget />
         </BrowserRouter>
       </TooltipProvider>
