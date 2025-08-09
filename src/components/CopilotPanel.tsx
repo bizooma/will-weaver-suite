@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Mic, Square } from "lucide-react";
 export type CopilotTarget = 'funeral' | 'pet' | 'guardian' | 'altGuardian' | 'gift';
 
 interface CopilotPanelProps {
@@ -36,6 +37,12 @@ const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onToneChange, onP
   const [redact, setRedact] = useState<boolean>(() => {
     try { return localStorage.getItem('copilot.redact') === '1'; } catch { return false; }
   });
+  const [speak, setSpeak] = useState<boolean>(() => {
+    try { return localStorage.getItem('copilot.speak') === '1'; } catch { return false; }
+  });
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const initializedRef = useRef(false);
   const seededRef = useRef(false);
   useEffect(()=>{ endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
@@ -74,6 +81,10 @@ useEffect(() => {
 useEffect(() => {
   try { localStorage.setItem('copilot.redact', redact ? '1' : '0'); } catch { /* ignore */ }
 }, [redact]);
+
+useEffect(() => {
+  try { localStorage.setItem('copilot.speak', speak ? '1' : '0'); } catch { /* ignore */ }
+}, [speak]);
 
 function redactText(text: string): string {
   if (!text) return text;
@@ -127,6 +138,19 @@ const send = async (overrideText?: string) => {
     if (error) throw error;
     const reply = (res as any)?.reply || 'Sorry, I could not generate a response.';
     setMessages([...next, { role: 'assistant', content: reply }]);
+    if (speak && reply) {
+      try {
+        const { data: audioRes, error: ttsErr } = await supabase.functions.invoke('text-to-voice', { body: { text: reply } });
+        if (ttsErr) throw ttsErr;
+        const b64 = (audioRes as any)?.audioContent;
+        if (b64) {
+          const audio = new Audio(`data:audio/mp3;base64,${b64}`);
+          audio.play().catch(()=>{});
+        }
+      } catch (e) {
+        console.error('TTS error', e);
+      }
+    }
   } catch (e) {
     console.error(e);
     toast.error('Co‑pilot error');
@@ -134,6 +158,65 @@ const send = async (overrideText?: string) => {
   } finally {
     setSending(false);
   }
+};
+
+// Helpers for voice recording and STT
+const blobToBase64 = (blob: Blob) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const res = reader.result as string;
+    resolve((res.split(',')[1]) || '');
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mr = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    chunksRef.current = [];
+    mr.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunksRef.current.push(e.data); };
+    mr.onstop = async () => {
+      try {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const base64 = await blobToBase64(blob);
+        setIsRecording(false);
+        const { data: sttRes, error: sttErr } = await supabase.functions.invoke('voice-to-text', { body: { audio: base64 } });
+        if (sttErr) throw sttErr;
+        const text = (sttRes as any)?.text?.trim?.();
+        if (text) {
+          setInput(text);
+          await send(text);
+        } else {
+          toast.error('Could not understand audio');
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Voice transcription failed');
+      } finally {
+        try { stream.getTracks().forEach(t => t.stop()); } catch {}
+      }
+    };
+    mediaRecorderRef.current = mr;
+    mr.start();
+    setIsRecording(true);
+  } catch (e) {
+    console.error(e);
+    toast.error('Microphone access denied');
+  }
+};
+
+const stopRecording = () => {
+  const mr = mediaRecorderRef.current;
+  if (mr && mr.state !== 'inactive') {
+    try { mr.stop(); } catch {}
+  }
+};
+
+const handleToggleRecording = async () => {
+  if (isRecording) stopRecording();
+  else await startRecording();
 };
 
 function getQuickPrompts(step?: number): string[] {
@@ -196,6 +279,8 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
             <div className="flex items-center gap-2">
               <Label className="text-sm">Redact personal details</Label>
               <Switch checked={redact} onCheckedChange={(v)=> setRedact(!!v)} />
+              <Label className="text-sm">Speak replies</Label>
+              <Switch checked={speak} onCheckedChange={(v)=> setSpeak(!!v)} />
               <Button size="sm" variant="outline" onClick={()=>{
                 const la = lastAssistant; if (!la) return; navigator.clipboard.writeText(la.content).then(()=> toast.success('Copied')).catch(()=> toast.error('Copy failed'));
               }} disabled={!lastAssistant}>Copy last</Button>
@@ -251,6 +336,9 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
 
           <div className="flex items-center gap-2">
             <Input ref={inputRef} placeholder="Ask a question or request a clause…" value={input} onChange={(e)=> setInput(e.target.value)} onKeyDown={(e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+            <Button variant="outline" onClick={handleToggleRecording} aria-label={isRecording ? 'Stop recording' : 'Start recording'} title={isRecording ? 'Stop recording' : 'Start recording'}>
+              {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
             <Button onClick={() => send()} disabled={sending}>{sending ? 'Sending…' : 'Send'}</Button>
           </div>
         </div>
