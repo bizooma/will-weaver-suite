@@ -30,10 +30,26 @@ serve(async (req) => {
     const userContext =
       typeof data === "string" ? data : JSON.stringify(data ?? {});
 
+    const toneKey = ["plain","formal","compassionate","concise"].includes(tone) ? tone : "plain";
+    const toneConfig = (
+      {
+        plain: { style: "Neutral, plain-English, respectful, clear", temp: 0.3 },
+        formal: { style: "Formal legal drafting; precise, traditional", temp: 0.2 },
+        compassionate: { style: "Warm, compassionate, supportive, professional", temp: 0.5 },
+        concise: { style: "Concise, minimal wording while preserving meaning", temp: 0.2 },
+      } as const
+    )[toneKey as "plain"|"formal"|"compassionate"|"concise"];
+
+    let jurisdiction = "";
+    try {
+      jurisdiction = typeof data === "object" && data && (data as any).state ? String((data as any).state) : "";
+    } catch (_) { /* ignore */ }
+
     const prompt = `Draft a concise, plain-English legal clause for a Last Will and Testament.
 - Clause type: ${fieldLabel}
 - Context (JSON): ${userContext}
-- Style: Traditional estate planning tone; respectful, clear, and jurisdiction-agnostic.
+- Jurisdiction hint: ${jurisdiction || 'None'} (keep drafting jurisdiction-agnostic; do not cite statutes)
+- Style: ${toneConfig.style}
 - Length: 2-5 sentences. No placeholders like [Name] if provided in context. Avoid legalese when possible.
 - Do NOT include disclaimers or headings. Output only the clause text.`;
 
@@ -53,7 +69,7 @@ serve(async (req) => {
           },
           { role: "user", content: prompt },
         ],
-        temperature: tone === "warmer" ? 0.8 : 0.4,
+        temperature: toneConfig.temp,
       }),
     });
 

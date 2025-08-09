@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { supabase } from "@/integrations/supabase/client";
+import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -140,6 +141,20 @@ import { supabase } from "@/integrations/supabase/client";
     const [guardianLoadingAlt, setGuardianLoadingAlt] = useState(false);
     const [petLoading, setPetLoading] = useState(false);
     const [tone, setTone] = useState<'plain' | 'formal' | 'compassionate' | 'concise'>('plain');
+    type PendingSuggestion = { target: 'funeral' | 'gift' | 'guardian' | 'altGuardian' | 'pet'; index?: number; suggestion: string };
+    const [pendingSuggestion, setPendingSuggestion] = useState<PendingSuggestion | null>(null);
+    const [undoAction, setUndoAction] = useState<null | (() => void)>>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const validationIssues = useMemo(() => {
+      const issues: string[] = [];
+      if (!data.fullName) issues.push('Missing full legal name');
+      if (!data.state) issues.push('Missing state of residence');
+      if (!data.executor.name) issues.push('Missing executor name');
+      if (data.addGuardians && !data.guardian?.name) issues.push('Guardian name required when guardians are enabled');
+      if (Math.round(residueSum) !== 100) issues.push('Residue total must equal 100%');
+      return issues;
+    }, [data, /* residueSum will be defined later via useMemo but captured when used */]);
   
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -244,12 +259,11 @@ import { supabase } from "@/integrations/supabase/client";
           }
         });
        if (error) throw error;
-       if (res?.result) {
-         setData({ ...data, funeralInstructions: res.result });
-         toast.success('AI draft added');
-       } else {
-         toast.error('AI did not return content');
-       }
+        if (res?.result) {
+          setPendingSuggestion({ target: 'funeral', suggestion: res.result });
+        } else {
+          toast.error('AI did not return content');
+        }
      } catch (e) {
        console.error(e);
        toast.error('AI drafting failed');
@@ -275,15 +289,11 @@ import { supabase } from "@/integrations/supabase/client";
           }
         });
        if (error) throw error;
-       if (res?.result) {
-         const list = [...data.gifts];
-         const current = list[idx] || { description: '', beneficiary: '' };
-         list[idx] = { ...current, description: current.description ? `${current.description} ${res.result}` : res.result };
-         setData({ ...data, gifts: list });
-         toast.success('AI draft added');
-       } else {
-         toast.error('AI did not return content');
-       }
+        if (res?.result) {
+          setPendingSuggestion({ target: 'gift', index: idx, suggestion: res.result });
+        } else {
+          toast.error('AI did not return content');
+        }
      } catch (e) {
        console.error(e);
        toast.error('AI drafting failed');
@@ -309,18 +319,11 @@ import { supabase } from "@/integrations/supabase/client";
           }
         });
        if (error) throw error;
-       if (res?.result) {
-         if (which === 'primary') {
-           const val = data.guardianInstructions ? `${data.guardianInstructions}\n${res.result}` : res.result;
-           setData({ ...data, guardianInstructions: val });
-         } else {
-           const val = data.altGuardianInstructions ? `${data.altGuardianInstructions}\n${res.result}` : res.result;
-           setData({ ...data, altGuardianInstructions: val });
-         }
-         toast.success('AI draft added');
-       } else {
-         toast.error('AI did not return content');
-       }
+        if (res?.result) {
+          setPendingSuggestion({ target: which === 'primary' ? 'guardian' : 'altGuardian', suggestion: res.result });
+        } else {
+          toast.error('AI did not return content');
+        }
      } catch (e) {
        console.error(e);
        toast.error('AI drafting failed');
@@ -346,13 +349,11 @@ import { supabase } from "@/integrations/supabase/client";
           }
         });
        if (error) throw error;
-       if (res?.result) {
-         const val = data.petInstructions ? `${data.petInstructions}\n${res.result}` : res.result;
-         setData({ ...data, petInstructions: val });
-         toast.success('AI draft added');
-       } else {
-         toast.error('AI did not return content');
-       }
+        if (res?.result) {
+          setPendingSuggestion({ target: 'pet', suggestion: res.result });
+        } else {
+          toast.error('AI did not return content');
+        }
      } catch (e) {
        console.error(e);
        toast.error('AI drafting failed');
@@ -395,6 +396,10 @@ import { supabase } from "@/integrations/supabase/client";
     }, [step, aiReview, reviewLoading]);
   
    async function handleExportPDF() {
+      if (validationIssues.length) {
+        const proceed = window.confirm(`There are ${validationIssues.length} validation issue(s). Proceed to download anyway?`);
+        if (!proceed) return;
+      }
      try {
        const pdfDoc = await PDFDocument.create();
        const times = await pdfDoc.embedFont(StandardFonts.TimesRoman);
@@ -551,23 +556,40 @@ import { supabase } from "@/integrations/supabase/client";
 
          <div className="rounded-lg border p-6 bg-card">
           <div className="mb-4">
-             <Progress value={progressValue} />
-             <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-               <div className="text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
-               <div className="flex items-center gap-2">
-                 <Label className="text-sm">AI tone</Label>
-                 <Select value={tone} onValueChange={(v)=>setTone(v as any)}>
-                   <SelectTrigger className="w-40"><SelectValue placeholder="Select tone"/></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="plain">Plain</SelectItem>
-                     <SelectItem value="formal">Formal</SelectItem>
-                     <SelectItem value="compassionate">Compassionate</SelectItem>
-                     <SelectItem value="concise">Concise</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
+              <Progress value={progressValue} />
+              <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Label className="text-sm">AI tone</Label>
+                  <Select value={tone} onValueChange={(v)=>setTone(v as any)}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Select tone"/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="plain">Plain</SelectItem>
+                      <SelectItem value="formal">Formal</SelectItem>
+                      <SelectItem value="compassionate">Compassionate</SelectItem>
+                      <SelectItem value="concise">Concise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {undoAction && (
+                    <Button size="sm" variant="outline" onClick={()=>{ undoAction(); setUndoAction(null); toast.success('Undone'); }}>Undo last AI insert</Button>
+                  )}
+                  <Button size="sm" variant="outline" onClick={()=>{
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = 'will-draft.json'; a.click(); URL.revokeObjectURL(url);
+                  }}>Export JSON</Button>
+                  <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={(e)=>{
+                    const file = e.target.files?.[0]; if (!file) return; const reader = new FileReader();
+                    reader.onload = () => { try { const obj = JSON.parse(String(reader.result||'{}')); setData({ ...defaultData, ...obj }); toast.success('Imported'); } catch { toast.error('Invalid JSON'); } };
+                    reader.readAsText(file);
+                    e.currentTarget.value = '';
+                  }} />
+                  <Button size="sm" variant="outline" onClick={()=> fileInputRef.current?.click()}>Import JSON</Button>
+                  <Button size="sm" variant="destructive" onClick={()=>{ if (confirm('Reset all data?')) { setData(defaultData); setStep(1); setAiReview(null); localStorage.removeItem('willCreator.data'); localStorage.removeItem('willCreator.step'); } }}>Reset</Button>
+                </div>
+              </div>
              </div>
-            </div>
 
            {/* Steps */}
            {step === 1 && (
@@ -917,9 +939,23 @@ import { supabase } from "@/integrations/supabase/client";
            )}
 
            {step === 11 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">Review & Generate</h2>
-               <p className="text-muted-foreground">Review your entries below before downloading your PDF.</p>
+              <div className="grid gap-4">
+                <h2 className="text-2xl font-serifBrand">Review & Generate</h2>
+                <p className="text-muted-foreground">Review your entries below before downloading your PDF.</p>
+                {validationIssues.length > 0 && (
+                  <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm">
+                    <div className="font-medium mb-2">Blocking issues</div>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {validationIssues.map((it, i)=> (
+                        <li key={i} className="flex items-start justify-between gap-3">
+                          <span className="flex-1">{it}</span>
+                          <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(it))}>Go fix</Button>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-muted-foreground mt-2">You can still download, but we recommend fixing these first.</p>
+                  </div>
+                )}
 
                <div className="grid gap-6">
                  <div>
@@ -1075,9 +1111,88 @@ import { supabase } from "@/integrations/supabase/client";
            <p className="text-muted-foreground mb-4 max-w-3xl">Use query parameters to brand this tool: brand, primary, accent, logo (URL). Example iframe code:</p>
            <pre className="bg-secondary/60 p-4 rounded-md text-sm overflow-auto">{`<iframe src="${window.location.origin}/will-creator?brand=Legally%20Innovative&primary=%230a3a64&accent=%23e0b04b" width="100%" height="900" style="border:0;" loading="lazy"></iframe>`}</pre>
          </section>
-       </section>
-     </main>
-   );
- };
+        </section>
+
+        {/* Suggestion Review Dialog */}
+        <SuggestionReviewDialog
+          open={!!pendingSuggestion}
+          suggestion={pendingSuggestion?.suggestion || ''}
+          onAppend={() => {
+            if (!pendingSuggestion) return;
+            const s = pendingSuggestion.suggestion;
+            if (pendingSuggestion.target === 'funeral') {
+              const prev = data.funeralInstructions || '';
+              setData({ ...data, funeralInstructions: prev ? `${prev}\n${s}` : s });
+              setUndoAction(()=> () => setData({ ...data, funeralInstructions: prev }));
+            } else if (pendingSuggestion.target === 'pet') {
+              const prev = data.petInstructions || '';
+              setData({ ...data, petInstructions: prev ? `${prev}\n${s}` : s });
+              setUndoAction(()=> () => setData({ ...data, petInstructions: prev }));
+            } else if (pendingSuggestion.target === 'guardian') {
+              const prev = data.guardianInstructions || '';
+              setData({ ...data, guardianInstructions: prev ? `${prev}\n${s}` : s });
+              setUndoAction(()=> () => setData({ ...data, guardianInstructions: prev }));
+            } else if (pendingSuggestion.target === 'altGuardian') {
+              const prev = data.altGuardianInstructions || '';
+              setData({ ...data, altGuardianInstructions: prev ? `${prev}\n${s}` : s });
+              setUndoAction(()=> () => setData({ ...data, altGuardianInstructions: prev }));
+            } else if (pendingSuggestion.target === 'gift') {
+              const idx = pendingSuggestion.index ?? 0;
+              const list = [...data.gifts];
+              const current = list[idx] || { description: '', beneficiary: '' };
+              const prev = current.description || '';
+              list[idx] = { ...current, description: prev ? `${prev} ${s}` : s };
+              setData({ ...data, gifts: list });
+              setUndoAction(()=> () => {
+                const l2 = [...list];
+                const cur2 = l2[idx] || { description: '', beneficiary: '' };
+                l2[idx] = { ...cur2, description: prev };
+                setData({ ...data, gifts: l2 });
+              });
+            }
+            setPendingSuggestion(null);
+            toast.success('Inserted');
+          }}
+          onReplace={() => {
+            if (!pendingSuggestion) return;
+            const s = pendingSuggestion.suggestion;
+            if (pendingSuggestion.target === 'funeral') {
+              const prev = data.funeralInstructions || '';
+              setData({ ...data, funeralInstructions: s });
+              setUndoAction(()=> () => setData({ ...data, funeralInstructions: prev }));
+            } else if (pendingSuggestion.target === 'pet') {
+              const prev = data.petInstructions || '';
+              setData({ ...data, petInstructions: s });
+              setUndoAction(()=> () => setData({ ...data, petInstructions: prev }));
+            } else if (pendingSuggestion.target === 'guardian') {
+              const prev = data.guardianInstructions || '';
+              setData({ ...data, guardianInstructions: s });
+              setUndoAction(()=> () => setData({ ...data, guardianInstructions: prev }));
+            } else if (pendingSuggestion.target === 'altGuardian') {
+              const prev = data.altGuardianInstructions || '';
+              setData({ ...data, altGuardianInstructions: s });
+              setUndoAction(()=> () => setData({ ...data, altGuardianInstructions: prev }));
+            } else if (pendingSuggestion.target === 'gift') {
+              const idx = pendingSuggestion.index ?? 0;
+              const list = [...data.gifts];
+              const current = list[idx] || { description: '', beneficiary: '' };
+              const prev = current.description || '';
+              list[idx] = { ...current, description: s };
+              setData({ ...data, gifts: list });
+              setUndoAction(()=> () => {
+                const l2 = [...list];
+                const cur2 = l2[idx] || { description: '', beneficiary: '' };
+                l2[idx] = { ...cur2, description: prev };
+                setData({ ...data, gifts: l2 });
+              });
+            }
+            setPendingSuggestion(null);
+            toast.success('Inserted');
+          }}
+          onClose={() => setPendingSuggestion(null)}
+        />
+      </main>
+    );
+  };
 
  export default WillCreator;
