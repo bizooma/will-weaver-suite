@@ -573,6 +573,7 @@ import CopilotPanel from "@/components/CopilotPanel";
                       <SelectItem value="concise">Concise</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button size="sm" variant="secondary" onClick={()=> setOpenCopilot(true)}>Co‑pilot</Button>
                   {undoAction && (
                     <Button size="sm" variant="outline" onClick={()=>{ undoAction(); setUndoAction(null); toast.success('Undone'); }}>Undo last AI insert</Button>
                   )}
@@ -1195,8 +1196,6 @@ import CopilotPanel from "@/components/CopilotPanel";
           onClose={() => setPendingSuggestion(null)}
         />
 
-        {/* Floating Co‑pilot button */}
-        <Button className="fixed bottom-6 right-6 z-40" variant="hero" onClick={()=> setOpenCopilot(true)}>Co‑pilot</Button>
         <CopilotPanel
           open={openCopilot}
           onOpenChange={setOpenCopilot}
