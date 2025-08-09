@@ -17,7 +17,11 @@ export default {
 				'2xl': '1400px'
 			}
 		},
-		extend: {
+			extend: {
+				fontFamily: {
+					serifBrand: ["Playfair Display", "serif"],
+					sansBody: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+				},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
