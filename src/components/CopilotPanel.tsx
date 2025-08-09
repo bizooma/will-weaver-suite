@@ -18,9 +18,10 @@ interface CopilotPanelProps {
   draft: string;
   tone: 'plain' | 'formal' | 'compassionate' | 'concise';
   onPropose: (text: string, target: CopilotTarget, index?: number) => void;
+  seedPrompt?: string;
 }
 
-const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose }: CopilotPanelProps) => {
+const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose, seedPrompt }: CopilotPanelProps) => {
   const [messages, setMessages] = useState<{ role: 'user'|'assistant'; content: string }[]>([
     { role: 'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }
   ]);
@@ -31,6 +32,12 @@ const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onPropose }: Copi
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(()=>{ endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
+
+  useEffect(() => {
+    if (open && seedPrompt) {
+      setInput(seedPrompt);
+    }
+  }, [open, seedPrompt]);
 
   const send = async () => {
     const text = input.trim();

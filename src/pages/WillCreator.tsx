@@ -11,6 +11,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { supabase } from "@/integrations/supabase/client";
 import SuggestionReviewDialog from "@/components/SuggestionReviewDialog";
 import CopilotPanel from "@/components/CopilotPanel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -134,6 +135,7 @@ import CopilotPanel from "@/components/CopilotPanel";
     const [brand, setBrand] = useState<string | null>(null);
     const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [openCopilot, setOpenCopilot] = useState(false);
+    const [seedPrompt, setSeedPrompt] = useState<string>("");
 
     const [aiReview, setAiReview] = useState<{ issues: string[]; risks: string[]; missing: string[]; summary: string; checklist: string[] } | null>(null);
     const [reviewLoading, setReviewLoading] = useState(false);
@@ -145,6 +147,7 @@ import CopilotPanel from "@/components/CopilotPanel";
     const [tone, setTone] = useState<'plain' | 'formal' | 'compassionate' | 'concise'>('plain');
     type PendingSuggestion = { target: 'funeral' | 'gift' | 'guardian' | 'altGuardian' | 'pet'; index?: number; suggestion: string };
     const [pendingSuggestion, setPendingSuggestion] = useState<PendingSuggestion | null>(null);
+    const [fixingKey, setFixingKey] = useState<string | null>(null);
     const [undoAction, setUndoAction] = useState<(() => void) | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -386,11 +389,62 @@ import CopilotPanel from "@/components/CopilotPanel";
      } catch (e) {
        console.error(e);
        toast.error('AI review failed');
-     } finally {
-       setReviewLoading(false);
-     }
-   }
-  
+      } finally {
+        setReviewLoading(false);
+      }
+    }
+
+    const stepToTarget = (s: number): 'funeral' | 'pet' | 'guardian' | 'altGuardian' | 'gift' | null => {
+      switch (s) {
+        case 5: return 'guardian';
+        case 6: return 'gift';
+        case 8: return 'pet';
+        case 9: return 'funeral';
+        default: return null;
+      }
+    };
+
+    async function handleFixIssue(item: string) {
+      setFixingKey(item);
+      try {
+        const stepGuess = guessStepForText(item);
+        const target = stepToTarget(stepGuess);
+        if (!target) {
+          setSeedPrompt(`Explain and propose exact wording to fix this in my will: "${item}"`);
+          setOpenCopilot(true);
+          return;
+        }
+        const { data: res, error } = await supabase.functions.invoke('ai-copilot', {
+          body: {
+            messages: [
+              { role: 'user', content: `Draft or revise the ${target} clause to address: ${item}. Return only the clause text.` }
+            ],
+            data,
+            draft,
+            tone
+          }
+        });
+        if (error) throw error;
+        const suggestion = (res as any)?.reply || '';
+        if (suggestion) {
+          setPendingSuggestion({ target, index: target==='gift' ? 0 : undefined, suggestion });
+          toast.success('AI suggestion ready');
+        } else {
+          toast.error('AI did not return content');
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error('AI drafting failed');
+      } finally {
+        setFixingKey(null);
+      }
+    }
+
+    function handleExplainIssue(item: string) {
+      setSeedPrompt(`Explain this review point and how to fix it in my will. Provide clear steps and example wording:\n\n"${item}"`);
+      setOpenCopilot(true);
+    }
+
     // Auto-run review on Review step
     useEffect(() => {
       if (step === 11 && !aiReview && !reviewLoading) {
@@ -1037,54 +1091,73 @@ import CopilotPanel from "@/components/CopilotPanel";
                     <h3 className="text-xl font-serifBrand">AI Review</h3>
                     <div className="flex items-center gap-3 mb-2">
                       <Button variant="secondary" onClick={runAIReview} disabled={reviewLoading}>
-                        {reviewLoading ? 'Reviewing…' : 'Run AI Review'}
+                        {reviewLoading ? 'Reviewing…' : (aiReview ? 'Re‑run review' : 'Run AI Review')}
                       </Button>
                       {aiReview && <span className="text-sm text-muted-foreground">Review ready</span>}
                     </div>
                     {aiReview && (
-                      <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md space-y-3">
-                        <div className="mb-2"><strong>Summary:</strong> {aiReview.summary}</div>
-                        {aiReview.issues?.length ? (
-                          <div>
-                            <strong>Potential issues:</strong>
-                            <ul className="list-disc pl-5">
-                              {aiReview.issues.map((item, i)=> (
-                                <li key={i} className="flex items-start justify-between gap-3">
-                                  <span className="flex-1">{item}</span>
-                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                        {aiReview.risks?.length ? (
-                          <div>
-                            <strong>Risks:</strong>
-                            <ul className="list-disc pl-5">
-                              {aiReview.risks.map((item, i)=> (
-                                <li key={i} className="flex items-start justify-between gap-3">
-                                  <span className="flex-1">{item}</span>
-                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                        {aiReview.missing?.length ? (
-                          <div>
-                            <strong>Missing info:</strong>
-                            <ul className="list-disc pl-5">
-                              {aiReview.missing.map((item, i)=> (
-                                <li key={i} className="flex items-start justify-between gap-3">
-                                  <span className="flex-1">{item}</span>
-                                  <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(item))}>Go fix</Button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
+                      <div className="space-y-3">
+                        <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
+                          <strong>Summary:</strong> {aiReview.summary}
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-3">
+                          {aiReview.issues?.length ? (
+                            <Card>
+                              <CardHeader><CardTitle>Issues</CardTitle></CardHeader>
+                              <CardContent>
+                                <ul className="space-y-2">
+                                  {aiReview.issues.map((item, i)=> (
+                                    <li key={i} className="flex items-start justify-between gap-3">
+                                      <span className="flex-1">{item}</span>
+                                      <div className="flex items-center gap-2">
+                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
+                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </CardContent>
+                            </Card>
+                          ) : null}
+                          {aiReview.risks?.length ? (
+                            <Card>
+                              <CardHeader><CardTitle>Risks</CardTitle></CardHeader>
+                              <CardContent>
+                                <ul className="space-y-2">
+                                  {aiReview.risks.map((item, i)=> (
+                                    <li key={i} className="flex items-start justify-between gap-3">
+                                      <span className="flex-1">{item}</span>
+                                      <div className="flex items-center gap-2">
+                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
+                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </CardContent>
+                            </Card>
+                          ) : null}
+                          {aiReview.missing?.length ? (
+                            <Card>
+                              <CardHeader><CardTitle>Missing Info</CardTitle></CardHeader>
+                              <CardContent>
+                                <ul className="space-y-2">
+                                  {aiReview.missing.map((item, i)=> (
+                                    <li key={i} className="flex items-start justify-between gap-3">
+                                      <span className="flex-1">{item}</span>
+                                      <div className="flex items-center gap-2">
+                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
+                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </CardContent>
+                            </Card>
+                          ) : null}
+                        </div>
                         {aiReview.checklist?.length ? (
-                          <div>
+                          <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
                             <strong>Checklist:</strong>
                             <ul className="list-disc pl-5">
                               {aiReview.checklist.map((item, i)=> (<li key={i}>{item}</li>))}
@@ -1203,6 +1276,7 @@ import CopilotPanel from "@/components/CopilotPanel";
           draft={draft}
           tone={tone}
           onPropose={(text, target, index)=> setPendingSuggestion({ target, index, suggestion: text })}
+          seedPrompt={seedPrompt}
         />
       </main>
     );
