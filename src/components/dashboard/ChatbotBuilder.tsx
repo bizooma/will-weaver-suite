@@ -26,6 +26,8 @@ export function ChatbotBuilder() {
     primaryColor: "#3b82f6",
     videoUrl: "",
     showSuggestedResponses: true,
+    contactPhone: "",
+    contactEmail: "",
     suggestedResponses: [
       "Tell me about your services",
       "How can you help me?", 
@@ -77,6 +79,8 @@ export function ChatbotBuilder() {
           primaryColor: config.primaryColor || "#3b82f6",
           videoUrl: config.videoUrl || "",
           showSuggestedResponses: config.showSuggestedResponses ?? true,
+          contactPhone: config.contactPhone || "",
+          contactEmail: config.contactEmail || "",
           suggestedResponses: config.suggestedResponses || [
             "Tell me about your services",
             "How can you help me?", 
@@ -155,7 +159,9 @@ export function ChatbotBuilder() {
         primaryColor: chatbotData.primaryColor,
         videoUrl: chatbotData.videoUrl,
         showSuggestedResponses: chatbotData.showSuggestedResponses,
-        suggestedResponses: chatbotData.suggestedResponses
+        suggestedResponses: chatbotData.suggestedResponses,
+        contactPhone: chatbotData.contactPhone,
+        contactEmail: chatbotData.contactEmail
       };
 
       const embedData = {
@@ -279,6 +285,26 @@ export function ChatbotBuilder() {
                   value={chatbotData.videoUrl}
                   onChange={(e) => setChatbotData(prev => ({ ...prev, videoUrl: e.target.value }))}
                   placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Contact Phone (optional)</Label>
+                <Input
+                  id="contactPhone"
+                  value={chatbotData.contactPhone}
+                  onChange={(e) => setChatbotData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                  placeholder="e.g., +1-555-123-4567"
+                  type="tel"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactEmail">Contact Email (optional)</Label>
+                <Input
+                  id="contactEmail"
+                  value={chatbotData.contactEmail}
+                  onChange={(e) => setChatbotData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                  placeholder="e.g., contact@example.com"
+                  type="email"
                 />
               </div>
             </CardContent>

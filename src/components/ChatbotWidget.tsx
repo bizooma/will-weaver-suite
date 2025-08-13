@@ -5,7 +5,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, Send, X } from "lucide-react";
+import { MessageCircle, Send, X, Phone, Mail } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -23,6 +23,8 @@ interface ChatbotData {
   videoUrl: string;
   suggestedResponses: string[];
   showSuggestedResponses: boolean;
+  contactPhone: string;
+  contactEmail: string;
 }
 
 interface ChatbotWidgetProps {
@@ -71,7 +73,9 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
           primaryColor: config.primaryColor || "#3b82f6",
           videoUrl: config.videoUrl || "",
           suggestedResponses: config.suggestedResponses || [],
-          showSuggestedResponses: config.showSuggestedResponses || false
+          showSuggestedResponses: config.showSuggestedResponses || false,
+          contactPhone: config.contactPhone || "",
+          contactEmail: config.contactEmail || ""
         });
       }
     } catch (error) {
@@ -141,8 +145,36 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
     <div className="fixed bottom-4 right-4 z-50">
       {open && chatbotData && (
         <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h4 className="font-medium">{chatbotData.name}</h4>
+          <div className="p-4 border-b border-t-2 border-t-red-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium">{chatbotData.name}</h4>
+              <div className="flex gap-1">
+                {chatbotData.contactPhone && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    asChild
+                  >
+                    <a href={`tel:${chatbotData.contactPhone}`}>
+                      <Phone className="h-3 w-3" />
+                    </a>
+                  </Button>
+                )}
+                {chatbotData.contactEmail && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    asChild
+                  >
+                    <a href={`mailto:${chatbotData.contactEmail}`}>
+                      <Mail className="h-3 w-3" />
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
