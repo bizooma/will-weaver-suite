@@ -279,9 +279,8 @@ export function ChatbotBuilder() {
                         {chatbotData.suggestedResponses.slice(0, 4).map((response, index) => (
                           <Button
                             key={index}
-                            variant="outline"
                             size="sm"
-                            className="text-xs h-8 justify-start"
+                            className="text-xs h-8 justify-start backdrop-blur-sm bg-white/20 border border-white/30 text-foreground hover:bg-white/30 transition-all duration-200 shadow-lg"
                           >
                             {response}
                           </Button>
@@ -291,9 +290,8 @@ export function ChatbotBuilder() {
                         {chatbotData.suggestedResponses.slice(4, 8).map((response, index) => (
                           <Button
                             key={index + 4}
-                            variant="outline"
                             size="sm"
-                            className="text-xs h-8 justify-start"
+                            className="text-xs h-8 justify-start backdrop-blur-sm bg-white/20 border border-white/30 text-foreground hover:bg-white/30 transition-all duration-200 shadow-lg"
                           >
                             {response}
                           </Button>
