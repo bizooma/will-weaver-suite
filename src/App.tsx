@@ -23,6 +23,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import CookiePolicy from "./pages/CookiePolicy";
 import DataPrivacy from "./pages/DataPrivacy";
+import Dashboard from "./pages/Dashboard";
 import ProductionDashboard from "./pages/ProductionDashboard";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import SiteHeader from "./components/layout/SiteHeader";
@@ -54,6 +55,11 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/dashboard/*" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/will-creator" element={
           <ProtectedRoute>
             <WillCreator />

@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      chatbot_conversations: {
+        Row: {
+          chatbot_id: string
+          conversation_data: Json
+          created_at: string
+          id: string
+          message_count: number
+          session_id: string
+        }
+        Insert: {
+          chatbot_id: string
+          conversation_data?: Json
+          created_at?: string
+          id?: string
+          message_count?: number
+          session_id: string
+        }
+        Update: {
+          chatbot_id?: string
+          conversation_data?: Json
+          created_at?: string
+          id?: string
+          message_count?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_conversations_chatbot_id"
+            columns: ["chatbot_id"]
+            isOneToOne: false
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbots: {
+        Row: {
+          avatar_url: string | null
+          configuration: Json
+          created_at: string
+          description: string | null
+          embed_code: string | null
+          id: string
+          is_active: boolean
+          name: string
+          script_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          configuration?: Json
+          created_at?: string
+          description?: string | null
+          embed_code?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          script_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          configuration?: Json
+          created_at?: string
+          description?: string | null
+          embed_code?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          script_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -38,6 +115,39 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          custom_domain: string | null
+          features: Json
+          id: string
+          plan_type: string
+          updated_at: string
+          user_id: string
+          white_label_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          custom_domain?: string | null
+          features?: Json
+          id?: string
+          plan_type?: string
+          updated_at?: string
+          user_id: string
+          white_label_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          custom_domain?: string | null
+          features?: Json
+          id?: string
+          plan_type?: string
+          updated_at?: string
+          user_id?: string
+          white_label_enabled?: boolean
         }
         Relationships: []
       }
