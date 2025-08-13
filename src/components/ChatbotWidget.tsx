@@ -140,7 +140,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {open && chatbotData && (
-        <Card className="mb-2 w-80 h-96 shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="p-4 border-b flex items-center justify-between">
             <h4 className="font-medium">{chatbotData.name}</h4>
             <Button
