@@ -153,7 +153,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-gray-100"
+                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
                       asChild
                     >
                       <a href={`tel:${chatbotData.contactPhone}`} className="flex items-center gap-1">
@@ -166,7 +166,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-gray-100"
+                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
                       asChild
                     >
                       <a href={`mailto:${chatbotData.contactEmail}`} className="flex items-center gap-1">
