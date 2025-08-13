@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Save, Eye, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,7 +19,18 @@ export function ChatbotBuilder() {
     welcomeMessage: "Hello! How can I help you today?",
     avatar: "default",
     primaryColor: "#3b82f6",
-    videoUrl: ""
+    videoUrl: "",
+    showSuggestedResponses: true,
+    suggestedResponses: [
+      "Tell me about your services",
+      "How can you help me?", 
+      "What are your hours?",
+      "Contact information",
+      "Pricing information",
+      "Book a consultation",
+      "FAQ",
+      "Get started"
+    ]
   });
 
   const getEmbedUrl = (url: string) => {
@@ -39,7 +51,7 @@ export function ChatbotBuilder() {
     return url;
   };
 
-  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}" data-video-url="${chatbotData.videoUrl}"></script>`;
+  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}" data-video-url="${chatbotData.videoUrl}" data-suggested-responses="${chatbotData.showSuggestedResponses}" data-responses='${JSON.stringify(chatbotData.suggestedResponses)}'></script>`;
 
   const copyEmbedScript = () => {
     navigator.clipboard.writeText(embedScript);
@@ -171,6 +183,47 @@ export function ChatbotBuilder() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
+              <CardTitle>Suggested Responses</CardTitle>
+              <CardDescription>
+                Quick response buttons to help users get started
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="suggested-responses"
+                  checked={chatbotData.showSuggestedResponses}
+                  onCheckedChange={(checked) => setChatbotData(prev => ({ ...prev, showSuggestedResponses: checked }))}
+                />
+                <Label htmlFor="suggested-responses">Show suggested responses</Label>
+              </div>
+              
+              {chatbotData.showSuggestedResponses && (
+                <div className="space-y-3">
+                  <Label>Response Buttons (8 total)</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {chatbotData.suggestedResponses.map((response, index) => (
+                      <div key={index} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Button {index + 1}</Label>
+                        <Input
+                          value={response}
+                          onChange={(e) => {
+                            const newResponses = [...chatbotData.suggestedResponses];
+                            newResponses[index] = e.target.value;
+                            setChatbotData(prev => ({ ...prev, suggestedResponses: newResponses }));
+                          }}
+                          placeholder={`Response ${index + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Preview</CardTitle>
               <CardDescription>
                 See how your chatbot will appear to users
@@ -218,6 +271,36 @@ export function ChatbotBuilder() {
                       <p className="text-sm">{chatbotData.welcomeMessage}</p>
                     </div>
                   </div>
+
+                  {/* Suggested Response Buttons */}
+                  {chatbotData.showSuggestedResponses && (
+                    <div className="space-y-2 mt-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        {chatbotData.suggestedResponses.slice(0, 4).map((response, index) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8 justify-start"
+                          >
+                            {response}
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {chatbotData.suggestedResponses.slice(4, 8).map((response, index) => (
+                          <Button
+                            key={index + 4}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8 justify-start"
+                          >
+                            {response}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 pt-3 border-t">
