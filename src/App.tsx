@@ -8,6 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useSecurityMonitoring, useSuspiciousActivityDetection } from "@/hooks/useSecurity";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
@@ -17,6 +18,8 @@ import MobileApp from "./pages/MobileApp";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -26,44 +29,57 @@ import DraftView from "./pages/DraftView";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppContent = () => {
   const isEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1';
+  
+  // Security monitoring
+  useSecurityMonitoring();
+  useSuspiciousActivityDetection();
+
+  return (
+    <BrowserRouter>
+      {!isEmbed && <SiteHeader />}
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/will-creator" element={
+          <ProtectedRoute>
+            <WillCreator />
+          </ProtectedRoute>
+        } />
+        <Route path="/alexa" element={<Alexa />} />
+        <Route path="/mobile-app" element={<MobileApp />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/drafts/save" element={
+          <ProtectedRoute>
+            <DraftSave />
+          </ProtectedRoute>
+        } />
+        <Route path="/drafts/:slug" element={<DraftView />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {!isEmbed && <SiteFooter />}
+      {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
+      {!isEmbed && <ChatbotWidget />}
+    </BrowserRouter>
+  );
+};
+
+const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <HelmetProvider>
           <AuthProvider>
             <TooltipProvider>
+              <AppContent />
               <Toaster />
               <Sonner />
-              <BrowserRouter>
-              {!isEmbed && <SiteHeader />}
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/will-creator" element={
-                  <ProtectedRoute>
-                    <WillCreator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/alexa" element={<Alexa />} />
-                <Route path="/mobile-app" element={<MobileApp />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/drafts/save" element={
-                  <ProtectedRoute>
-                    <DraftSave />
-                  </ProtectedRoute>
-                } />
-                <Route path="/drafts/:slug" element={<DraftView />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              {!isEmbed && <SiteFooter />}
-              {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
-              {!isEmbed && <ChatbotWidget />}
-              </BrowserRouter>
             </TooltipProvider>
           </AuthProvider>
         </HelmetProvider>

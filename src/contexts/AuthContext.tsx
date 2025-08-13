@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { signUpSchema, signInSchema, sanitizeEmail, sanitizeString } from '@/lib/validation';
+import { logger } from '@/lib/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -54,24 +56,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
+      // Validate and sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email);
+      const sanitizedDisplayName = displayName ? sanitizeString(displayName) : undefined;
+      
+      const validationResult = signUpSchema.safeParse({
+        email: sanitizedEmail,
+        password,
+        displayName: sanitizedDisplayName,
+      });
+
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || 'Invalid input';
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        logger.warn('Sign up validation failed', { email: sanitizedEmail, errors: validationResult.error.errors });
+        return { error: new Error(errorMessage) };
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
-        email,
+        email: sanitizedEmail,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: displayName ? { display_name: displayName } : undefined
+          data: sanitizedDisplayName ? { display_name: sanitizedDisplayName } : undefined
         }
       });
       
       if (error) {
+        logger.error('Sign up failed', error, { email: sanitizedEmail });
         toast({
           title: "Sign up failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        logger.info('User signed up successfully', { email: sanitizedEmail });
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your signup.",
@@ -80,6 +105,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       return { error };
     } catch (error: any) {
+      logger.error('Unexpected sign up error', error);
       toast({
         title: "An error occurred",
         description: "Please try again later.",
@@ -91,21 +117,44 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Validate and sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email);
+      
+      const validationResult = signInSchema.safeParse({
+        email: sanitizedEmail,
+        password,
+      });
+
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || 'Invalid input';
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        logger.warn('Sign in validation failed', { email: sanitizedEmail, errors: validationResult.error.errors });
+        return { error: new Error(errorMessage) };
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: sanitizedEmail,
         password,
       });
       
       if (error) {
+        logger.warn('Sign in failed', { email: sanitizedEmail, error: error.message });
         toast({
           title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        logger.info('User signed in successfully', { email: sanitizedEmail });
       }
       
       return { error };
     } catch (error: any) {
+      logger.error('Unexpected sign in error', error);
       toast({
         title: "An error occurred",
         description: "Please try again later.",
@@ -119,13 +168,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
+        logger.error('Sign out failed', error);
         toast({
           title: "Sign out failed",
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        logger.info('User signed out successfully');
       }
     } catch (error: any) {
+      logger.error('Unexpected sign out error', error);
       toast({
         title: "An error occurred",
         description: "Please try again later.",
