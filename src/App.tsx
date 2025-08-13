@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useSecurityMonitoring, useSuspiciousActivityDetection } from "@/hooks/useSecurity";
+import { useAnalytics, useErrorTracking, usePerformanceMonitoring, useAccessibilityMonitoring } from "@/hooks/useMonitoring";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
@@ -20,6 +21,7 @@ import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import ProductionDashboard from "./pages/ProductionDashboard";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -35,6 +37,12 @@ const AppContent = () => {
   // Security monitoring
   useSecurityMonitoring();
   useSuspiciousActivityDetection();
+  
+  // Production monitoring
+  useAnalytics();
+  useErrorTracking();
+  usePerformanceMonitoring();
+  useAccessibilityMonitoring();
 
   return (
     <BrowserRouter>
@@ -54,6 +62,11 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/production-dashboard" element={
+          <ProtectedRoute>
+            <ProductionDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/drafts/save" element={
           <ProtectedRoute>
             <DraftSave />

@@ -4,26 +4,48 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import HeroDemoFrame from "@/components/HeroDemoFrame";
+import { generateMetaTags, generateStructuredData } from "@/lib/seo";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/" : "/";
 
 const Index = () => {
   const { user } = useAuth();
 
+  const seoConfig = {
+    title: 'Legal Tech SaaS Demo | AI-Powered Will Generator & Legal Tools',
+    description: 'Experience our AI-powered legal document generation platform featuring will creator, Alexa skill, and mobile app integrations. Professional demo for law firms.',
+    keywords: ['legal tech', 'will generator', 'legal AI', 'document automation', 'law firm software'],
+    type: 'website' as const,
+    url: '/',
+  };
+
+  const metaTags = generateMetaTags(seoConfig);
+  const structuredData = generateStructuredData(seoConfig);
+
   return (
     <main>
       <Helmet>
-        <title>Legal Tech SaaS Demo | Will Generator, Alexa Skill, Mobile App</title>
-        <meta name="description" content="Clean, professional demo site showcasing our will generator, Alexa skill, and mobile app for law firms." />
-        <link rel="canonical" href={canonical} />
+        <title>{metaTags.title}</title>
+        <meta name="description" content={metaTags.description} />
+        <meta name="keywords" content={metaTags.keywords} />
+        
+        <meta property="og:title" content={metaTags['og:title']} />
+        <meta property="og:description" content={metaTags['og:description']} />
+        <meta property="og:image" content={metaTags['og:image']} />
+        <meta property="og:url" content={metaTags['og:url']} />
+        <meta property="og:type" content={metaTags['og:type']} />
+        <meta property="og:site_name" content={metaTags['og:site_name']} />
+        
+        <meta name="twitter:card" content={metaTags['twitter:card']} />
+        <meta name="twitter:title" content={metaTags['twitter:title']} />
+        <meta name="twitter:description" content={metaTags['twitter:description']} />
+        <meta name="twitter:image" content={metaTags['twitter:image']} />
+        <meta name="twitter:site" content={metaTags['twitter:site']} />
+        
+        <link rel="canonical" href={metaTags.canonical} />
+        
         <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: 'LexiTech Demo',
-            url: canonical,
-            sameAs: []
-          })}
+          {JSON.stringify(structuredData)}
         </script>
       </Helmet>
 
