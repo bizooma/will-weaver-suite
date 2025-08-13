@@ -297,8 +297,8 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
           </div>
         </div>
 
-        <div className="flex flex-col h-full gap-3">
-          <ScrollArea className="flex-1 rounded-md border p-3 bg-card">
+        <div className="flex flex-col gap-3 h-[calc(100vh-12rem)]">
+          <ScrollArea className="flex-1 rounded-md border p-3 bg-card min-h-0">
             <div className="space-y-3">
               {messages.map((m, i)=> (
                 <div key={i} className={m.role==='user' ? 'text-right' : 'text-left'}>
@@ -309,37 +309,39 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
             </div>
           </ScrollArea>
 
-          {lastAssistant && (
-            <div className="rounded-md border p-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Label className="text-sm">Insert last reply into</Label>
-                <Select value={insertTarget} onValueChange={(v)=> setInsertTarget(v as CopilotTarget)}>
-                  <SelectTrigger className="w-40"><SelectValue placeholder="Select target"/></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="funeral">Funeral</SelectItem>
-                    <SelectItem value="pet">Pet clause</SelectItem>
-                    <SelectItem value="guardian">Guardian</SelectItem>
-                    <SelectItem value="altGuardian">Alt Guardian</SelectItem>
-                    <SelectItem value="gift">Gift (choose index)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {insertTarget==='gift' && (
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm">Index</Label>
-                    <Input type="number" min={0} value={giftIndex} onChange={(e)=> setGiftIndex(parseInt(e.target.value || '0', 10))} className="w-20" />
-                  </div>
-                )}
-                <Button size="sm" onClick={()=> onPropose(lastAssistant.content, insertTarget, insertTarget==='gift' ? giftIndex : undefined)}>Insert</Button>
+          <div className="flex-shrink-0 space-y-3">
+            {lastAssistant && (
+              <div className="rounded-md border p-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Label className="text-sm">Insert last reply into</Label>
+                  <Select value={insertTarget} onValueChange={(v)=> setInsertTarget(v as CopilotTarget)}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Select target"/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="funeral">Funeral</SelectItem>
+                      <SelectItem value="pet">Pet clause</SelectItem>
+                      <SelectItem value="guardian">Guardian</SelectItem>
+                      <SelectItem value="altGuardian">Alt Guardian</SelectItem>
+                      <SelectItem value="gift">Gift (choose index)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {insertTarget==='gift' && (
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm">Index</Label>
+                      <Input type="number" min={0} value={giftIndex} onChange={(e)=> setGiftIndex(parseInt(e.target.value || '0', 10))} className="w-20" />
+                    </div>
+                  )}
+                  <Button size="sm" onClick={()=> onPropose(lastAssistant.content, insertTarget, insertTarget==='gift' ? giftIndex : undefined)}>Insert</Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex items-center gap-2">
-            <Input ref={inputRef} placeholder="Ask a question or request a clause…" value={input} onChange={(e)=> setInput(e.target.value)} onKeyDown={(e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-            <Button variant="outline" onClick={handleToggleRecording} aria-label={isRecording ? 'Stop recording' : 'Start recording'} title={isRecording ? 'Stop recording' : 'Start recording'}>
-              {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </Button>
-            <Button onClick={() => send()} disabled={sending}>{sending ? 'Sending…' : 'Send'}</Button>
+            <div className="flex items-center gap-2">
+              <Input ref={inputRef} placeholder="Ask a question or request a clause…" value={input} onChange={(e)=> setInput(e.target.value)} onKeyDown={(e)=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+              <Button variant="outline" onClick={handleToggleRecording} aria-label={isRecording ? 'Stop recording' : 'Start recording'} title={isRecording ? 'Stop recording' : 'Start recording'}>
+                {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+              <Button onClick={() => send()} disabled={sending}>{sending ? 'Sending…' : 'Send'}</Button>
+            </div>
           </div>
         </div>
       </SheetContent>
