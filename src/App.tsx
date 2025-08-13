@@ -88,7 +88,7 @@ const AppContent = () => {
       {!isEmbed && <SiteFooter />}
       {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
       {!isEmbed && <ChatbotWidget />}
-      <CookieConsentBanner />
+      {!isEmbed && <CookieConsentBanner />}
     </BrowserRouter>
   );
 };
