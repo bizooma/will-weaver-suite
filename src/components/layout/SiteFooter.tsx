@@ -105,7 +105,7 @@ const SiteFooter = () => {
         <div className="container py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-xs text-muted-foreground">
-              © {currentYear} {ENV_CONFIG.app.name}. All rights reserved.
+              © 2025 <a href="https://legallyinnovative.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Legally Innovative</a>, A Bizooma, LLC Company | All rights reserved.
             </div>
             
             <div className="text-xs text-muted-foreground">
