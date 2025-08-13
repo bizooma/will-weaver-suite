@@ -32,6 +32,37 @@ export function ChatbotBuilder() {
       "Get started"
     ]
   });
+  
+  const [messages, setMessages] = useState([
+    { id: 1, text: "Hello! How can I help you today?", isBot: true }
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+
+  // Update welcome message in chat when it changes
+  React.useEffect(() => {
+    setMessages(prev => prev.map((msg, index) => 
+      index === 0 ? { ...msg, text: chatbotData.welcomeMessage } : msg
+    ));
+  }, [chatbotData.welcomeMessage]);
+
+  const sendMessage = (text: string) => {
+    const userMessage = { id: Date.now(), text, isBot: false };
+    const botResponse = { id: Date.now() + 1, text: "Thanks for your message! This is a preview response.", isBot: true };
+    
+    setMessages(prev => [...prev, userMessage, botResponse]);
+    setInputMessage("");
+  };
+
+  const handleSuggestedResponse = (response: string) => {
+    sendMessage(response);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputMessage.trim()) {
+      sendMessage(inputMessage);
+    }
+  };
 
   const getEmbedUrl = (url: string) => {
     if (!url) return "";
@@ -259,27 +290,36 @@ export function ChatbotBuilder() {
                   </div>
                 </div>
                 
-                <div className="flex-1 space-y-3">
-                  <div className="flex gap-2">
-                    <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs"
-                      style={{ backgroundColor: chatbotData.primaryColor }}
-                    >
-                      AI
+                <div className="flex-1 space-y-3 max-h-64 overflow-y-auto">
+                  {messages.map((message) => (
+                    <div key={message.id} className={`flex gap-2 ${message.isBot ? '' : 'justify-end'}`}>
+                      {message.isBot && (
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0"
+                          style={{ backgroundColor: chatbotData.primaryColor }}
+                        >
+                          AI
+                        </div>
+                      )}
+                      <div className={`rounded-lg p-3 max-w-[80%] ${
+                        message.isBot 
+                          ? 'bg-background' 
+                          : 'bg-primary text-primary-foreground ml-auto'
+                      }`}>
+                        <p className="text-sm">{message.text}</p>
+                      </div>
                     </div>
-                    <div className="bg-background rounded-lg p-3 max-w-[80%]">
-                      <p className="text-sm">{chatbotData.welcomeMessage}</p>
-                    </div>
-                  </div>
+                  ))}
 
-                  {/* Suggested Response Buttons */}
-                  {chatbotData.showSuggestedResponses && (
+                  {/* Suggested Response Buttons - only show if it's the first message */}
+                  {chatbotData.showSuggestedResponses && messages.length === 1 && (
                     <div className="space-y-2 mt-3">
                       <div className="grid grid-cols-2 gap-2">
                         {chatbotData.suggestedResponses.slice(0, 4).map((response, index) => (
                           <Button
                             key={index}
                             size="sm"
+                            onClick={() => handleSuggestedResponse(response)}
                             className="text-xs h-8 justify-start backdrop-blur-sm bg-white/20 border border-white/30 text-foreground hover:bg-white/30 transition-all duration-200 shadow-lg"
                           >
                             {response}
@@ -291,6 +331,7 @@ export function ChatbotBuilder() {
                           <Button
                             key={index + 4}
                             size="sm"
+                            onClick={() => handleSuggestedResponse(response)}
                             className="text-xs h-8 justify-start backdrop-blur-sm bg-white/20 border border-white/30 text-foreground hover:bg-white/30 transition-all duration-200 shadow-lg"
                           >
                             {response}
@@ -302,12 +343,17 @@ export function ChatbotBuilder() {
                 </div>
 
                 <div className="mt-4 pt-3 border-t">
-                  <div className="flex gap-2">
-                    <Input placeholder="Type your message..." className="flex-1" />
-                    <Button size="icon" style={{ backgroundColor: chatbotData.primaryColor }}>
+                  <form onSubmit={handleSubmit} className="flex gap-2">
+                    <Input 
+                      placeholder="Type your message..." 
+                      className="flex-1"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                    />
+                    <Button type="submit" size="icon" style={{ backgroundColor: chatbotData.primaryColor }}>
                       <span className="text-white">→</span>
                     </Button>
-                  </div>
+                  </form>
                 </div>
               </div>
             </CardContent>
