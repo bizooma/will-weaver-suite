@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save, Eye, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export function ChatbotBuilder() {
@@ -19,13 +19,23 @@ export function ChatbotBuilder() {
     primaryColor: "#3b82f6"
   });
 
+  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}"></script>`;
+
+  const copyEmbedScript = () => {
+    navigator.clipboard.writeText(embedScript);
+    toast({
+      title: "Embed code copied",
+      description: "The embed script has been copied to your clipboard."
+    });
+  };
+
   const handleSave = () => {
     // Here you would save to the database
     toast({
       title: "Chatbot saved",
-      description: "Your chatbot has been created successfully."
+      description: "Your chatbot has been saved successfully."
     });
-    navigate("/dashboard/chatbots");
+    // Don't navigate away - keep user on this page
   };
 
   return (
@@ -174,6 +184,28 @@ export function ChatbotBuilder() {
                     </Button>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Embed Script</CardTitle>
+              <CardDescription>
+                Copy this script and paste it into your website's HTML
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="bg-muted rounded-lg p-4">
+                  <code className="text-sm text-muted-foreground break-all">
+                    {embedScript}
+                  </code>
+                </div>
+                <Button onClick={copyEmbedScript} variant="outline" className="w-full">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Embed Script
+                </Button>
               </div>
             </CardContent>
           </Card>
