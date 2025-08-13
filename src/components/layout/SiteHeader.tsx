@@ -61,6 +61,14 @@ const SiteHeader = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {user && (
+                    <DropdownMenuItem asChild>
+                      <a href="/data-privacy">
+                        <User className="mr-2 h-4 w-4" />
+                        Privacy Settings
+                      </a>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out

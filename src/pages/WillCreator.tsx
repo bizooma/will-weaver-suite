@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { LegalDisclaimer } from "@/components/CookieConsentBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -713,10 +714,11 @@ import VoiceButton from "@/components/VoiceButton";
          </script>
        </Helmet>
 
-       <section className="container py-10">
-         <header className="mb-6">
-           <h1 className="text-4xl md:text-5xl mb-2 font-serifBrand">{title}</h1>
-           <p className="text-muted-foreground max-w-3xl">Follow the steps below. Your information stays in your browser. At the end, review everything and download a polished PDF draft.</p>
+        <section className="container py-10">
+          <LegalDisclaimer variant="banner" />
+          <header className="mb-6">
+            <h1 className="text-4xl md:text-5xl mb-2 font-serifBrand">{title}</h1>
+            <p className="text-muted-foreground max-w-3xl">Follow the steps below. Your information stays in your browser. At the end, review everything and download a polished PDF draft.</p>
          </header>
 
          <div className="rounded-lg border p-6 bg-card">

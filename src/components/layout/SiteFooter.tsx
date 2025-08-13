@@ -51,6 +51,10 @@ const SiteFooter = () => {
           <ul className="text-sm text-muted-foreground space-y-2">
             <li><a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
             <li><a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a></li>
+            <li><a href="/cookies" className="hover:text-foreground transition-colors">Cookie Policy</a></li>
+            {user && (
+              <li><a href="/data-privacy" className="hover:text-foreground transition-colors">Data Privacy</a></li>
+            )}
           </ul>
           
           <div className="mt-4">

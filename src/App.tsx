@@ -21,7 +21,10 @@ import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import CookiePolicy from "./pages/CookiePolicy";
+import DataPrivacy from "./pages/DataPrivacy";
 import ProductionDashboard from "./pages/ProductionDashboard";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
@@ -62,6 +65,12 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/cookies" element={<CookiePolicy />} />
+        <Route path="/data-privacy" element={
+          <ProtectedRoute>
+            <DataPrivacy />
+          </ProtectedRoute>
+        } />
         <Route path="/production-dashboard" element={
           <ProtectedRoute>
             <ProductionDashboard />
@@ -79,6 +88,7 @@ const AppContent = () => {
       {!isEmbed && <SiteFooter />}
       {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
       {!isEmbed && <ChatbotWidget />}
+      <CookieConsentBanner />
     </BrowserRouter>
   );
 };
