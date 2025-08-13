@@ -118,6 +118,94 @@ export type Database = {
         }
         Relationships: []
       }
+      training_content: {
+        Row: {
+          chunk_index: number
+          content_chunk: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          training_source_id: string
+        }
+        Insert: {
+          chunk_index?: number
+          content_chunk: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          training_source_id: string
+        }
+        Update: {
+          chunk_index?: number
+          content_chunk?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          training_source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_content_training_source_id_fkey"
+            columns: ["training_source_id"]
+            isOneToOne: false
+            referencedRelation: "training_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sources: {
+        Row: {
+          chatbot_id: string
+          created_at: string
+          error_message: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          source_type: string
+          source_url: string | null
+          status: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chatbot_id: string
+          created_at?: string
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          source_type: string
+          source_url?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chatbot_id?: string
+          created_at?: string
+          error_message?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sources_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            isOneToOne: false
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_subscriptions: {
         Row: {
           created_at: string
