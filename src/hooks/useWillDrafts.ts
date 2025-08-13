@@ -8,10 +8,18 @@ export type WillDraft = {
   data: unknown;
   tone: string | null;
   step: number | null;
+  user_id: string | null;
   created_at: string;
 };
 
 export async function createDraft(input: { data: unknown; tone?: string | null; step?: number | null }) {
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error("You must be logged in to create drafts.");
+  }
+
   let slug = generateSlug();
   let attempt = 0;
 
@@ -19,7 +27,13 @@ export async function createDraft(input: { data: unknown; tone?: string | null; 
   while (attempt < 3) {
     const { data, error } = await supabase
       .from("will_drafts")
-      .insert({ slug, data: input.data as any, tone: input.tone ?? null, step: input.step ?? null })
+      .insert({ 
+        slug, 
+        data: input.data as any, 
+        tone: input.tone ?? null, 
+        step: input.step ?? null,
+        user_id: user.id
+      })
       .select("slug")
       .single();
 

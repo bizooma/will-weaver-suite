@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getDraftBySlug, WillDraft } from "@/hooks/useWillDrafts";
+import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { exportWillDocx } from "@/utils/docxExport";
 import { Helmet } from "react-helmet-async";
@@ -12,8 +13,10 @@ import { Helmet } from "react-helmet-async";
 const DraftView = () => {
   const { slug } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<WillDraft | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const canonical = typeof window !== 'undefined' ? `${window.location.origin}/drafts/${slug ?? ''}` : `/drafts/${slug ?? ''}`;
 
   useEffect(() => {
@@ -21,17 +24,34 @@ const DraftView = () => {
     setLoading(true);
     getDraftBySlug(slug)
       .then((d) => {
-        setDraft(d);
         if (!d) {
           toast({
             title: "Draft not found",
             description: "This link may be invalid or the draft was removed.",
             variant: "destructive",
           });
+          setDraft(null);
+        } else if (user && d.user_id && d.user_id !== user.id) {
+          // User is logged in but trying to access someone else's draft
+          setAccessDenied(true);
+          toast({
+            title: "Access denied",
+            description: "You don't have permission to view this draft.",
+            variant: "destructive",
+          });
+        } else {
+          setDraft(d);
         }
       })
+      .catch((error) => {
+        toast({
+          title: "Error loading draft",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      })
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, user]);
 
   const shareUrl = useMemo(() => (slug ? `${window.location.origin}/drafts/${slug}` : ""), [slug]);
 
@@ -81,11 +101,19 @@ const DraftView = () => {
 
           <div className="rounded border p-4 overflow-auto max-h-[60vh]">
             {loading ? (
-              <div>Loading...</div>
+              <div className="flex items-center justify-center py-8">
+                <div>Loading draft...</div>
+              </div>
+            ) : accessDenied ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <div>Access denied. You don't have permission to view this draft.</div>
+              </div>
             ) : draft ? (
               <pre className="text-sm">{JSON.stringify(draft.data, null, 2)}</pre>
             ) : (
-              <div>No draft found.</div>
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <div>No draft found.</div>
+              </div>
             )}
           </div>
         </CardContent>

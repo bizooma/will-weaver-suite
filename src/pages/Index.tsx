@@ -2,11 +2,14 @@ import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import HeroDemoFrame from "@/components/HeroDemoFrame";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/" : "/";
 
 const Index = () => {
+  const { user } = useAuth();
+
   return (
     <main>
       <Helmet>
@@ -36,7 +39,14 @@ const Index = () => {
               A clean, conversion‑focused demo of our real‑time Will & Trust Creator, Alexa skill, and mobile app integrations.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
+              {user ? (
+                <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
+              ) : (
+                <>
+                  <a href="/auth"><Button variant="hero" size="lg">Get Started</Button></a>
+                  <a href="/will-creator"><Button variant="outline" size="lg">Preview Creator</Button></a>
+                </>
+              )}
               <a href="/alexa"><Button variant="outline" size="lg">Try Alexa Demo</Button></a>
               <a href="/mobile-app"><Button variant="secondary" size="lg">Download Our App</Button></a>
             </div>
