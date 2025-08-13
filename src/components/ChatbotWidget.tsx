@@ -222,11 +222,11 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
             </div>
             
             <div className="px-4 pb-2 border-t-2 border-red-800 bg-red-800">
-              <div className="text-xs text-white text-center py-2 flex items-center justify-center gap-1">
+              <div className="text-xs text-white text-center py-2 flex items-center justify-center gap-2">
                 <img 
                   src="/lovable-uploads/f1f7b1e1-351b-471c-a117-df155e956829.png" 
                   alt="Legally Innovative Logo" 
-                  className="h-4 w-auto"
+                  className="h-8 w-auto"
                 />
                 Powered by{" "}
                 <a
