@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Save, Eye, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ChatbotBuilder() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { id } = useParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatbotId, setChatbotId] = useState<string | null>(id || null);
+  
   const [chatbotData, setChatbotData] = useState({
     name: "",
     description: "",
@@ -38,12 +43,61 @@ export function ChatbotBuilder() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
+  // Load existing chatbot data if editing
+  useEffect(() => {
+    if (chatbotId) {
+      loadChatbot(chatbotId);
+    }
+  }, [chatbotId]);
+
   // Update welcome message in chat when it changes
-  React.useEffect(() => {
+  useEffect(() => {
     setMessages(prev => prev.map((msg, index) => 
       index === 0 ? { ...msg, text: chatbotData.welcomeMessage } : msg
     ));
   }, [chatbotData.welcomeMessage]);
+
+  const loadChatbot = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('chatbots')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        const config = data.configuration as any || {};
+        setChatbotData({
+          name: data.name || "",
+          description: data.description || "",
+          welcomeMessage: config.welcomeMessage || "Hello! How can I help you today?",
+          avatar: config.avatar || "default",
+          primaryColor: config.primaryColor || "#3b82f6",
+          videoUrl: config.videoUrl || "",
+          showSuggestedResponses: config.showSuggestedResponses ?? true,
+          suggestedResponses: config.suggestedResponses || [
+            "Tell me about your services",
+            "How can you help me?", 
+            "What are your hours?",
+            "Contact information",
+            "Pricing information",
+            "Book a consultation",
+            "FAQ",
+            "Get started"
+          ]
+        });
+      }
+    } catch (error) {
+      console.error('Error loading chatbot:', error);
+      toast({
+        title: "Error loading chatbot",
+        description: "Failed to load chatbot data.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const sendMessage = (text: string) => {
     const userMessage = { id: Date.now(), text, isBot: false };
@@ -92,13 +146,78 @@ export function ChatbotBuilder() {
     });
   };
 
-  const handleSave = () => {
-    // Here you would save to the database
-    toast({
-      title: "Chatbot saved",
-      description: "Your chatbot has been saved successfully."
-    });
-    // Don't navigate away - keep user on this page
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      const configuration = {
+        welcomeMessage: chatbotData.welcomeMessage,
+        avatar: chatbotData.avatar,
+        primaryColor: chatbotData.primaryColor,
+        videoUrl: chatbotData.videoUrl,
+        showSuggestedResponses: chatbotData.showSuggestedResponses,
+        suggestedResponses: chatbotData.suggestedResponses
+      };
+
+      const embedData = {
+        name: chatbotData.name,
+        color: chatbotData.primaryColor,
+        videoUrl: chatbotData.videoUrl,
+        showSuggestedResponses: chatbotData.showSuggestedResponses,
+        suggestedResponses: chatbotData.suggestedResponses
+      };
+
+      if (chatbotId) {
+        // Update existing chatbot
+        const { error } = await supabase
+          .from('chatbots')
+          .update({
+            name: chatbotData.name,
+            description: chatbotData.description,
+            configuration,
+            script_data: embedData,
+            embed_code: embedScript,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', chatbotId);
+
+        if (error) throw error;
+      } else {
+        // Create new chatbot
+        const { data, error } = await supabase
+          .from('chatbots')
+          .insert({
+            name: chatbotData.name,
+            description: chatbotData.description,
+            configuration,
+            script_data: embedData,
+            embed_code: embedScript,
+            user_id: (await supabase.auth.getUser()).data.user?.id
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setChatbotId(data.id);
+          // Update URL to reflect we're now editing an existing chatbot
+          navigate(`/dashboard/chatbots/edit/${data.id}`, { replace: true });
+        }
+      }
+
+      toast({
+        title: "Chatbot saved",
+        description: "Your chatbot has been saved successfully."
+      });
+    } catch (error) {
+      console.error('Error saving chatbot:', error);
+      toast({
+        title: "Error saving chatbot",
+        description: "Failed to save chatbot. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -382,9 +501,9 @@ export function ChatbotBuilder() {
           </Card>
 
           <div className="flex gap-2">
-            <Button onClick={handleSave} className="flex-1">
+            <Button onClick={handleSave} className="flex-1" disabled={isLoading}>
               <Save className="h-4 w-4 mr-2" />
-              Save Chatbot
+              {isLoading ? "Saving..." : "Save Chatbot"}
             </Button>
             <Button variant="outline">
               <Eye className="h-4 w-4 mr-2" />
