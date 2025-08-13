@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Save, Eye, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export function ChatbotBuilder() {
   const navigate = useNavigate();
@@ -16,10 +17,29 @@ export function ChatbotBuilder() {
     description: "",
     welcomeMessage: "Hello! How can I help you today?",
     avatar: "default",
-    primaryColor: "#3b82f6"
+    primaryColor: "#3b82f6",
+    videoUrl: ""
   });
 
-  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}"></script>`;
+  const getEmbedUrl = (url: string) => {
+    if (!url) return "";
+    
+    // YouTube URL conversion
+    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+    
+    // Vimeo URL conversion
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    
+    return url;
+  };
+
+  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}" data-video-url="${chatbotData.videoUrl}"></script>`;
 
   const copyEmbedScript = () => {
     navigator.clipboard.writeText(embedScript);
@@ -90,6 +110,15 @@ export function ChatbotBuilder() {
                   placeholder="First message users will see"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="videoUrl">Video URL (YouTube or Vimeo)</Label>
+                <Input
+                  id="videoUrl"
+                  value={chatbotData.videoUrl}
+                  onChange={(e) => setChatbotData(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -148,7 +177,22 @@ export function ChatbotBuilder() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg p-4 bg-muted/30 min-h-[400px] flex flex-col">
+              <div className="border rounded-lg p-4 bg-muted/30 min-h-[500px] flex flex-col">
+                {/* Video Section */}
+                {chatbotData.videoUrl && (
+                  <div className="mb-4">
+                    <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
+                      <iframe
+                        src={getEmbedUrl(chatbotData.videoUrl)}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </AspectRatio>
+                  </div>
+                )}
+                
                 <div className="flex items-center gap-3 mb-4 pb-3 border-b">
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
