@@ -220,6 +220,20 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
                 </Button>
               </form>
             </div>
+            
+            <div className="px-4 pb-2 border-t">
+              <div className="text-xs text-muted-foreground text-center py-2">
+                Powered by{" "}
+                <a
+                  href="https://legallyinnovative.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Legally Innovative
+                </a>
+              </div>
+            </div>
           </div>
         </Card>
       )}
