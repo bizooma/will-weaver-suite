@@ -223,20 +223,19 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
             
             <div className="px-4 pb-2 border-t-2 border-red-800 bg-red-800">
               <div className="text-xs text-white text-center py-2 flex items-center justify-center gap-2">
-                <img 
-                  src="/lovable-uploads/22c96565-b032-41c7-85c0-d846886cac6c.png" 
-                  alt="Legally Innovative Logo" 
-                  className="h-16 w-auto"
-                />
-                Powered by{" "}
                 <a
                   href="https://legallyinnovative.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:underline font-medium"
+                  className="hover:opacity-80 transition-opacity"
                 >
-                  Legally Innovative
+                  <img 
+                    src="/lovable-uploads/22c96565-b032-41c7-85c0-d846886cac6c.png" 
+                    alt="Legally Innovative Logo" 
+                    className="h-16 w-auto"
+                  />
                 </a>
+                Powered by
               </div>
             </div>
           </div>
