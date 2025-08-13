@@ -221,8 +221,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
               </form>
             </div>
             
-            <div className="px-4 pb-2 border-t-2 border-red-800 bg-red-800">
-              <div className="text-xs text-white text-center py-2 flex items-center justify-center gap-2">
+            <div className="px-4 py-1 border-t-2 border-red-800 bg-red-800">
+              <div className="text-xs text-white text-center py-1 flex items-center justify-center gap-2">
                 Powered by
                 <a
                   href="https://legallyinnovative.com"
