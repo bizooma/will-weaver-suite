@@ -3,6 +3,7 @@ import appMock from "@/assets/mobile-app-mock.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 import HeroDemoFrame from "@/components/HeroDemoFrame";
 import { generateMetaTags, generateStructuredData } from "@/lib/seo";
 
@@ -78,21 +79,34 @@ const Index = () => {
 
       <section className="container py-16">
         <h2 className="text-3xl mb-8">Featured Tools</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-4">
+          <article className="rounded-lg border p-5 bg-card">
+            <h3 className="text-xl font-serifBrand mb-2">Video Chatbots</h3>
+            <p className="text-sm text-muted-foreground mb-4">AI-powered video assistants for your website with customizable branding.</p>
+            <Button asChild variant="outline" size="sm">
+              <Link to={user ? "/dashboard/chatbots" : "/auth"}>Get Started</Link>
+            </Button>
+          </article>
           <article className="rounded-lg border p-5 bg-card">
             <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
             <p className="text-sm text-muted-foreground mb-4">Step‑by‑step guided drafting with firm‑ready outputs. White‑label capable.</p>
-            <a className="text-primary" href="/will-creator">Explore</a>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/will-creator">Explore</Link>
+            </Button>
           </article>
           <article className="rounded-lg border p-5 bg-card">
             <h3 className="text-xl font-serifBrand mb-2">Alexa Skill</h3>
             <p className="text-sm text-muted-foreground mb-4">Voice‑first guidance for FAQs and client reminders.</p>
-            <a className="text-primary" href="/alexa">Try Demo</a>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/alexa">Try Demo</Link>
+            </Button>
           </article>
           <article className="rounded-lg border p-5 bg-card">
             <h3 className="text-xl font-serifBrand mb-2">Mobile App</h3>
-            <p className="text-sm text-muted-foreground mb-4">Secure client intake, reminders, and document review.</p>
-            <a className="text-primary" href="/mobile-app">See Features</a>
+            <p className="text-sm text-muted-foreground mb-4">Native iOS and Android app with offline capabilities.</p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/mobile-app">Download</Link>
+            </Button>
           </article>
         </div>
       </section>

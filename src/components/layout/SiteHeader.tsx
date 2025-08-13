@@ -7,7 +7,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const navLinkCls = ({ isActive }: { isActive: boolean }) =>
   `${isActive ? "text-primary" : "text-foreground/80 hover:text-foreground"} px-3 py-2 rounded-md transition-colors`;
@@ -50,41 +50,39 @@ const SiteHeader = () => {
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
-            <>
-              <NavLink to="/will-creator">
-                <Button variant="hero" size="lg">Create My Will</Button>
-              </NavLink>
+            <div className="flex items-center gap-4">
+              <Button asChild variant="outline" size="sm">
+                <NavLink to="/dashboard">Dashboard</NavLink>
+              </Button>
+              <Button asChild size="sm">
+                <NavLink to="/will-creator">Create My Will</NavLink>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <User className="h-4 w-4" />
+                  <Button variant="ghost" size="sm">
+                    {user.email}
+                    <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {user && (
-                    <DropdownMenuItem asChild>
-                      <a href="/data-privacy">
-                        <User className="mr-2 h-4 w-4" />
-                        Privacy Settings
-                      </a>
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/dashboard">Dashboard</NavLink>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
+            </div>
           ) : (
-            <>
-              <NavLink to="/auth">
-                <Button variant="outline">Sign In</Button>
-              </NavLink>
-              <NavLink to="/will-creator">
-                <Button variant="hero" size="lg">Get Started</Button>
-              </NavLink>
-            </>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" asChild>
+                <NavLink to="/auth">Sign In</NavLink>
+              </Button>
+              <Button asChild>
+                <NavLink to="/auth">Get Started</NavLink>
+              </Button>
+            </div>
           )}
         </div>
       </div>
