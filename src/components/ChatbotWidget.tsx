@@ -147,33 +147,38 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
         <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="p-4 border-b border-t-2 border-t-red-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h4 className="font-medium">{chatbotData.name}</h4>
-              <div className="flex gap-1">
-                {chatbotData.contactPhone && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    asChild
-                  >
-                    <a href={`tel:${chatbotData.contactPhone}`}>
-                      <Phone className="h-3 w-3" />
-                    </a>
-                  </Button>
-                )}
-                {chatbotData.contactEmail && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    asChild
-                  >
-                    <a href={`mailto:${chatbotData.contactEmail}`}>
-                      <Mail className="h-3 w-3" />
-                    </a>
-                  </Button>
-                )}
-              </div>
+              {(chatbotData.contactPhone || chatbotData.contactEmail) ? (
+                <div className="flex gap-2">
+                  {chatbotData.contactPhone && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      asChild
+                    >
+                      <a href={`tel:${chatbotData.contactPhone}`} className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        Call Us
+                      </a>
+                    </Button>
+                  )}
+                  {chatbotData.contactEmail && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      asChild
+                    >
+                      <a href={`mailto:${chatbotData.contactEmail}`} className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        Email Us
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <h4 className="font-medium">{chatbotData.name}</h4>
+              )}
             </div>
             <Button
               variant="ghost"
