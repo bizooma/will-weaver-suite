@@ -226,7 +226,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
                 <img 
                   src="/lovable-uploads/f1f7b1e1-351b-471c-a117-df155e956829.png" 
                   alt="Legally Innovative Logo" 
-                  className="h-8 w-auto"
+                  className="h-16 w-auto"
                 />
                 Powered by{" "}
                 <a
