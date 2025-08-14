@@ -5,7 +5,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, Send, X, Phone, Mail } from "lucide-react";
+import { MessageCircle, Send, X, Phone, Mail, Play } from "lucide-react";
+import { getVideoThumbnail, type VideoThumbnail } from "@/utils/videoThumbnails";
 
 interface ChatMessage {
   id: string;
@@ -38,6 +39,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [videoThumbnail, setVideoThumbnail] = useState<VideoThumbnail | null>(null);
+  const [thumbnailLoading, setThumbnailLoading] = useState(false);
 
   useEffect(() => {
     loadChatbot();
@@ -76,7 +79,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
 
       if (data) {
         const config = data.configuration as any;
-        setChatbotData({
+        const chatbot = {
           id: data.id,
           name: data.name || "AI Assistant",
           description: data.description || "",
@@ -88,7 +91,24 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
           contactPhone: config.contactPhone || "",
           contactEmail: config.contactEmail || "",
           calendlyUrl: data.calendly_url || ""
-        });
+        };
+
+        setChatbotData(chatbot);
+
+        // Load video thumbnail if video URL exists
+        if (chatbot.videoUrl) {
+          setThumbnailLoading(true);
+          getVideoThumbnail(chatbot.videoUrl)
+            .then(thumbnail => {
+              setVideoThumbnail(thumbnail);
+            })
+            .catch(error => {
+              console.error('Error loading video thumbnail:', error);
+            })
+            .finally(() => {
+              setThumbnailLoading(false);
+            });
+        }
       }
     } catch (error) {
       console.error("Error loading chatbot:", error);
@@ -152,6 +172,52 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
       </div>
     );
   }
+
+  const renderChatButton = () => {
+    // Show video thumbnail if available, otherwise fall back to icon
+    if (videoThumbnail && !thumbnailLoading) {
+      return (
+        <div className="relative group">
+          <div 
+            className="w-20 h-20 rounded-full overflow-hidden shadow-lg cursor-pointer transition-transform hover:scale-105 border-4"
+            style={{ borderColor: chatbotData?.primaryColor || "#3b82f6" }}
+            onClick={() => setOpen(!open)}
+          >
+            <img 
+              src={videoThumbnail.url} 
+              alt={`${chatbotData?.name} preview`}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <div 
+                className="bg-white/90 rounded-full p-2 shadow-md"
+                style={{ color: chatbotData?.primaryColor || "#3b82f6" }}
+              >
+                <Play className="h-4 w-4 fill-current" />
+              </div>
+            </div>
+          </div>
+          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded-full shadow-sm text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+            Chat
+          </div>
+        </div>
+      );
+    }
+
+    // Fallback to original button
+    return (
+      <Button 
+        variant="hero" 
+        size="lg" 
+        onClick={() => setOpen(!open)}
+        className="shadow-lg"
+        style={chatbotData?.primaryColor ? { backgroundColor: chatbotData.primaryColor } : {}}
+      >
+        {open ? <X className="h-5 w-5 mr-2" /> : <MessageCircle className="h-5 w-5 mr-2" />}
+        {open ? "Close" : "Chat"}
+      </Button>
+    );
+  };
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -306,16 +372,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
           </div>
         </Card>
       )}
-      <Button 
-        variant="hero" 
-        size="lg" 
-        onClick={() => setOpen(!open)}
-        className="shadow-lg"
-        style={chatbotData?.primaryColor ? { backgroundColor: chatbotData.primaryColor } : {}}
-      >
-        {open ? <X className="h-5 w-5 mr-2" /> : <MessageCircle className="h-5 w-5 mr-2" />}
-        {open ? "Close" : "Chat"}
-      </Button>
+      {renderChatButton()}
     </div>
   );
 };
