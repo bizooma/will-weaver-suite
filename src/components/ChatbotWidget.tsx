@@ -25,6 +25,7 @@ interface ChatbotData {
   showSuggestedResponses: boolean;
   contactPhone: string;
   contactEmail: string;
+  calendlyUrl: string;
 }
 
 interface ChatbotWidgetProps {
@@ -75,7 +76,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
           suggestedResponses: config.suggestedResponses || [],
           showSuggestedResponses: config.showSuggestedResponses || false,
           contactPhone: config.contactPhone || "",
-          contactEmail: config.contactEmail || ""
+          contactEmail: config.contactEmail || "",
+          calendlyUrl: data.calendly_url || ""
         });
       }
     } catch (error) {
@@ -145,49 +147,65 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
     <div className="fixed bottom-4 right-4 z-50">
       {open && chatbotData && (
         <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="p-4 bg-red-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {(chatbotData.contactPhone || chatbotData.contactEmail) ? (
-                <div className="flex gap-2">
-                  {chatbotData.contactPhone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
-                      asChild
-                    >
-                      <a href={`tel:${chatbotData.contactPhone}`} className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        Call Us
-                      </a>
-                    </Button>
-                  )}
-                  {chatbotData.contactEmail && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
-                      asChild
-                    >
-                      <a href={`mailto:${chatbotData.contactEmail}`} className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        Email Us
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <h4 className="font-medium text-white">{chatbotData.name}</h4>
-              )}
+          <div className="p-4 bg-red-800">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {(chatbotData.contactPhone || chatbotData.contactEmail) ? (
+                  <div className="flex gap-2">
+                    {chatbotData.contactPhone && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
+                        asChild
+                      >
+                        <a href={`tel:${chatbotData.contactPhone}`} className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          Call Us
+                        </a>
+                      </Button>
+                    )}
+                    {chatbotData.contactEmail && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
+                        asChild
+                      >
+                        <a href={`mailto:${chatbotData.contactEmail}`} className="flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          Email Us
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <h4 className="font-medium text-white">{chatbotData.name}</h4>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOpen(false)}
+                className="h-8 w-8 p-0 text-white hover:bg-red-700"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setOpen(false)}
-              className="h-8 w-8 p-0 text-white hover:bg-red-700"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            
+            {/* Calendly Button - Full Width */}
+            {chatbotData.calendlyUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full h-8 bg-white text-red-800 border-white hover:bg-red-100 hover:text-red-900"
+                asChild
+              >
+                <a href={chatbotData.calendlyUrl} target="_blank" rel="noopener noreferrer">
+                  Schedule a Free Consultation
+                </a>
+              </Button>
+            )}
           </div>
 
           <div className="flex-1 flex flex-col">

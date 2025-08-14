@@ -30,6 +30,7 @@ export function ChatbotBuilder() {
     showSuggestedResponses: true,
     contactPhone: "",
     contactEmail: "",
+    calendlyUrl: "",
     suggestedResponses: [
       "Tell me about your services",
       "How can you help me?", 
@@ -83,6 +84,7 @@ export function ChatbotBuilder() {
           showSuggestedResponses: config.showSuggestedResponses ?? true,
           contactPhone: config.contactPhone || "",
           contactEmail: config.contactEmail || "",
+          calendlyUrl: data.calendly_url || "",
           suggestedResponses: config.suggestedResponses || [
             "Tell me about your services",
             "How can you help me?", 
@@ -184,6 +186,7 @@ export function ChatbotBuilder() {
             configuration,
             script_data: embedData,
             embed_code: embedScript,
+            calendly_url: chatbotData.calendlyUrl,
             updated_at: new Date().toISOString()
           })
           .eq('id', chatbotId);
@@ -199,6 +202,7 @@ export function ChatbotBuilder() {
             configuration,
             script_data: embedData,
             embed_code: embedScript,
+            calendly_url: chatbotData.calendlyUrl,
             user_id: (await supabase.auth.getUser()).data.user?.id
           })
           .select()
@@ -315,6 +319,16 @@ export function ChatbotBuilder() {
                       onChange={(e) => setChatbotData(prev => ({ ...prev, contactEmail: e.target.value }))}
                       placeholder="e.g., contact@example.com"
                       type="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="calendlyUrl">Calendly URL (optional)</Label>
+                    <Input
+                      id="calendlyUrl"
+                      value={chatbotData.calendlyUrl}
+                      onChange={(e) => setChatbotData(prev => ({ ...prev, calendlyUrl: e.target.value }))}
+                      placeholder="e.g., https://calendly.com/yourname/consultation"
+                      type="url"
                     />
                   </div>
                 </CardContent>
