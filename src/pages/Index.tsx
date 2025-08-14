@@ -55,7 +55,7 @@ const Index = () => {
           <img src={heroBg} alt="Light legal tech background with code and documents" className="h-full w-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/25 via-background/10 to-transparent" />
         </div>
-        <div className="container pt-12 md:pt-20 grid gap-10 md:grid-cols-2 items-center">
+        <div className="container pt-12 md:pt-20 pb-12 md:pb-20 grid gap-10 md:grid-cols-2 items-center min-h-[80vh]">
           <div>
             <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
