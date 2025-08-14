@@ -176,6 +176,8 @@ export function ChatbotBuilder() {
         suggestedResponses: chatbotData.suggestedResponses
       };
 
+      let savedId = chatbotId;
+
       if (chatbotId) {
         // Update existing chatbot
         const { error } = await supabase
@@ -211,14 +213,21 @@ export function ChatbotBuilder() {
         if (error) throw error;
         if (data) {
           setChatbotId(data.id);
+          savedId = data.id;
           // Update URL to reflect we're now editing an existing chatbot
           navigate(`/dashboard/chatbots/edit/${data.id}`, { replace: true });
         }
       }
 
+      // Notify widget to refresh if it exists
+      window.postMessage({
+        type: 'CHATBOT_UPDATED',
+        chatbotId: savedId
+      }, '*');
+
       toast({
-        title: "Chatbot saved",
-        description: "Your chatbot has been saved successfully."
+        title: "Chatbot saved successfully",
+        description: "Your changes have been saved and the chatbot preview will update automatically."
       });
     } catch (error) {
       console.error('Error saving chatbot:', error);

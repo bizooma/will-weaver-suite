@@ -41,6 +41,16 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
 
   useEffect(() => {
     loadChatbot();
+    
+    // Listen for chatbot updates from parent window
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'CHATBOT_UPDATED' && event.data.chatbotId === chatbotId) {
+        loadChatbot();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, [chatbotId]);
 
   useEffect(() => {
