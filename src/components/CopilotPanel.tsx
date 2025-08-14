@@ -329,7 +329,7 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 h-[calc(100vh-12rem)]">
+        <div className="flex flex-col gap-3 h-[calc(100vh-20rem)]">
           <ScrollArea className="flex-1 rounded-md border p-3 bg-card min-h-0">
             <div className="space-y-3">
               {messages.map((m, i)=> (
