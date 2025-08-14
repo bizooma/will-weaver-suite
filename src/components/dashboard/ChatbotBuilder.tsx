@@ -330,6 +330,9 @@ export function ChatbotBuilder() {
                       placeholder="e.g., https://calendly.com/yourname/consultation"
                       type="url"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      This will add a "Schedule a Free Consultation" button to your chatbot header
+                    </p>
                   </div>
                 </CardContent>
               </Card>
