@@ -41,9 +41,6 @@ const SiteHeader = () => {
           <NavLink to="/mobile-app" className={navLinkCls}>
             Mobile App
           </NavLink>
-          <NavLink to="/blog" className={navLinkCls}>
-            Blog
-          </NavLink>
           <NavLink to="/contact" className={navLinkCls}>
             Contact
           </NavLink>
