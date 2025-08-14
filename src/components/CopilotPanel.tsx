@@ -7,9 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Mic, Square } from "lucide-react";
+import { Mic, Square, MessageSquare, Volume2 } from "lucide-react";
+import VoiceAutoFillPanel from "@/components/VoiceAutoFillPanel";
+import { ExtractedData } from "@/hooks/useVoiceAutoFill";
+
 export type CopilotTarget = 'funeral' | 'pet' | 'guardian' | 'altGuardian' | 'gift';
 
 interface CopilotPanelProps {
@@ -20,11 +24,12 @@ interface CopilotPanelProps {
   tone: 'plain' | 'formal' | 'compassionate' | 'concise';
   onToneChange?: (tone: 'plain' | 'formal' | 'compassionate' | 'concise') => void;
   onPropose: (text: string, target: CopilotTarget, index?: number) => void;
+  onVoiceAutoFill?: (extractedData: ExtractedData, confidence: Record<string, number>) => void;
   seedPrompt?: string;
   currentStep?: number;
 }
 
-const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onToneChange, onPropose, seedPrompt, currentStep }: CopilotPanelProps) => {
+const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onToneChange, onPropose, onVoiceAutoFill, seedPrompt, currentStep }: CopilotPanelProps) => {
   const [messages, setMessages] = useState<{ role: 'user'|'assistant'; content: string }[]>([
     { role: 'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }
   ]);
@@ -256,12 +261,39 @@ useEffect(() => {
 
 const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
 
+  const handleVoiceAutoFillData = (extractedData: ExtractedData, confidence: Record<string, number>) => {
+    onVoiceAutoFill?.(extractedData, confidence);
+    onOpenChange(false);
+    toast.success("Form auto-filled with voice data!");
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Conversational Co‑pilot</SheetTitle>
+          <SheetTitle>AI Co‑pilot</SheetTitle>
         </SheetHeader>
+        
+        <Tabs defaultValue="chat" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="voice-fill" className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4" />
+              Voice Fill
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="voice-fill" className="mt-4">
+            <VoiceAutoFillPanel 
+              onDataExtracted={handleVoiceAutoFillData}
+              onCancel={() => onOpenChange(false)}
+            />
+          </TabsContent>
+          
+          <TabsContent value="chat" className="mt-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
@@ -344,6 +376,8 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
             </div>
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );

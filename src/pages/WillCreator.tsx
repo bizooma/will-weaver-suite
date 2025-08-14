@@ -17,6 +17,8 @@ import { createDraft, getDraftBySlug } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "@/components/VoiceButton";
+import { useFormAutoFill } from "@/hooks/useFormAutoFill";
+import { ExtractedData } from "@/hooks/useVoiceAutoFill";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -157,6 +159,7 @@ import VoiceButton from "@/components/VoiceButton";
     const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const [saving, setSaving] = useState(false);
+    const { generateAutoFillPreview, applyAutoFill } = useFormAutoFill();
     const isDemo = useMemo(() => {
       try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
     }, []);
@@ -515,6 +518,27 @@ import VoiceButton from "@/components/VoiceButton";
       setSeedPrompt(`Explain this review point and how to fix it in my will. Provide clear steps and example wording:\n\n"${item}"`);
       setOpenCopilot(true);
     }
+
+    const handleVoiceAutoFill = (extractedData: ExtractedData, confidence: Record<string, number>) => {
+      try {
+        const changes = generateAutoFillPreview(data, extractedData, confidence);
+        if (changes.length === 0) {
+          toast.info("No new information found to fill the form");
+          return;
+        }
+        const highConfidenceChanges = changes.filter(change => change.confidence >= 0.8);
+        if (highConfidenceChanges.length > 0) {
+          const newData = applyAutoFill(data, extractedData, highConfidenceChanges);
+          const prevData = data;
+          setData(newData);
+          setUndoAction(() => () => setData(prevData));
+          toast.success(`Auto-filled ${highConfidenceChanges.length} field(s) with high confidence`);
+        }
+      } catch (error) {
+        console.error("Voice auto-fill error:", error);
+        toast.error("Failed to process voice data");
+      }
+    };
 
     // Auto-run review on Review step
     useEffect(() => {
@@ -1419,6 +1443,7 @@ import VoiceButton from "@/components/VoiceButton";
           onToneChange={(t)=> setTone(t)}
           currentStep={step}
           onPropose={(text, target, index)=> setPendingSuggestion({ target, index, suggestion: text })}
+          onVoiceAutoFill={handleVoiceAutoFill}
           seedPrompt={seedPrompt}
         />
       </main>

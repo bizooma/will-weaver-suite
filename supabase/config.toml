@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.voice-to-text]
 verify_jwt = false
 
+[functions.voice-to-structured-data]
+verify_jwt = false
+
 [functions.text-to-voice]
 verify_jwt = false
 
