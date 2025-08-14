@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import HeroDemoFrame from "@/components/HeroDemoFrame";
+
 import { generateMetaTags, generateStructuredData } from "@/lib/seo";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/" : "/";
@@ -72,7 +72,15 @@ const Index = () => {
             </div>
           </div>
           <div>
-            <HeroDemoFrame />
+            <div className="relative aspect-[16/10] rounded-xl border bg-card shadow overflow-hidden animate-fade-in hover-scale">
+              <iframe
+                src="https://app.heygen.com/embeds/3a1e052ccc804697a2ea0a7fb12ef8ea"
+                title="HeyGen video player"
+                className="absolute inset-0 w-full h-full transition-all duration-300"
+                allow="encrypted-media; fullscreen;"
+                allowFullScreen
+              />
+            </div>
           </div>
         </div>
       </section>
