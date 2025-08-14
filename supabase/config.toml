@@ -1,22 +1,65 @@
 project_id = "fmcgsxdtyvssvwtxufll"
 
-[functions.ai-generate-clause]
-verify_jwt = false
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
-[functions.ai-review-will]
-verify_jwt = false
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lovable.dev"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+secure_nonce_enabled = true
+enable_signup = true
+enable_anonymous_sign_ins = false
 
-[functions.ai-copilot]
-verify_jwt = false
+[db]
+port = 54322
 
-[functions.voice-to-text]
-verify_jwt = false
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
+file_transform_limit = "10MiB"
+
+[edge_functions]
+enabled = true
+port = 54324
 
 [functions.voice-to-structured-data]
+verify_jwt = false
+
+[functions.validate-voice-data]
+verify_jwt = false
+
+[functions.generate-followup-questions]
 verify_jwt = false
 
 [functions.text-to-voice]
 verify_jwt = false
 
+[functions.voice-to-text]
+verify_jwt = false
+
+[functions.ai-copilot]
+verify_jwt = false
+
+[functions.ai-review-will]
+verify_jwt = false
+
+[functions.ai-generate-clause]
+verify_jwt = false
+
 [functions.eleven-signed-url]
 verify_jwt = false
+
+[functions.process-training-document]
+verify_jwt = true
+
+[functions.process-training-url]
+verify_jwt = true

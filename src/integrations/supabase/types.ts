@@ -242,6 +242,48 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_sessions: {
+        Row: {
+          confidence_scores: Json
+          context_questions: string[]
+          created_at: string
+          extracted_data: Json
+          id: string
+          is_active: boolean
+          session_data: Json
+          transcriptions: string[]
+          updated_at: string
+          user_id: string
+          validation_issues: Json
+        }
+        Insert: {
+          confidence_scores?: Json
+          context_questions?: string[]
+          created_at?: string
+          extracted_data?: Json
+          id?: string
+          is_active?: boolean
+          session_data?: Json
+          transcriptions?: string[]
+          updated_at?: string
+          user_id: string
+          validation_issues?: Json
+        }
+        Update: {
+          confidence_scores?: Json
+          context_questions?: string[]
+          created_at?: string
+          extracted_data?: Json
+          id?: string
+          is_active?: boolean
+          session_data?: Json
+          transcriptions?: string[]
+          updated_at?: string
+          user_id?: string
+          validation_issues?: Json
+        }
+        Relationships: []
+      }
       will_drafts: {
         Row: {
           created_at: string

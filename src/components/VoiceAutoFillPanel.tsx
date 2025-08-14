@@ -5,19 +5,43 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Mic, Square, Check, X, AlertCircle, Loader2 } from "lucide-react";
+import { Mic, Square, Check, X, AlertCircle, Loader2, MessageSquare, History } from "lucide-react";
 import { useVoiceAutoFill, ExtractedData, VoiceProcessingResult } from "@/hooks/useVoiceAutoFill";
+import { useAdvancedVoiceAutoFill, ValidationIssue, SmartFollowUp } from "@/hooks/useAdvancedVoiceAutoFill";
 import { cn } from "@/lib/utils";
 
 interface VoiceAutoFillPanelProps {
   onDataExtracted: (data: ExtractedData, confidence: Record<string, number>) => void;
   onCancel: () => void;
+  initialFormData?: any;
 }
 
-const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelProps) => {
+const VoiceAutoFillPanel = ({ onDataExtracted, onCancel, initialFormData }: VoiceAutoFillPanelProps) => {
   const { isRecording, isProcessing, currentTranscription, recordAndProcess } = useVoiceAutoFill();
+  const { 
+    currentSession, 
+    validationIssues, 
+    followUpQuestions, 
+    isValidating,
+    createSession,
+    addTranscriptionToSession,
+    getUserSessions 
+  } = useAdvancedVoiceAutoFill();
+  
   const [lastResult, setLastResult] = useState<VoiceProcessingResult | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [showSessions, setShowSessions] = useState(false);
+  const [previousSessions, setPreviousSessions] = useState([]);
+
+  // Initialize session and load previous sessions
+  useEffect(() => {
+    const initializeSession = async () => {
+      await createSession(initialFormData);
+      const sessions = await getUserSessions();
+      setPreviousSessions(sessions);
+    };
+    initializeSession();
+  }, []);
 
   // Recording duration timer
   useEffect(() => {
@@ -34,13 +58,23 @@ const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelPro
 
   const handleRecordToggle = async () => {
     const result = await recordAndProcess();
-    if (result) {
+    if (result && currentSession) {
       setLastResult(result);
+      // Add to session for advanced processing
+      await addTranscriptionToSession(
+        currentSession.id,
+        result.transcription,
+        result.extractedData,
+        result.extractedData.confidence || {}
+      );
     }
   };
 
   const handleApproveData = () => {
-    if (lastResult?.extractedData) {
+    if (currentSession?.extracted_data) {
+      // Use session data which includes merged information from multiple recordings
+      onDataExtracted(currentSession.extracted_data as ExtractedData, currentSession.confidence_scores as Record<string, number>);
+    } else if (lastResult?.extractedData) {
       onDataExtracted(lastResult.extractedData, lastResult.extractedData.confidence || {});
     }
   };
@@ -66,7 +100,8 @@ const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelPro
   const renderExtractedField = (label: string, value: string | undefined, confidenceKey: string) => {
     if (!value) return null;
     
-    const confidence = lastResult?.extractedData?.confidence?.[confidenceKey] || 0;
+    const confidence = currentSession?.confidence_scores?.[confidenceKey] || 
+                      lastResult?.extractedData?.confidence?.[confidenceKey] || 0;
     
     return (
       <div className="flex items-center justify-between py-2">
@@ -88,7 +123,19 @@ const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelPro
     <div className="space-y-6 p-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Voice Auto-Fill</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Voice Auto-Fill</h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSessions(!showSessions)}
+            >
+              <History className="h-4 w-4 mr-2" />
+              Sessions
+            </Button>
+          </div>
+        </div>
         <p className="text-muted-foreground">
           Tell me about yourself and your estate planning needs. I'll extract the key information to fill your form.
         </p>
@@ -154,8 +201,71 @@ const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelPro
         </CardContent>
       </Card>
 
+      {/* Validation Issues */}
+      {validationIssues.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-600">
+              <AlertCircle className="h-5 w-5" />
+              Validation Issues
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {validationIssues.map((issue, index) => (
+                <Alert key={index} variant={issue.severity === 'high' ? 'destructive' : 'default'}>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div>
+                      <strong>{issue.message}</strong>
+                      {issue.suggestions && issue.suggestions.length > 0 && (
+                        <ul className="mt-2 list-disc list-inside text-sm">
+                          {issue.suggestions.map((suggestion, i) => (
+                            <li key={i}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Follow-up Questions */}
+      {followUpQuestions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Follow-up Questions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {followUpQuestions.map((question, index) => (
+                <div key={index} className="p-3 border rounded-lg">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="font-medium text-sm">{question.question}</p>
+                    <Badge variant={
+                      question.priority === 'high' ? 'destructive' : 
+                      question.priority === 'medium' ? 'default' : 'secondary'
+                    }>
+                      {question.priority}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{question.context}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Extracted Data Preview */}
-      {lastResult?.extractedData && (
+      {(currentSession?.extracted_data || lastResult?.extractedData) && (
         <Card>
           <CardHeader>
             <CardTitle>Extracted Information</CardTitle>
@@ -163,75 +273,85 @@ const VoiceAutoFillPanel = ({ onDataExtracted, onCancel }: VoiceAutoFillPanelPro
           <CardContent>
             <ScrollArea className="h-96">
               <div className="space-y-4">
-                {/* Personal Information */}
-                {lastResult.extractedData.personal && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Personal Information</h4>
-                    {renderExtractedField("Full Name", lastResult.extractedData.personal.fullName, "personal.fullName")}
-                    {renderExtractedField("Date of Birth", lastResult.extractedData.personal.dob, "personal.dob")}
-                    {renderExtractedField("Address", lastResult.extractedData.personal.address, "personal.address")}
-                    {renderExtractedField("State", lastResult.extractedData.personal.state, "personal.state")}
-                    {renderExtractedField("Marital Status", lastResult.extractedData.personal.maritalStatus, "personal.maritalStatus")}
-                    <Separator className="my-3" />
-                  </div>
-                )}
+                {/* Use session data if available, otherwise use last result */}
+                {(() => {
+                  const dataToShow = (currentSession?.extracted_data as ExtractedData) || lastResult?.extractedData;
+                  if (!dataToShow) return null;
+                  
+                  return (
+                    <>
+                      {/* Personal Information */}
+                      {dataToShow.personal && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Personal Information</h4>
+                          {renderExtractedField("Full Name", dataToShow.personal.fullName, "personal.fullName")}
+                          {renderExtractedField("Date of Birth", dataToShow.personal.dob, "personal.dob")}
+                          {renderExtractedField("Address", dataToShow.personal.address, "personal.address")}
+                          {renderExtractedField("State", dataToShow.personal.state, "personal.state")}
+                          {renderExtractedField("Marital Status", dataToShow.personal.maritalStatus, "personal.maritalStatus")}
+                          <Separator className="my-3" />
+                        </div>
+                      )}
 
-                {/* Spouse */}
-                {lastResult.extractedData.spouse?.name && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Spouse</h4>
-                    {renderExtractedField("Name", lastResult.extractedData.spouse.name, "spouse.name")}
-                    {renderExtractedField("Date of Birth", lastResult.extractedData.spouse.dob, "spouse.dob")}
-                    {renderExtractedField("Address", lastResult.extractedData.spouse.address, "spouse.address")}
-                    <Separator className="my-3" />
-                  </div>
-                )}
+                      {/* Spouse */}
+                      {dataToShow.spouse?.name && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Spouse</h4>
+                          {renderExtractedField("Name", dataToShow.spouse.name, "spouse.name")}
+                          {renderExtractedField("Date of Birth", dataToShow.spouse.dob, "spouse.dob")}
+                          {renderExtractedField("Address", dataToShow.spouse.address, "spouse.address")}
+                          <Separator className="my-3" />
+                        </div>
+                      )}
 
-                {/* Beneficiaries */}
-                {lastResult.extractedData.beneficiaries && lastResult.extractedData.beneficiaries.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Beneficiaries</h4>
-                    {lastResult.extractedData.beneficiaries.map((beneficiary, index) => (
-                      <div key={index} className="pl-4 border-l-2 border-muted mb-3">
-                        <p className="text-sm font-medium text-muted-foreground">Beneficiary {index + 1}</p>
-                        {renderExtractedField("Name", beneficiary.name, `beneficiaries.${index}.name`)}
-                        {renderExtractedField("Date of Birth", beneficiary.dob, `beneficiaries.${index}.dob`)}
-                        {renderExtractedField("Relationship", beneficiary.relationship, `beneficiaries.${index}.relationship`)}
-                      </div>
-                    ))}
-                    <Separator className="my-3" />
-                  </div>
-                )}
+                      {/* Beneficiaries */}
+                      {dataToShow.beneficiaries && dataToShow.beneficiaries.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Beneficiaries</h4>
+                          {dataToShow.beneficiaries.map((beneficiary, index) => (
+                            <div key={index} className="pl-4 border-l-2 border-muted mb-3">
+                              <p className="text-sm font-medium text-muted-foreground">Beneficiary {index + 1}</p>
+                              {renderExtractedField("Name", beneficiary.name, `beneficiaries.${index}.name`)}
+                              {renderExtractedField("Date of Birth", beneficiary.dob, `beneficiaries.${index}.dob`)}
+                              {renderExtractedField("Relationship", beneficiary.relationship, `beneficiaries.${index}.relationship`)}
+                            </div>
+                          ))}
+                          <Separator className="my-3" />
+                        </div>
+                      )}
 
-                {/* Executor */}
-                {lastResult.extractedData.executor?.name && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Executor</h4>
-                    {renderExtractedField("Name", lastResult.extractedData.executor.name, "executor.name")}
-                    {renderExtractedField("Relationship", lastResult.extractedData.executor.relationship, "executor.relationship")}
-                    <Separator className="my-3" />
-                  </div>
-                )}
+                      {/* Executor */}
+                      {dataToShow.executor?.name && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Executor</h4>
+                          {renderExtractedField("Name", dataToShow.executor.name, "executor.name")}
+                          {renderExtractedField("Relationship", dataToShow.executor.relationship, "executor.relationship")}
+                          <Separator className="my-3" />
+                        </div>
+                      )}
 
-                {/* Pets */}
-                {lastResult.extractedData.pets?.petName && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Pet Information</h4>
-                    {renderExtractedField("Pet Name", lastResult.extractedData.pets.petName, "pets.petName")}
-                    {renderExtractedField("Pet Type", lastResult.extractedData.pets.petType, "pets.petType")}
-                    {renderExtractedField("Caregiver", lastResult.extractedData.pets.petCaregiver, "pets.petCaregiver")}
-                    <Separator className="my-3" />
-                  </div>
-                )}
+                      {/* Pets */}
+                      {dataToShow.pets?.petName && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Pet Information</h4>
+                          {renderExtractedField("Pet Name", dataToShow.pets.petName, "pets.petName")}
+                          {renderExtractedField("Pet Type", dataToShow.pets.petType, "pets.petType")}
+                          {renderExtractedField("Caregiver", dataToShow.pets.petCaregiver, "pets.petCaregiver")}
+                          <Separator className="my-3" />
+                        </div>
+                      )}
 
-                {/* Funeral Preferences */}
-                {lastResult.extractedData.funeral?.funeralPreference && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Funeral Preferences</h4>
-                    {renderExtractedField("Preference", lastResult.extractedData.funeral.funeralPreference, "funeral.funeralPreference")}
-                    {renderExtractedField("Instructions", lastResult.extractedData.funeral.funeralInstructions, "funeral.funeralInstructions")}
-                  </div>
-                )}
+                      {/* Funeral Preferences */}
+                      {dataToShow.funeral?.funeralPreference && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Funeral Preferences</h4>
+                          {renderExtractedField("Preference", dataToShow.funeral.funeralPreference, "funeral.funeralPreference")}
+                          {renderExtractedField("Instructions", dataToShow.funeral.funeralInstructions, "funeral.funeralInstructions")}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </ScrollArea>
 
