@@ -16,18 +16,24 @@ const Contact = () => {
   return (
     <main>
       <Helmet>
-        <title>Contact | Legal Tech SaaS Demo</title>
-        <meta name="description" content="Get in touch for demos, partnerships, or support." />
+        <title>Contact Amicus Edge | Legal Technology Solutions</title>
+        <meta name="description" content="Contact Amicus Edge for custom legal technology solutions including Alexa skills, mobile apps, and chatbots for your law firm." />
         <link rel="canonical" href={canonical} />
       </Helmet>
       <section className="container py-16 grid gap-8 md:grid-cols-2">
         <div>
           <h1 className="text-4xl md:text-5xl mb-4">Contact Us</h1>
-          <p className="text-lg text-muted-foreground">We’d love to hear from you. Fill out the form and we’ll respond shortly.</p>
-          <div className="mt-6 text-sm text-muted-foreground">
-            <p>(555) 123-4567</p>
-            <p>hello@example.com</p>
-            <p>123 Main St, Suite 400, Your City</p>
+          <p className="text-lg text-muted-foreground mb-8">Ready to transform your law firm with cutting-edge technology? Get in touch and let's discuss how Amicus Edge can help you serve your clients better.</p>
+          <div className="space-y-4 text-muted-foreground">
+            <div>
+              <h3 className="font-semibold text-foreground mb-1">Phone</h3>
+              <p className="text-lg">845-377-9730</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground mb-1">Address</h3>
+              <p>2465 US-1S, Suite 1045</p>
+              <p>St. Augustine, FL 32086</p>
+            </div>
           </div>
         </div>
         <form onSubmit={onSubmit} className="rounded-lg border p-6 bg-card grid gap-4">
