@@ -188,14 +188,6 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
               alt={`${chatbotData?.name} preview`}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-              <div 
-                className="bg-white/90 rounded-full p-2 shadow-md"
-                style={{ color: chatbotData?.primaryColor || "#3b82f6" }}
-              >
-                <Play className="h-4 w-4 fill-current" />
-              </div>
-            </div>
           </div>
           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded-full shadow-sm text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
             Chat
