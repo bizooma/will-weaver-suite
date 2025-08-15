@@ -115,15 +115,20 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Submission stored successfully:', submission.id);
 
-    // Start background tasks
-    const backgroundTasks = Promise.all([
-      sendEmails(formData, submission.id),
-      syncToGoogleSheets(formData, submission.id),
-    ]);
+    // Start background tasks using EdgeRuntime.waitUntil
+    console.log('Starting background tasks...');
+    
+    const backgroundTasks = async () => {
+      try {
+        console.log('Running email and sheets sync in background...');
+        const [emailSuccess, sheetsSuccess] = await Promise.all([
+          sendEmails(formData, submission.id),
+          syncToGoogleSheets(formData, submission.id),
+        ]);
 
-    // Don't await background tasks, but update status after they complete
-    backgroundTasks.then(async ([emailSuccess, sheetsSuccess]) => {
-      if (emailSuccess || sheetsSuccess) {
+        console.log('Background tasks completed:', { emailSuccess, sheetsSuccess });
+
+        // Update the submission record with results
         await supabase
           .from('contact_submissions')
           .update({
@@ -131,10 +136,30 @@ const handler = async (req: Request): Promise<Response> => {
             sheet_synced: sheetsSuccess,
           })
           .eq('id', submission.id);
+
+        console.log('Background task status updated in database');
+      } catch (error) {
+        console.error('Background task error:', error);
+        // Update with failure status
+        await supabase
+          .from('contact_submissions')
+          .update({
+            email_sent: false,
+            sheet_synced: false,
+          })
+          .eq('id', submission.id);
       }
-    }).catch(error => {
-      console.error('Background task error:', error);
-    });
+    };
+
+    // Use EdgeRuntime.waitUntil to ensure background tasks complete
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      console.log('Using EdgeRuntime.waitUntil for background tasks');
+      EdgeRuntime.waitUntil(backgroundTasks());
+    } else {
+      console.log('EdgeRuntime not available, running background tasks without waiting');
+      // Run without waiting if EdgeRuntime is not available
+      backgroundTasks().catch(console.error);
+    }
 
     console.log('Contact form submission processed successfully');
 
