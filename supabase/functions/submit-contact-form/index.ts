@@ -258,21 +258,25 @@ async function syncToGoogleSheets(formData: ContactFormData, submissionId: strin
       return false;
     }
 
-    // Prepare row data for Google Sheets
+    // Prepare row data for Google Sheets - matching your column order:
+    // Name, Email, Law Firm, Subject, City, State, Message
     const rowData = [
-      new Date().toISOString(),
       formData.name,
       formData.email,
-      formData.subject,
-      formData.message,
       formData.lawFirm || '',
+      formData.subject,
       formData.city || '',
       formData.state || '',
-      submissionId,
+      formData.message,
     ];
 
-    // Add to Google Sheets (replace SHEET_ID with your actual sheet ID)
-    const SHEET_ID = "1BvO8XGZ8QN0QrGq-YYrXwXxXwXxXwXxXwXxXwXx"; // Replace with your actual sheet ID
+    // Get the Sheet ID from environment variable
+    const SHEET_ID = Deno.env.get("GOOGLE_SHEET_ID");
+    
+    if (!SHEET_ID) {
+      console.error('Google Sheet ID not configured');
+      return false;
+    }
     const sheetsResponse = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1:append?valueInputOption=RAW`,
       {
