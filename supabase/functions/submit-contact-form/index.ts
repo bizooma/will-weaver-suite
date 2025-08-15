@@ -248,21 +248,43 @@ async function syncToGoogleSheets(formData: ContactFormData, submissionId: strin
       return false;
     }
 
+    console.log('Service account JSON raw length:', serviceAccountJson.length);
+    console.log('Service account JSON first 100 chars:', serviceAccountJson.substring(0, 100));
+    console.log('Service account JSON last 100 chars:', serviceAccountJson.substring(serviceAccountJson.length - 100));
+
+    // Check if the JSON is wrapped in extra quotes
+    let jsonToParse = serviceAccountJson;
+    if (serviceAccountJson.startsWith('"') && serviceAccountJson.endsWith('"')) {
+      console.log('Detected JSON wrapped in quotes, unwrapping...');
+      jsonToParse = serviceAccountJson.slice(1, -1);
+      // Also handle escaped quotes within
+      jsonToParse = jsonToParse.replace(/\\"/g, '"');
+    }
+
     console.log('Parsing service account JSON...');
     let serviceAccount;
     try {
-      serviceAccount = JSON.parse(serviceAccountJson);
+      serviceAccount = JSON.parse(jsonToParse);
+      console.log('JSON parsed successfully');
+      console.log('Service account keys:', Object.keys(serviceAccount));
+      console.log('Has private_key:', !!serviceAccount.private_key);
+      console.log('Has client_email:', !!serviceAccount.client_email);
     } catch (error) {
       console.error('Failed to parse service account JSON:', error);
+      console.error('JSON to parse length:', jsonToParse.length);
+      console.error('JSON to parse sample:', jsonToParse.substring(0, 200));
       return false;
     }
     
     if (!serviceAccount.private_key) {
       console.error('Google Sheets service account private_key not found');
+      console.error('Available keys in service account:', Object.keys(serviceAccount));
       return false;
     }
 
     console.log('Service account client_email:', serviceAccount.client_email);
+    console.log('Private key starts with:', serviceAccount.private_key.substring(0, 50));
+    console.log('Private key ends with:', serviceAccount.private_key.substring(serviceAccount.private_key.length - 50));
 
     // Create JWT token for Google Sheets API
     const header = {
