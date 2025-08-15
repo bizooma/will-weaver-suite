@@ -37,7 +37,11 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     // Get client IP and user agent
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null;
+    // Parse x-forwarded-for header to get only the first IP address
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const clientIP = forwardedFor 
+      ? forwardedFor.split(',')[0].trim() 
+      : req.headers.get('x-real-ip') || null;
     const userAgent = req.headers.get('user-agent') || null;
 
     console.log('Client IP:', clientIP);
