@@ -1,16 +1,34 @@
 import { Helmet } from "react-helmet-async";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
+import { contactFormSchema, type ContactFormInput } from "@/lib/validation";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/contact" : "/contact";
 
 const Contact = () => {
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<ContactFormInput>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+      lawFirm: "",
+      city: "",
+      state: "",
+    },
+  });
+
+  const onSubmit = (data: ContactFormInput) => {
+    console.log("Form data:", data);
     toast.success("Message sent (demo)");
+    form.reset();
   };
 
   return (
@@ -36,23 +54,111 @@ const Contact = () => {
             </div>
           </div>
         </div>
-        <form onSubmit={onSubmit} className="rounded-lg border p-6 bg-card grid gap-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" required />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required />
-          </div>
-          <div className="md:col-span-2">
-            <Label htmlFor="message">Message</Label>
-            <Textarea id="message" rows={6} required />
-          </div>
-          <div>
-            <Button variant="hero" type="submit">Send Message</Button>
-          </div>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="rounded-lg border p-6 bg-card grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name *</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email *</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lawFirm"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Law Firm</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subject *</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Message *</FormLabel>
+                  <FormControl>
+                    <Textarea rows={6} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="md:col-span-2">
+              <Button 
+                variant="hero" 
+                type="submit" 
+                disabled={form.formState.isSubmitting}
+                className="w-full md:w-auto"
+              >
+                {form.formState.isSubmitting ? "Sending..." : "Send Message"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </section>
     </main>
   );

@@ -25,6 +25,9 @@ export const contactFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   subject: z.string().min(1, 'Subject is required').max(200, 'Subject must be less than 200 characters'),
   message: z.string().min(10, 'Message must be at least 10 characters').max(1000, 'Message must be less than 1000 characters'),
+  lawFirm: z.string().max(100, 'Law Firm must be less than 100 characters').optional(),
+  city: z.string().max(50, 'City must be less than 50 characters').optional(),
+  state: z.string().max(50, 'State must be less than 50 characters').optional(),
 });
 
 // Utility function to sanitize strings
