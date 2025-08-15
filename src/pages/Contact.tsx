@@ -80,6 +80,7 @@ const Contact = () => {
             <div>
               <h3 className="font-semibold text-foreground mb-1">Phone</h3>
               <a href="tel:8453779730" className="text-lg hover:text-primary transition-colors">845-377-9730</a>
+              <p className="text-sm text-muted-foreground mt-1">An AI Receptionist will answer the call.</p>
             </div>
             <div>
               <h3 className="font-semibold text-foreground mb-1">Address</h3>
