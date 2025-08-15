@@ -214,7 +214,7 @@ async function sendEmails(formData: ContactFormData, submissionId: string): Prom
 
     // Send user confirmation email
     const userEmailResponse = await resend.emails.send({
-      from: "Amicus Edge <noreply@amicusedge.com>",
+      from: "Amicus Edge <onboarding@resend.dev>",
       to: [formData.email],
       subject: "Thank you for contacting Amicus Edge",
       html: userEmailHtml,
@@ -222,8 +222,8 @@ async function sendEmails(formData: ContactFormData, submissionId: string): Prom
 
     // Send business notification email
     const businessEmailResponse = await resend.emails.send({
-      from: "Contact Form <contact@amicusedge.com>",
-      to: ["info@amicusedge.com"], // Replace with your actual business email
+      from: "Contact Form <onboarding@resend.dev>",
+      to: ["joe@bizooma.com"], // Business notification email
       subject: `New Contact: ${formData.subject} - ${formData.name}`,
       html: businessEmailHtml,
     });
