@@ -242,12 +242,27 @@ async function syncToGoogleSheets(formData: ContactFormData, submissionId: strin
   try {
     console.log('Syncing to Google Sheets...');
 
-    const serviceAccount = JSON.parse(Deno.env.get("GOOGLE_SHEETS_SERVICE_ACCOUNT") ?? "{}");
-    
-    if (!serviceAccount.private_key) {
-      console.error('Google Sheets service account not configured');
+    const serviceAccountJson = Deno.env.get("GOOGLE_SHEETS_SERVICE_ACCOUNT");
+    if (!serviceAccountJson) {
+      console.error('GOOGLE_SHEETS_SERVICE_ACCOUNT environment variable not set');
       return false;
     }
+
+    console.log('Parsing service account JSON...');
+    let serviceAccount;
+    try {
+      serviceAccount = JSON.parse(serviceAccountJson);
+    } catch (error) {
+      console.error('Failed to parse service account JSON:', error);
+      return false;
+    }
+    
+    if (!serviceAccount.private_key) {
+      console.error('Google Sheets service account private_key not found');
+      return false;
+    }
+
+    console.log('Service account client_email:', serviceAccount.client_email);
 
     // Create JWT token for Google Sheets API
     const header = {
@@ -264,20 +279,56 @@ async function syncToGoogleSheets(formData: ContactFormData, submissionId: strin
       iat: now,
     };
 
-    // Import crypto for JWT signing
-    const encoder = new TextEncoder();
-    const keyData = serviceAccount.private_key.replace(/\\n/g, '\n');
-    const key = await crypto.subtle.importKey(
-      "pkcs8",
-      encoder.encode(keyData),
-      {
-        name: "RSASSA-PKCS1-v1_5",
-        hash: "SHA-256",
-      },
-      false,
-      ["sign"]
-    );
+    // Process the private key - handle different formats
+    console.log('Processing private key...');
+    let keyData = serviceAccount.private_key;
+    
+    // Handle escaped newlines
+    if (keyData.includes('\\n')) {
+      keyData = keyData.replace(/\\n/g, '\n');
+    }
+    
+    // Ensure proper PEM format
+    if (!keyData.startsWith('-----BEGIN PRIVATE KEY-----')) {
+      console.error('Private key is not in proper PEM format');
+      return false;
+    }
+    
+    // Extract the base64 content between the PEM headers
+    const pemContent = keyData
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s/g, '');
+    
+    console.log('Attempting to decode base64 private key...');
+    let keyBuffer;
+    try {
+      keyBuffer = Uint8Array.from(atob(pemContent), c => c.charCodeAt(0));
+    } catch (error) {
+      console.error('Failed to decode base64 private key:', error);
+      return false;
+    }
 
+    console.log('Importing private key for crypto operations...');
+    let key;
+    try {
+      key = await crypto.subtle.importKey(
+        "pkcs8",
+        keyBuffer,
+        {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+        },
+        false,
+        ["sign"]
+      );
+    } catch (error) {
+      console.error('Failed to import private key:', error);
+      return false;
+    }
+
+    console.log('Creating JWT signature...');
+    const encoder = new TextEncoder();
     const headerB64 = btoa(JSON.stringify(header)).replace(/[+/]/g, (c) => c === '+' ? '-' : '_').replace(/=/g, '');
     const payloadB64 = btoa(JSON.stringify(payload)).replace(/[+/]/g, (c) => c === '+' ? '-' : '_').replace(/=/g, '');
     const signatureData = encoder.encode(`${headerB64}.${payloadB64}`);
