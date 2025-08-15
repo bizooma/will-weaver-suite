@@ -8,10 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { contactFormSchema, type ContactFormInput } from "@/lib/validation";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/contact" : "/contact";
 
 const Contact = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<ContactFormInput>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -25,10 +29,40 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = (data: ContactFormInput) => {
-    console.log("Form data:", data);
-    toast.success("Message sent (demo)");
-    form.reset();
+  const onSubmit = async (data: ContactFormInput) => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      console.log("Submitting contact form:", data);
+      
+      const { data: result, error } = await supabase.functions.invoke('submit-contact-form', {
+        body: data,
+      });
+
+      if (error) {
+        console.error("Function invocation error:", error);
+        toast.error("Failed to send message. Please try again.");
+        return;
+      }
+
+      if (result?.error) {
+        console.error("Function returned error:", result.error);
+        toast.error(result.error || "Failed to send message. Please try again.");
+        return;
+      }
+
+      console.log("Contact form submitted successfully:", result);
+      toast.success(result?.message || "Thank you for your message. We'll get back to you soon!");
+      form.reset();
+      
+    } catch (error) {
+      console.error("Contact form submission error:", error);
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -151,10 +185,10 @@ const Contact = () => {
               <Button 
                 variant="hero" 
                 type="submit" 
-                disabled={form.formState.isSubmitting}
+                disabled={isSubmitting}
                 className="w-full md:w-auto"
               >
-                {form.formState.isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </div>
           </form>
