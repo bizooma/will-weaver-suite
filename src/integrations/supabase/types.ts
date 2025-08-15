@@ -94,6 +94,57 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_submissions: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string
+          email_sent: boolean
+          id: string
+          ip_address: unknown | null
+          law_firm: string | null
+          message: string
+          name: string
+          sheet_synced: boolean
+          state: string | null
+          subject: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean
+          id?: string
+          ip_address?: unknown | null
+          law_firm?: string | null
+          message: string
+          name: string
+          sheet_synced?: boolean
+          state?: string | null
+          subject: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean
+          id?: string
+          ip_address?: unknown | null
+          law_firm?: string | null
+          message?: string
+          name?: string
+          sheet_synced?: boolean
+          state?: string | null
+          subject?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
