@@ -96,6 +96,7 @@ export type Database = {
       }
       contact_submissions: {
         Row: {
+          background_task_status: string | null
           city: string | null
           created_at: string
           email: string
@@ -112,6 +113,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          background_task_status?: string | null
           city?: string | null
           created_at?: string
           email: string
@@ -128,6 +130,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          background_task_status?: string | null
           city?: string | null
           created_at?: string
           email?: string
