@@ -37,8 +37,11 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     // Get client IP and user agent
-    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    const userAgent = req.headers.get('user-agent') || 'unknown';
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null;
+    const userAgent = req.headers.get('user-agent') || null;
+
+    console.log('Client IP:', clientIP);
+    console.log('User Agent:', userAgent);
 
     // Parse and validate form data
     const formData: ContactFormData = await req.json();
@@ -67,6 +70,17 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     console.log('Inserting contact submission into database...');
+    console.log('Form data to insert:', {
+      name: formData.name.trim(),
+      email: formData.email.toLowerCase().trim(),
+      subject: formData.subject.trim(),
+      message: formData.message.trim(),
+      law_firm: formData.lawFirm?.trim() || null,
+      city: formData.city?.trim() || null,
+      state: formData.state?.trim() || null,
+      ip_address: clientIP,
+      user_agent: userAgent,
+    });
 
     // Store submission in database
     const { data: submission, error: dbError } = await supabase
@@ -86,9 +100,11 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (dbError) {
-      console.error('Database error:', dbError);
+      console.error('Database error details:', dbError);
+      console.error('Database error code:', dbError.code);
+      console.error('Database error message:', dbError.message);
       return new Response(
-        JSON.stringify({ error: "Failed to store submission" }),
+        JSON.stringify({ error: "Failed to store submission", details: dbError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
