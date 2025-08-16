@@ -25,6 +25,22 @@ const About = () => {
             <p className="text-muted-foreground leading-relaxed">
               Developed by <strong>Legally Innovative</strong>, a leader in law firm digital marketing and technology solutions, Amicus Edge was built to give firms a competitive advantage in an increasingly digital legal landscape.
             </p>
+            
+            <div className="flex items-center gap-4 my-6">
+              <a 
+                href="https://legallyinnovative.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="/lovable-uploads/e01568b0-2490-4606-a46d-db15c981805f.png" 
+                  alt="Legally Innovative Logo" 
+                  className="h-12 w-auto"
+                />
+              </a>
+            </div>
+            
             <p className="text-muted-foreground leading-relaxed">
               Our mission is simple: <strong>equip law firms with cutting-edge, easy-to-use technology that attracts new clients, streamlines communication, and improves client experience.</strong>
             </p>
