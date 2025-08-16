@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 import WillCreator from "./pages/WillCreator";
 import Alexa from "./pages/Alexa";
+import AIOAnalyzer from "./pages/AIOAnalyzer";
 import MobileApp from "./pages/MobileApp";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
@@ -67,6 +68,7 @@ const AppContent = () => {
           </ProtectedRoute>
         } />
         <Route path="/alexa" element={<Alexa />} />
+        <Route path="/aio-analyzer" element={<AIOAnalyzer />} />
         <Route path="/mobile-app" element={<MobileApp />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<Contact />} />
