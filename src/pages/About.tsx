@@ -42,7 +42,7 @@ const About = () => {
             </div>
             
             <p className="text-muted-foreground leading-relaxed">
-              Our mission is simple: <strong>equip law firms with cutting-edge, easy-to-use technology that attracts new clients, streamlines communication, and improves client experience.</strong>
+              Our mission is to bridge the gap between traditional legal marketing and the digital future, empowering legal professionals to deliver more efficient, accessible, and client-centered solutions.
             </p>
           </div>
 
