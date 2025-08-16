@@ -69,3 +69,6 @@ verify_jwt = false
 
 [functions.create-admin-user]
 verify_jwt = false
+
+[functions.analyze-seo]
+verify_jwt = false

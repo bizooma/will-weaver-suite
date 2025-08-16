@@ -175,6 +175,45 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_analyses: {
+        Row: {
+          ai_overview_score: number | null
+          analysis_data: Json
+          created_at: string
+          id: string
+          seo_score: number | null
+          status: string
+          updated_at: string
+          url: string
+          user_id: string | null
+          voice_seo_score: number | null
+        }
+        Insert: {
+          ai_overview_score?: number | null
+          analysis_data?: Json
+          created_at?: string
+          id?: string
+          seo_score?: number | null
+          status?: string
+          updated_at?: string
+          url: string
+          user_id?: string | null
+          voice_seo_score?: number | null
+        }
+        Update: {
+          ai_overview_score?: number | null
+          analysis_data?: Json
+          created_at?: string
+          id?: string
+          seo_score?: number | null
+          status?: string
+          updated_at?: string
+          url?: string
+          user_id?: string | null
+          voice_seo_score?: number | null
+        }
+        Relationships: []
+      }
       training_content: {
         Row: {
           chunk_index: number

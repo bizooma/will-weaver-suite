@@ -8,7 +8,8 @@ import {
   Smartphone,
   BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  Search
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button";
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
+  { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search },
   { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },

@@ -7,12 +7,14 @@ import { AlexaManager } from "./AlexaManager";
 import { MobileManager } from "./MobileManager";
 import { AnalyticsManager } from "./AnalyticsManager";
 import { SettingsManager } from "./SettingsManager";
+import { AIOManager } from "./AIOManager";
 
 export function DashboardContent() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Routes>
         <Route path="/" element={<DashboardOverview />} />
+        <Route path="/aio" element={<AIOManager />} />
         <Route path="/chatbots/*" element={<ChatbotManager />} />
         <Route path="/wills" element={<WillManager />} />
         <Route path="/alexa" element={<AlexaManager />} />

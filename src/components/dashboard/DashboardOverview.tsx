@@ -12,7 +12,8 @@ import {
   BarChart3,
   TrendingUp,
   Users,
-  Clock
+  Clock,
+  Search
 } from "lucide-react";
 
 export function DashboardOverview() {
@@ -24,6 +25,13 @@ export function DashboardOverview() {
   ];
 
   const quickActions = [
+    {
+      title: "AIO SEO Analyzer",
+      description: "Analyze websites for SEO, Voice SEO, and AI optimization",
+      icon: Search,
+      action: "/dashboard/aio",
+      color: "bg-indigo-500"
+    },
     {
       title: "Create New Chatbot",
       description: "Build a new video chatbot for your website",
