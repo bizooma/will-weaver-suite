@@ -32,6 +32,9 @@ const SiteHeader = () => {
           <NavLink to="/about" className={navLinkCls}>
             About
           </NavLink>
+          <NavLink to="/aio-analyzer" className={navLinkCls}>
+            AIO Analyzer
+          </NavLink>
           <NavLink to="/will-creator" className={navLinkCls}>
             Will & Trust
           </NavLink>
