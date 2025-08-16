@@ -13,6 +13,8 @@ import { Search, CheckCircle, AlertCircle, Info, ExternalLink } from "lucide-rea
 
 interface AnalysisResult {
   analysisId?: string;
+  saved?: boolean;
+  authenticated?: boolean;
   url: string;
   analysis: {
     seo: {
@@ -91,8 +93,7 @@ export function AIOManager() {
 
       const { data, error } = await supabase.functions.invoke('analyze-seo', {
         body: {
-          url: url.trim(),
-          userId: user?.id
+          url: url.trim()
         }
       });
 
@@ -106,9 +107,17 @@ export function AIOManager() {
       }
 
       setResult(data);
+      
+      // Show appropriate success message based on save status
+      const description = data.saved 
+        ? "Analysis completed and saved to your account" 
+        : data.authenticated 
+        ? "Analysis completed but couldn't be saved" 
+        : "Analysis completed (sign in to save results)";
+      
       toast({
         title: "Analysis Complete",
-        description: "Your SEO analysis has been completed successfully",
+        description,
       });
 
     } catch (error) {
@@ -243,13 +252,34 @@ export function AIOManager() {
             </Card>
           </div>
 
-          {/* URL Info */}
+          {/* URL Info and Save Status */}
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="space-y-1">
                   <p className="font-medium">Analyzed URL:</p>
                   <p className="text-sm text-muted-foreground">{result.url}</p>
+                  <div className="flex items-center gap-2">
+                    {result.saved ? (
+                      <Badge variant="default" className="text-xs">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Saved to Account
+                      </Badge>
+                    ) : result.authenticated ? (
+                      <Badge variant="secondary" className="text-xs">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Not Saved
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs">
+                        <Info className="h-3 w-3 mr-1" />
+                        Sign in to Save
+                      </Badge>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(result.timestamp).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
                 <Button variant="outline" size="sm" asChild>
                   <a href={result.url} target="_blank" rel="noopener noreferrer">

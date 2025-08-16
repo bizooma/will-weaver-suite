@@ -216,12 +216,27 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header for authenticated requests
+    const authHeader = req.headers.get('Authorization');
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        global: {
+          headers: authHeader ? { Authorization: authHeader } : {}
+        }
+      }
     );
 
-    const { url, userId }: AnalysisRequest = await req.json();
+    const { url }: { url: string } = await req.json();
+    
+    // Get the current user from the auth token
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.error('Auth error:', authError);
+    }
     
     if (!url) {
       throw new Error('URL is required');
@@ -244,11 +259,12 @@ serve(async (req) => {
     
     // Save analysis to database if user is authenticated
     let analysisId = null;
-    if (userId) {
+    let saved = false;
+    if (user) {
       const { data, error } = await supabase
         .from('seo_analyses')
         .insert({
-          user_id: userId,
+          user_id: user.id,
           url,
           analysis_data: analysis,
           seo_score: analysis.seo.score,
@@ -263,7 +279,11 @@ serve(async (req) => {
         console.error('Error saving analysis:', error);
       } else {
         analysisId = data.id;
+        saved = true;
+        console.log(`Analysis saved with ID: ${analysisId}`);
       }
+    } else {
+      console.log('Anonymous analysis - not saved to database');
     }
 
     console.log(`Analysis completed for: ${url}`);
@@ -272,6 +292,8 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         analysisId,
+        saved,
+        authenticated: !!user,
         url,
         analysis,
         timestamp: new Date().toISOString()
