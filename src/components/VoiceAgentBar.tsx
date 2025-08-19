@@ -55,7 +55,7 @@ const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgent
   const connected = conversation.status === "connected";
 
   return (
-    <div className="fixed bottom-6 right-20 z-50">
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
       <Card className="px-4 py-3 shadow-lg flex items-center gap-3">
         <div className="text-sm">
           {connected ? (conversation.isSpeaking ? "Listening & Speaking" : "Connected") : connecting ? "Connecting…" : "Voice Assistant"}
