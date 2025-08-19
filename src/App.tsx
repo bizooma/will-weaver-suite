@@ -32,6 +32,7 @@ import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ChatbotWidget from "./components/ChatbotWidget";
 import VoiceAgentBar from "./components/VoiceAgentBar";
+import ElevenLabsWidget from "./components/ElevenLabsWidget";
 import DraftSave from "./pages/DraftSave";
 import DraftView from "./pages/DraftView";
 
@@ -98,6 +99,7 @@ const AppContent = () => {
       {!isEmbed && <SiteFooter />}
       {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
       {!isEmbed && <ChatbotWidget />}
+      {!isEmbed && <ElevenLabsWidget />}
       {!isEmbed && <CookieConsentBanner />}
     </BrowserRouter>
   );
