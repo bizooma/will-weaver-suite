@@ -165,7 +165,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
 
   if (loading) {
     return (
-      <div className="fixed bottom-20 right-4 z-50">
+      <div className="fixed bottom-20 left-4 z-50">
         <Button variant="hero" size="lg" disabled>
           <MessageCircle className="h-5 w-5" />
         </Button>
@@ -212,7 +212,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-50">
+    <div className="fixed bottom-20 left-4 z-50">
       {open && chatbotData && (
         <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="p-4 bg-red-800">
