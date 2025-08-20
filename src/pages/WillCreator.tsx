@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import VoiceButton from "@/components/VoiceButton";
 import { useFormAutoFill } from "@/hooks/useFormAutoFill";
 import { ExtractedData } from "@/hooks/useVoiceAutoFill";
+import { useEffect as useD_IDEffect } from "react";
 
 // Types
  type Beneficiary = { name: string; dob: string; relationship: string };
@@ -157,9 +158,10 @@ import { ExtractedData } from "@/hooks/useVoiceAutoFill";
     const [fixingKey, setFixingKey] = useState<string | null>(null);
     const [undoAction, setUndoAction] = useState<(() => void) | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const navigate = useNavigate();
-    const [saving, setSaving] = useState(false);
-    const { generateAutoFillPreview, applyAutoFill } = useFormAutoFill();
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const { generateAutoFillPreview, applyAutoFill } = useFormAutoFill();
+  const [didAvatarLoaded, setDidAvatarLoaded] = useState(false);
     const isDemo = useMemo(() => {
       try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
     }, []);
@@ -547,6 +549,29 @@ import { ExtractedData } from "@/hooks/useVoiceAutoFill";
         runAIReview();
       }
     }, [step, aiReview, reviewLoading, isDemo]);
+
+    // Load D-ID script and initialize avatar
+    useD_IDEffect(() => {
+      if (didAvatarLoaded) return;
+      
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://agent.d-id.com/v2/index.js';
+      script.setAttribute('data-mode', 'full');
+      script.setAttribute('data-client-key', 'Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP');
+      script.setAttribute('data-agent-id', 'v2_agt_gURW8-bU');
+      script.setAttribute('data-name', 'did-agent');
+      script.setAttribute('data-monitor', 'true');
+      script.setAttribute('data-target-id', 'did-avatar-container');
+      
+      document.head.appendChild(script);
+      setDidAvatarLoaded(true);
+      
+      return () => {
+        // Clean up script on unmount
+        document.head.removeChild(script);
+      };
+    }, [didAvatarLoaded]);
   
    async function handleExportPDF() {
       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
@@ -745,23 +770,35 @@ import { ExtractedData } from "@/hooks/useVoiceAutoFill";
             <p className="text-muted-foreground max-w-3xl">Follow the steps below. Your information stays in your browser. At the end, review everything and download a polished PDF draft.</p>
          </header>
 
-         <div className="rounded-lg border p-6 bg-card">
-          <div className="mb-4">
-              <Progress value={progressValue} />
-              <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                <div className="text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Label className="text-sm">AI tone</Label>
-                  <Select value={tone} onValueChange={(v)=>setTone(v as any)}>
-                    <SelectTrigger className="w-40"><SelectValue placeholder="Select tone"/></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="plain">Plain</SelectItem>
-                      <SelectItem value="formal">Formal</SelectItem>
-                      <SelectItem value="compassionate">Compassionate</SelectItem>
-                      <SelectItem value="concise">Concise</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" variant="secondary" onClick={()=> setOpenCopilot(true)}>Co‑pilot</Button>
+          <div className="rounded-lg border p-6 bg-card relative">
+           {/* D-ID Avatar Container - Floating in upper right */}
+           <div 
+             id="did-avatar-container" 
+             className="fixed top-4 right-4 w-80 h-60 bg-background border rounded-lg shadow-lg z-40 md:block hidden"
+             style={{ 
+               maxWidth: '320px', 
+               maxHeight: '240px',
+               minWidth: '280px',
+               minHeight: '200px' 
+             }}
+           />
+           
+           <div className="mb-4">
+               <Progress value={progressValue} />
+               <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                 <div className="text-sm text-muted-foreground">Step {step} of {TOTAL_STEPS}</div>
+                 <div className="flex items-center gap-2 flex-wrap">
+                   <Label className="text-sm">AI tone</Label>
+                   <Select value={tone} onValueChange={(v)=>setTone(v as any)}>
+                     <SelectTrigger className="w-40"><SelectValue placeholder="Select tone"/></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="plain">Plain</SelectItem>
+                       <SelectItem value="formal">Formal</SelectItem>
+                       <SelectItem value="compassionate">Compassionate</SelectItem>
+                       <SelectItem value="concise">Concise</SelectItem>
+                     </SelectContent>
+                   </Select>
+                   <Button size="sm" variant="secondary" onClick={()=> setOpenCopilot(true)}>Co‑pilot</Button>
                   {undoAction && (
                     <Button size="sm" variant="outline" onClick={()=>{ undoAction(); setUndoAction(null); toast.success('Undone'); }}>Undo last AI insert</Button>
                   )}
