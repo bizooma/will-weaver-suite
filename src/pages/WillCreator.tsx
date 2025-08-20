@@ -1375,28 +1375,31 @@ import { useEffect as useD_IDEffect } from "react";
                    </div>
                  </div>
                 </div>
-            </div>
-            
-            {/* D-ID Avatar Section - Right side */}
-            <div className="lg:col-span-1">
-              <div className="rounded-lg border p-4 bg-card sticky top-4">
-                <h3 className="text-lg font-medium mb-3">Legal Assistant</h3>
-                <div 
-                  id="did-avatar-container" 
-                  className="w-full h-80 bg-muted/30 rounded-lg flex items-center justify-center"
-                >
-                  {!didAvatarLoaded && (
-                    <div className="text-center text-muted-foreground">
-                      <div className="animate-pulse">Loading avatar...</div>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Your AI legal assistant is ready to help
-                </p>
               </div>
+           )}
             </div>
           </div>
+            
+          {/* D-ID Avatar Section - Right side */}
+          <div className="lg:col-span-1">
+            <div className="rounded-lg border p-4 bg-card sticky top-4">
+              <h3 className="text-lg font-medium mb-3">Legal Assistant</h3>
+              <div 
+                id="did-avatar-container" 
+                className="w-full h-80 bg-muted/30 rounded-lg flex items-center justify-center"
+              >
+                {!didAvatarLoaded && (
+                  <div className="text-center text-muted-foreground">
+                    <div className="animate-pulse">Loading avatar...</div>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Your AI legal assistant is ready to help
+              </p>
+            </div>
+          </div>
+        </div>
 
          {/* White-label embed note */}
          <section className="pt-8">
