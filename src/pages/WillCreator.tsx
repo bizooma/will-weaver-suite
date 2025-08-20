@@ -161,7 +161,6 @@ import { useEffect as useD_IDEffect } from "react";
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const { generateAutoFillPreview, applyAutoFill } = useFormAutoFill();
-  const [didAvatarLoaded, setDidAvatarLoaded] = useState(false);
     const isDemo = useMemo(() => {
       try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
     }, []);
@@ -550,31 +549,7 @@ import { useEffect as useD_IDEffect } from "react";
       }
     }, [step, aiReview, reviewLoading, isDemo]);
 
-    // Load D-ID script and initialize avatar
-    useD_IDEffect(() => {
-      if (didAvatarLoaded) return;
-      
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = 'https://agent.d-id.com/v2/index.js';
-      script.setAttribute('data-mode', 'full');
-      script.setAttribute('data-client-key', 'Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP');
-      script.setAttribute('data-agent-id', 'v2_agt_gURW8-bU');
-      script.setAttribute('data-name', 'did-agent');
-      script.setAttribute('data-monitor', 'true');
-      script.setAttribute('data-target-id', 'did-avatar-container');
-      
-      script.onload = () => {
-        console.log('D-ID script loaded successfully');
-      };
-      
-      script.onerror = () => {
-        console.error('Failed to load D-ID script');
-      };
-      
-      document.head.appendChild(script);
-      setDidAvatarLoaded(true);
-    }, [didAvatarLoaded]);
+    // D-ID avatar loaded via iframe
   
    async function handleExportPDF() {
       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
@@ -774,23 +749,19 @@ import { useEffect as useD_IDEffect } from "react";
          </header>
 
           <div className="rounded-lg border p-6 bg-card relative">
-           {/* D-ID Avatar Container - Floating in upper right */}
-           <div 
-             id="did-avatar-container" 
-             className="fixed top-4 right-4 w-80 h-60 bg-background border rounded-lg shadow-lg z-40"
+           {/* D-ID Avatar - Direct iframe embed */}
+           <iframe 
+             src="https://agent.d-id.com/agents/v2_agt_gURW8-bU?key=Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP"
+             className="fixed top-4 right-4 w-80 h-60 border rounded-lg shadow-lg z-40"
              style={{ 
                maxWidth: '320px', 
                maxHeight: '240px',
                minWidth: '280px',
                minHeight: '200px' 
              }}
-           >
-             {!didAvatarLoaded && (
-               <div className="flex items-center justify-center h-full text-muted-foreground">
-                 Loading avatar...
-               </div>
-             )}
-           </div>
+             allow="microphone; camera"
+             title="Legal Assistant Avatar"
+           />
            
            <div className="mb-4">
                <Progress value={progressValue} />
