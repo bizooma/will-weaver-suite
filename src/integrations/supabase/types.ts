@@ -302,6 +302,39 @@ export type Database = {
           },
         ]
       }
+      user_api_keys: {
+        Row: {
+          api_key: string
+          created_at: string
+          id: string
+          is_active: boolean
+          key_name: string
+          last_used_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_name: string
+          last_used_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_name?: string
+          last_used_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -320,6 +353,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          api_access_enabled: boolean
+          brand_color: string | null
+          company_name: string | null
+          created_at: string
+          custom_domain: string | null
+          hide_branding: boolean
+          id: string
+          logo_url: string | null
+          updated_at: string
+          user_id: string
+          white_label_enabled: boolean
+        }
+        Insert: {
+          api_access_enabled?: boolean
+          brand_color?: string | null
+          company_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          hide_branding?: boolean
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          user_id: string
+          white_label_enabled?: boolean
+        }
+        Update: {
+          api_access_enabled?: boolean
+          brand_color?: string | null
+          company_name?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          hide_branding?: boolean
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          user_id?: string
+          white_label_enabled?: boolean
         }
         Relationships: []
       }
@@ -398,6 +473,36 @@ export type Database = {
         }
         Relationships: []
       }
+      widget_requests: {
+        Row: {
+          chatbot_id: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          origin_domain: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          chatbot_id: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          origin_domain?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          chatbot_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          origin_domain?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       will_drafts: {
         Row: {
           created_at: string
@@ -439,6 +544,14 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      generate_api_key: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_chatbot_widget_config: {
+        Args: { chatbot_id_param: string }
+        Returns: Json
       }
       has_role: {
         Args: {
