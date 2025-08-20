@@ -15,6 +15,7 @@ import {
   Clock,
   Search
 } from "lucide-react";
+import { ProductionReadinessPanel } from "./ProductionReadinessPanel";
 
 export function DashboardOverview() {
   const stats = [
@@ -134,49 +135,54 @@ export function DashboardOverview() {
         </CardContent>
       </Card>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Recent Activity
-          </CardTitle>
-          <CardDescription>
-            Your latest actions across all products
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-blue-600" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Recent Activity
+            </CardTitle>
+            <CardDescription>
+              Your latest actions across all products
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Created new chatbot "Legal Assistant"</p>
+                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Created new chatbot "Legal Assistant"</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Completed will draft "Johnson Family Trust"</p>
+                  <p className="text-xs text-muted-foreground">1 day ago</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Mic className="h-4 w-4 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tested Alexa skill integration</p>
+                  <p className="text-xs text-muted-foreground">3 days ago</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Completed will draft "Johnson Family Trust"</p>
-                <p className="text-xs text-muted-foreground">1 day ago</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
-              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                <Mic className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Tested Alexa skill integration</p>
-                <p className="text-xs text-muted-foreground">3 days ago</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Production Readiness Panel */}
+        <ProductionReadinessPanel />
+      </div>
     </div>
   );
 }

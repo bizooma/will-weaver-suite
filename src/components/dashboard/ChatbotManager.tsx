@@ -136,13 +136,18 @@ export function ChatbotManager() {
   };
 
   const copyEmbedCode = (chatbot: Chatbot) => {
-    const embedCode = `<script src="https://fmcgsxdtyvssvwtxufll.supabase.co/storage/v1/object/public/chatbot-widget/widget.js"></script>
-<div id="chatbot-widget" data-chatbot-id="${chatbot.id}"></div>`;
+    // Generate production-ready embed code
+    const embedCode = `<!-- Amicus Edge Chatbot Widget -->
+<script 
+  src="${window.location.origin}/widget.js" 
+  data-amicus-chatbot-id="${chatbot.id}"
+  async>
+</script>`;
     
     navigator.clipboard.writeText(embedCode);
     toast({
-      title: "Success",
-      description: "Embed code copied to clipboard"
+      title: "Embed code copied",
+      description: "Paste this code on your website to add the chatbot",
     });
   };
 

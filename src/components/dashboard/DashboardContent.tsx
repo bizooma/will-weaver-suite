@@ -6,7 +6,7 @@ import { WillManager } from "./WillManager";
 import { AlexaManager } from "./AlexaManager";
 import { MobileManager } from "./MobileManager";
 import { AnalyticsManager } from "./AnalyticsManager";
-import { SettingsManager } from "./SettingsManager";
+import { FunctionalSettingsManager } from "./FunctionalSettingsManager";
 import { AIOManager } from "./AIOManager";
 
 export function DashboardContent() {
@@ -20,7 +20,7 @@ export function DashboardContent() {
         <Route path="/alexa" element={<AlexaManager />} />
         <Route path="/mobile" element={<MobileManager />} />
         <Route path="/analytics" element={<AnalyticsManager />} />
-        <Route path="/settings" element={<SettingsManager />} />
+        <Route path="/settings" element={<FunctionalSettingsManager />} />
       </Routes>
     </div>
   );
