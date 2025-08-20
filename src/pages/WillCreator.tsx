@@ -550,7 +550,39 @@ import { useEffect as useD_IDEffect } from "react";
       }
     }, [step, aiReview, reviewLoading, isDemo]);
 
-  // D-ID avatar will be loaded via iframe to avoid CORS issues
+  // Load D-ID script and initialize avatar
+  useEffect(() => {
+    if (didAvatarLoaded) return;
+    
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = 'https://agent.d-id.com/v2/index.js';
+    script.setAttribute('data-mode', 'full');
+    script.setAttribute('data-client-key', 'Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP');
+    script.setAttribute('data-agent-id', 'v2_agt_gURW8-bU');
+    script.setAttribute('data-name', 'did-agent');
+    script.setAttribute('data-monitor', 'true');
+    script.setAttribute('data-target-id', 'did-avatar-container');
+    
+    script.onload = () => {
+      console.log('D-ID script loaded successfully');
+      setDidAvatarLoaded(true);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load D-ID script');
+    };
+    
+    document.head.appendChild(script);
+    
+    return () => {
+      // Cleanup script on unmount
+      const existingScript = document.querySelector('script[src="https://agent.d-id.com/v2/index.js"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
   
    async function handleExportPDF() {
       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
@@ -1360,13 +1392,16 @@ import { useEffect as useD_IDEffect } from "react";
           <div className="lg:col-span-1">
             <div className="rounded-lg border p-4 bg-card sticky top-4">
               <h3 className="text-lg font-medium mb-3">Legal Assistant</h3>
-              <iframe 
-                src="https://agent.d-id.com/agents/v2_agt_gURW8-bU?key=Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP"
-                className="w-full h-80 rounded-lg border-0"
-                allow="microphone; camera"
-                title="Legal Assistant Avatar"
-                style={{ backgroundColor: 'transparent' }}
-              />
+              <div 
+                id="did-avatar-container" 
+                className="w-full h-80 bg-muted/30 rounded-lg flex items-center justify-center"
+              >
+                {!didAvatarLoaded && (
+                  <div className="text-center text-muted-foreground">
+                    <div className="animate-pulse">Loading avatar...</div>
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground mt-2 text-center">
                 Your AI legal assistant is ready to help
               </p>
