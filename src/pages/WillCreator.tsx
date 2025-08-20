@@ -161,6 +161,7 @@ import { useEffect as useD_IDEffect } from "react";
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const { generateAutoFillPreview, applyAutoFill } = useFormAutoFill();
+  const [didAvatarLoaded, setDidAvatarLoaded] = useState(false);
     const isDemo = useMemo(() => {
       try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
     }, []);
@@ -549,7 +550,31 @@ import { useEffect as useD_IDEffect } from "react";
       }
     }, [step, aiReview, reviewLoading, isDemo]);
 
-    // D-ID avatar loaded via iframe
+    // Load D-ID script and initialize avatar
+    useEffect(() => {
+      if (didAvatarLoaded) return;
+      
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://agent.d-id.com/v2/index.js';
+      script.setAttribute('data-mode', 'full');
+      script.setAttribute('data-client-key', 'Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP');
+      script.setAttribute('data-agent-id', 'v2_agt_gURW8-bU');
+      script.setAttribute('data-name', 'did-agent');
+      script.setAttribute('data-monitor', 'true');
+      script.setAttribute('data-target-id', 'did-avatar-container');
+      
+      script.onload = () => {
+        console.log('D-ID script loaded successfully');
+        setDidAvatarLoaded(true);
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load D-ID script');
+      };
+      
+      document.head.appendChild(script);
+    }, [didAvatarLoaded]);
   
    async function handleExportPDF() {
       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
@@ -748,21 +773,11 @@ import { useEffect as useD_IDEffect } from "react";
             <p className="text-muted-foreground max-w-3xl">Follow the steps below. Your information stays in your browser. At the end, review everything and download a polished PDF draft.</p>
          </header>
 
-          <div className="rounded-lg border p-6 bg-card relative">
-           {/* D-ID Avatar - Direct iframe embed */}
-           <iframe 
-             src="https://agent.d-id.com/agents/v2_agt_gURW8-bU?key=Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP"
-             className="fixed top-4 right-4 w-80 h-60 border rounded-lg shadow-lg z-40"
-             style={{ 
-               maxWidth: '320px', 
-               maxHeight: '240px',
-               minWidth: '280px',
-               minHeight: '200px' 
-             }}
-             allow="microphone; camera"
-             title="Legal Assistant Avatar"
-           />
-           
+          {/* Main layout with form and avatar side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Form Section - Left side */}
+            <div className="lg:col-span-2">
+              <div className="rounded-lg border p-6 bg-card relative">
            <div className="mb-4">
                <Progress value={progressValue} />
                <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -1359,10 +1374,29 @@ import { useEffect as useD_IDEffect } from "react";
                      <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
                    </div>
                  </div>
-               </div>
-             </div>
-           )}
-         </div>
+                </div>
+            </div>
+            
+            {/* D-ID Avatar Section - Right side */}
+            <div className="lg:col-span-1">
+              <div className="rounded-lg border p-4 bg-card sticky top-4">
+                <h3 className="text-lg font-medium mb-3">Legal Assistant</h3>
+                <div 
+                  id="did-avatar-container" 
+                  className="w-full h-80 bg-muted/30 rounded-lg flex items-center justify-center"
+                >
+                  {!didAvatarLoaded && (
+                    <div className="text-center text-muted-foreground">
+                      <div className="animate-pulse">Loading avatar...</div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Your AI legal assistant is ready to help
+                </p>
+              </div>
+            </div>
+          </div>
 
          {/* White-label embed note */}
          <section className="pt-8">
