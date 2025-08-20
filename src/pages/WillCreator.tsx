@@ -564,13 +564,16 @@ import { useEffect as useD_IDEffect } from "react";
       script.setAttribute('data-monitor', 'true');
       script.setAttribute('data-target-id', 'did-avatar-container');
       
+      script.onload = () => {
+        console.log('D-ID script loaded successfully');
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load D-ID script');
+      };
+      
       document.head.appendChild(script);
       setDidAvatarLoaded(true);
-      
-      return () => {
-        // Clean up script on unmount
-        document.head.removeChild(script);
-      };
     }, [didAvatarLoaded]);
   
    async function handleExportPDF() {
@@ -774,14 +777,20 @@ import { useEffect as useD_IDEffect } from "react";
            {/* D-ID Avatar Container - Floating in upper right */}
            <div 
              id="did-avatar-container" 
-             className="fixed top-4 right-4 w-80 h-60 bg-background border rounded-lg shadow-lg z-40 md:block hidden"
+             className="fixed top-4 right-4 w-80 h-60 bg-background border rounded-lg shadow-lg z-40"
              style={{ 
                maxWidth: '320px', 
                maxHeight: '240px',
                minWidth: '280px',
                minHeight: '200px' 
              }}
-           />
+           >
+             {!didAvatarLoaded && (
+               <div className="flex items-center justify-center h-full text-muted-foreground">
+                 Loading avatar...
+               </div>
+             )}
+           </div>
            
            <div className="mb-4">
                <Progress value={progressValue} />
