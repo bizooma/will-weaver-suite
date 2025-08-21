@@ -139,9 +139,11 @@
         return '';
       }
       
-      const responses = this.config.suggestedResponses.map(response => 
-        `<button class="amicus-suggested-response" data-response="${response}">${response}</button>`
-      ).join('');
+      const responses = this.config.suggestedResponses
+        .filter(response => response && response.trim() !== '')
+        .map(response => 
+          `<button class="amicus-suggested-response" data-response="${response}">${response}</button>`
+        ).join('');
       
       return `
         <div class="amicus-suggested-responses" id="amicus-suggested-responses">

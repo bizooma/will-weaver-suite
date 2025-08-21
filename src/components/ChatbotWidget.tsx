@@ -315,7 +315,9 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
             {chatbotData.showSuggestedResponses && chatbotData.suggestedResponses.length > 0 && (
               <div className="p-2 border-t">
                 <div className="flex flex-wrap gap-1">
-                  {chatbotData.suggestedResponses.map((response, index) => (
+                  {chatbotData.suggestedResponses
+                    .filter(response => response && response.trim() !== '')
+                    .map((response, index) => (
                     <Button
                       key={index}
                       variant="outline"
