@@ -631,18 +631,40 @@ import { useEffect as useD_IDEffect } from "react";
 
        // Disclaimer
        const disclaimer = 'This is an automatically generated draft for demonstration purposes only and is not legal advice. Please consult a licensed attorney before signing any legal document.';
-       const wrapText = (text: string, maxWidth: number, size = 11) => {
-         const words = text.split(' ');
-         const lines: string[] = [];
-         let line = '';
-         for (const w of words) {
-           const test = line ? line + ' ' + w : w;
-           const width = times.widthOfTextAtSize(test, size);
-           if (width > maxWidth) { lines.push(line); line = w; } else { line = test; }
-         }
-         if (line) lines.push(line);
-         return lines;
-       };
+        const wrapText = (text: string, maxWidth: number, size = 11) => {
+          // First split by newlines to preserve existing line breaks
+          const paragraphs = text.split('\n');
+          const lines: string[] = [];
+          
+          for (const paragraph of paragraphs) {
+            if (paragraph.trim() === '') {
+              lines.push(''); // Preserve empty lines
+              continue;
+            }
+            
+            const words = paragraph.split(' ');
+            let line = '';
+            for (const w of words) {
+              const test = line ? line + ' ' + w : w;
+              try {
+                const width = times.widthOfTextAtSize(test, size);
+                if (width > maxWidth) { 
+                  if (line) lines.push(line); 
+                  line = w; 
+                } else { 
+                  line = test; 
+                }
+              } catch (error) {
+                // If there's an encoding error, just use the word as-is
+                console.warn('Text encoding error:', error);
+                if (line) lines.push(line);
+                line = w;
+              }
+            }
+            if (line) lines.push(line);
+          }
+          return lines;
+        };
        const maxWidth = width - margin * 2;
        for (const line of wrapText(disclaimer, maxWidth)) {
          page.drawText(line, { x: margin, y: cursorY, size: 10, font: times, color: rgb(0.2,0.2,0.2) });
