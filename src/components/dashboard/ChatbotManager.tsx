@@ -13,7 +13,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  Loader2
+  Loader2,
+  BookOpen
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ChatbotBuilder } from "./ChatbotBuilder";
+import { ChatbotTrainingWrapper } from "./ChatbotTrainingWrapper";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -168,6 +170,7 @@ export function ChatbotManager() {
     <Routes>
       <Route path="/new" element={<ChatbotBuilder />} />
       <Route path="/edit/:id" element={<ChatbotBuilder />} />
+      <Route path="/training/:id" element={<ChatbotTrainingWrapper />} />
       <Route path="/" element={
         <div className="flex-1 space-y-6 p-6">
           <div className="flex items-center justify-between">
@@ -207,6 +210,12 @@ export function ChatbotManager() {
                             <Link to={`/dashboard/chatbots/edit/${chatbot.id}`}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/dashboard/chatbots/training/${chatbot.id}`}>
+                              <BookOpen className="h-4 w-4 mr-2" />
+                              Train
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setPreviewChatbot(chatbot.id)}>
@@ -268,10 +277,16 @@ export function ChatbotManager() {
                         <Play className="h-4 w-4 mr-2" />
                         Test
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" asChild>
+                      <Button size="sm" variant="outline" asChild>
                         <Link to={`/dashboard/chatbots/edit/${chatbot.id}`}>
                           <Settings className="h-4 w-4 mr-2" />
                           Configure
+                        </Link>
+                      </Button>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/dashboard/chatbots/training/${chatbot.id}`}>
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Train
                         </Link>
                       </Button>
                     </div>
