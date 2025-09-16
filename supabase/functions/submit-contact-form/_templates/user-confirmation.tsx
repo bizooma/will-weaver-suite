@@ -47,6 +47,18 @@ export const UserConfirmationEmail = ({
           Best regards,<br/>
           The Amicus Edge Team
         </Text>
+        <div style={{ textAlign: 'center', margin: '32px 0 24px 0' }}>
+          <Link href="https://bizooma.com" target="_blank">
+            <img 
+              src="https://fmcgsxdtyvssvwtxufll.supabase.co/storage/v1/object/public/images/bizooma-logo.png"
+              alt="Bizooma Foundation"
+              style={{ maxWidth: '200px', height: 'auto' }}
+            />
+          </Link>
+          <Text style={{ ...footer, marginTop: '16px', marginBottom: '0' }}>
+            Amicus Edge is a Bizooma, LLC property.
+          </Text>
+        </div>
         <Text style={footer}>
           <Link
             href="https://amicusedge.com"
