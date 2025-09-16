@@ -205,8 +205,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     }
     return url;
   };
-  const wrapperClass = embedded ? "relative w-full" : "fixed bottom-20 left-4 z-50";
-  const cardSizeClass = embedded ? "w-full max-h-[70vh]" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
+  const wrapperClass = embedded ? "relative w-full h-full" : "fixed bottom-20 left-4 z-50";
+  const cardSizeClass = embedded ? "w-full h-full" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
 
   if (loading) {
     return (
@@ -324,9 +324,9 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
             )}
           </div>
 
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-0">
             {chatbotData.videoUrl && (
-              <div className="p-2">
+              <div className="p-2 flex-shrink-0">
                 <AspectRatio ratio={16 / 9} className="rounded overflow-hidden">
                   <iframe
                     src={getEmbedUrl(chatbotData.videoUrl)}
@@ -339,7 +339,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
               </div>
             )}
 
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 min-h-0 p-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -361,7 +361,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
             </ScrollArea>
 
             {chatbotData.showSuggestedResponses && chatbotData.suggestedResponses.length > 0 && (
-              <div className="p-2 border-t">
+              <div className="p-2 border-t flex-shrink-0">
                 <div className="flex flex-wrap gap-1">
                   {chatbotData.suggestedResponses
                     .filter(response => response && response.trim() !== '')
@@ -380,7 +380,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
               </div>
             )}
 
-            <div className="p-4 border-t">
+            <div className="p-4 border-t flex-shrink-0">
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <Input
                   value={input}
@@ -394,7 +394,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
               </form>
             </div>
             
-            <div className="px-4 border-t-2 border-red-800 bg-red-800">
+            <div className="px-4 border-t-2 border-red-800 bg-red-800 flex-shrink-0">
               <div className="text-xs text-white text-center flex items-center justify-center gap-2">
                 Powered by
                 <a
