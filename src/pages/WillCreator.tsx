@@ -541,14 +541,15 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
      setOpenCopilot(true);
    };
 
-   const handleVoiceAutoFill = async (extractedData: ExtractedData) => {
-     try {
-       const preview = await generateAutoFillPreview(extractedData);
-       if (preview && Object.keys(preview).length > 0) {
-         const confirmed = confirm(`Voice data detected:\n\n${Object.entries(preview).map(([key, value]) => `${key}: ${value}`).join('\n')}\n\nApply these changes?`);
-         if (confirmed) {
-           const updatedData = applyAutoFill(data, preview);
-           setData(updatedData);
+    const handleVoiceAutoFill = async (extractedData: ExtractedData) => {
+      try {
+        const confidence = {}; // Default confidence values
+        const preview = generateAutoFillPreview(data, extractedData, confidence);
+        if (preview && preview.length > 0) {
+          const confirmed = confirm(`Voice data detected:\n\n${preview.map(change => `${change.field}: ${change.newValue}`).join('\n')}\n\nApply these changes?`);
+          if (confirmed) {
+            const updatedData = applyAutoFill(data, extractedData, preview);
+            setData(updatedData);
            toast.success("Form updated with voice data");
          }
        } else {
@@ -855,9 +856,12 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                    </Select>
                  </div>
                </div>
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    // Use basic text input for now - can be enhanced later with structured data extraction
+                    setData(prev => ({ ...prev, fullName: text.trim() }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -883,9 +887,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                ) : (
                  <p className="text-muted-foreground">You indicated you are not married. Skip to the next step.</p>
                )}
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, address: text.trim() }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -936,9 +942,12 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </Card>
                ))}
                <Button variant="outline" onClick={()=> setData({...data, beneficiaries: [...data.beneficiaries, {name: '', dob: '', relationship: ''}]})}>Add Beneficiary</Button>
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    // Add voice input for beneficiaries section
+                    toast.info("Voice input recorded: " + text.trim());
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -992,9 +1001,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </CardContent>
                </Card>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, executor: { ...prev.executor, name: text.trim() } }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1105,9 +1116,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </>
                )}
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, guardian: { ...prev.guardian, name: text.trim() } }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1172,9 +1185,12 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                
                <Button variant="outline" onClick={()=> setData({...data, gifts: [...data.gifts, {description: '', beneficiary: ''}]})}>Add Gift</Button>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    // Add voice input for gifts section
+                    toast.info("Voice input recorded: " + text.trim());
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1237,9 +1253,12 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                
                <Button variant="outline" onClick={()=> setData({...data, residue: [...data.residue, {beneficiary: '', percentage: '0'}]})}>Add Split</Button>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    // Add voice input for residue section
+                    toast.info("Voice input recorded: " + text.trim());
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1285,9 +1304,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </div>
                </div>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, petName: text.trim() }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1330,9 +1351,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </div>
                </div>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, funeralInstructions: text.trim() }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
@@ -1371,9 +1394,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </div>
                </div>
                
-               <div className="mt-4">
-                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
-               </div>
+                <div className="mt-4">
+                  <VoiceButton onResult={(text) => {
+                    setData(prev => ({ ...prev, additionalWishes: text.trim() }));
+                  }} />
+                </div>
                {StepActions}
              </div>
            )}
