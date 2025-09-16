@@ -102,3 +102,102 @@ export async function getDraftBySlug(slug: string) {
     throw error;
   }
 }
+
+export async function getUserDrafts() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      logger.securityEvent('Unauthorized draft fetch attempt');
+      throw new Error("You must be logged in to view drafts.");
+    }
+
+    const { data, error } = await supabase
+      .from("will_drafts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      logger.error('Database error in getUserDrafts', error, { userId: user.id });
+      throw new Error('Failed to retrieve drafts');
+    }
+
+    return data as WillDraft[];
+  } catch (error) {
+    logger.error('Unexpected error in getUserDrafts', error as Error);
+    throw error;
+  }
+}
+
+export async function updateDraft(id: string, input: { data: unknown; tone?: string | null; step?: number | null }) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      logger.securityEvent('Unauthorized draft update attempt');
+      throw new Error("You must be logged in to update drafts.");
+    }
+
+    // Validate input
+    const validationResult = createDraftSchema.safeParse(input);
+    if (!validationResult.success) {
+      logger.warn('Draft update validation failed', { 
+        userId: user.id, 
+        draftId: id,
+        errors: validationResult.error.errors 
+      });
+      throw new Error("Invalid draft data provided.");
+    }
+
+    const { data, error } = await supabase
+      .from("will_drafts")
+      .update({ 
+        data: validationResult.data.data as any, 
+        tone: validationResult.data.tone ?? null, 
+        step: validationResult.data.step ?? null
+      })
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (error) {
+      logger.error('Database error in updateDraft', error, { userId: user.id, draftId: id });
+      throw new Error('Failed to update draft');
+    }
+
+    logger.info('Draft updated successfully', { userId: user.id, draftId: id });
+    return data as WillDraft;
+  } catch (error) {
+    logger.error('Unexpected error in updateDraft', error as Error);
+    throw error;
+  }
+}
+
+export async function deleteDraft(id: string) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      logger.securityEvent('Unauthorized draft deletion attempt');
+      throw new Error("You must be logged in to delete drafts.");
+    }
+
+    const { error } = await supabase
+      .from("will_drafts")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      logger.error('Database error in deleteDraft', error, { userId: user.id, draftId: id });
+      throw new Error('Failed to delete draft');
+    }
+
+    logger.info('Draft deleted successfully', { userId: user.id, draftId: id });
+  } catch (error) {
+    logger.error('Unexpected error in deleteDraft', error as Error);
+    throw error;
+  }
+}
