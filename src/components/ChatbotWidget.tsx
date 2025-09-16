@@ -205,8 +205,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     }
     return url;
   };
-  const wrapperClass = embedded ? "relative w-full h-full" : "fixed bottom-20 left-4 z-50";
-  const cardSizeClass = embedded ? "w-full h-full" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
+  const wrapperClass = embedded ? "relative w-full" : "fixed bottom-20 left-4 z-50";
+  const cardSizeClass = embedded ? "w-full max-h-[80vh]" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
 
   if (loading) {
     return (
