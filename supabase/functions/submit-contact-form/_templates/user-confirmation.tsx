@@ -56,8 +56,8 @@ export const UserConfirmationEmail = ({
             Amicus Edge
           </Link>
           <br/>
-          2465 US-1S, Suite 1045<br/>
-          St. Augustine, FL 32086
+          200 N Laura St<br/>
+          Jacksonville, FL 32202
         </Text>
       </Container>
     </Body>
