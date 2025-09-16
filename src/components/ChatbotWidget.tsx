@@ -360,7 +360,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
               </div>
             )}
 
-            <div className="flex-1 min-h-0 overflow-y-auto p-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
