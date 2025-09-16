@@ -8,6 +8,7 @@ import { MobileManager } from "./MobileManager";
 import { AnalyticsManager } from "./AnalyticsManager";
 import { FunctionalSettingsManager } from "./FunctionalSettingsManager";
 import { AIOManager } from "./AIOManager";
+import { ChatbotConversations } from "./ChatbotConversations";
 
 export function DashboardContent() {
   return (
@@ -15,7 +16,9 @@ export function DashboardContent() {
       <Routes>
         <Route path="/" element={<DashboardOverview />} />
         <Route path="/aio" element={<AIOManager />} />
+        <Route path="/chatbots" element={<ChatbotManager />} />
         <Route path="/chatbots/*" element={<ChatbotManager />} />
+        <Route path="/chatbots/conversations/:chatbotId" element={<ChatbotConversations />} />
         <Route path="/wills" element={<WillManager />} />
         <Route path="/alexa" element={<AlexaManager />} />
         <Route path="/mobile" element={<MobileManager />} />

@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, chatbotId } = await req.json();
+    const { message, chatbotId, sessionId } = await req.json();
     
     console.log('Received request:', { message, chatbotId });
 
@@ -161,6 +161,50 @@ Answering rules:
     const aiResponse = openAIData.choices[0].message.content;
 
     console.log('Generated AI response');
+
+    // Log the conversation message if sessionId is provided
+    if (sessionId) {
+      try {
+        // Check if conversation exists
+        const { data: existingConversation } = await supabase
+          .from('chatbot_conversations')
+          .select('conversation_data, message_count')
+          .eq('session_id', sessionId)
+          .eq('chatbot_id', chatbotId)
+          .single();
+
+        const currentTime = new Date().toISOString();
+        const userMessage = { type: 'user', content: message, timestamp: currentTime };
+        const botMessage = { type: 'bot', content: aiResponse, timestamp: currentTime };
+
+        if (existingConversation) {
+          // Update existing conversation
+          const currentMessages = existingConversation.conversation_data?.messages || [];
+          const updatedMessages = [...currentMessages, userMessage, botMessage];
+          
+          await supabase
+            .from('chatbot_conversations')
+            .update({
+              conversation_data: { messages: updatedMessages },
+              message_count: existingConversation.message_count + 2
+            })
+            .eq('session_id', sessionId)
+            .eq('chatbot_id', chatbotId);
+        } else {
+          // Create new conversation
+          await supabase
+            .from('chatbot_conversations')
+            .insert({
+              chatbot_id: chatbotId,
+              session_id: sessionId,
+              conversation_data: { messages: [userMessage, botMessage] },
+              message_count: 2
+            });
+        }
+      } catch (logError) {
+        console.error('Error logging conversation:', logError);
+      }
+    }
 
     return new Response(JSON.stringify({ 
       response: aiResponse,

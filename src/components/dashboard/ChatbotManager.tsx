@@ -14,7 +14,8 @@ import {
   Edit,
   Trash2,
   Loader2,
-  BookOpen
+  BookOpen,
+  MessageCircle
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -216,6 +217,12 @@ export function ChatbotManager() {
                             <Link to={`/dashboard/chatbots/training/${chatbot.id}`}>
                               <BookOpen className="h-4 w-4 mr-2" />
                               Train
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/dashboard/chatbots/conversations/${chatbot.id}`}>
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              View Conversations
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setPreviewChatbot(chatbot.id)}>

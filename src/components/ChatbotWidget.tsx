@@ -145,11 +145,20 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     setInput("");
 
     try {
+      // Generate session ID if not exists
+      const sessionId = sessionStorage.getItem(`chatbot_session_${chatbotId}`) || 
+        `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      if (!sessionStorage.getItem(`chatbot_session_${chatbotId}`)) {
+        sessionStorage.setItem(`chatbot_session_${chatbotId}`, sessionId);
+      }
+
       // Call the chatbot response function
       const { data, error } = await supabase.functions.invoke('chatbot-response', {
         body: {
           message: text,
-          chatbotId: chatbotId
+          chatbotId: chatbotId,
+          sessionId: sessionId
         }
       });
 
