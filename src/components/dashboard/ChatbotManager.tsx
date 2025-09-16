@@ -341,7 +341,7 @@ export function ChatbotManager() {
               </DialogHeader>
               {previewChatbot && (
                 <div className="relative">
-                  <ChatbotWidget chatbotId={previewChatbot} />
+                  <ChatbotWidget chatbotId={previewChatbot} embedded />
                 </div>
               )}
             </DialogContent>

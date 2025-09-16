@@ -31,10 +31,11 @@ interface ChatbotData {
 
 interface ChatbotWidgetProps {
   chatbotId?: string;
+  embedded?: boolean;
 }
 
-const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: ChatbotWidgetProps) => {
-  const [open, setOpen] = useState(false);
+const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", embedded = false }: ChatbotWidgetProps) => {
+  const [open, setOpen] = useState(embedded);
   const [chatbotData, setChatbotData] = useState<ChatbotData | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -204,10 +205,12 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
     }
     return url;
   };
+  const wrapperClass = embedded ? "relative w-full" : "fixed bottom-20 left-4 z-50";
+  const cardSizeClass = embedded ? "w-full max-h-[70vh]" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
 
   if (loading) {
     return (
-      <div className="fixed bottom-20 left-4 z-50">
+      <div className={wrapperClass}>
         <Button variant="hero" size="lg" disabled>
           <MessageCircle className="h-5 w-5" />
         </Button>
@@ -216,6 +219,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
   }
 
   const renderChatButton = () => {
+    if (embedded) return null;
     // Show video thumbnail if available, otherwise fall back to icon
     if (videoThumbnail && !thumbnailLoading) {
       return (
@@ -254,9 +258,9 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
   };
 
   return (
-    <div className="fixed bottom-20 left-4 z-50">
+    <div className={wrapperClass}>
       {open && chatbotData && (
-        <Card className="mb-2 w-80 max-h-[calc(100vh-8rem)] shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Card className={`${cardSizeClass} shadow-lg flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60`}>
           <div className="p-4 bg-red-800">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -293,14 +297,16 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
                   <h4 className="font-medium text-white">{chatbotData.name}</h4>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setOpen(false)}
-                className="h-8 w-8 p-0 text-white hover:bg-red-700"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              {!embedded && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpen(false)}
+                  className="h-8 w-8 p-0 text-white hover:bg-red-700"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             
             {/* Calendly Button - Full Width */}
