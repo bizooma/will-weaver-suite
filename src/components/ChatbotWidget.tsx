@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -42,6 +42,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
   const [loading, setLoading] = useState(true);
   const [videoThumbnail, setVideoThumbnail] = useState<VideoThumbnail | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     loadChatbot();
@@ -67,6 +68,11 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
       }]);
     }
   }, [chatbotData?.welcomeMessage]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const loadChatbot = async () => {
     try {
@@ -126,18 +132,17 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
       timestamp: new Date()
     };
 
-    // Add user message immediately
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-
-    // Add loading message
+    // Prepare loading placeholder
     const loadingMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       text: "Thinking...",
       isBot: true,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, loadingMessage]);
+
+    // Add user and loading messages together to avoid race conditions
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
+    setInput("");
 
     try {
       // Call the chatbot response function
@@ -157,10 +162,18 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
         timestamp: new Date()
       };
 
-      // Replace loading message with actual response
-      setMessages(prev => prev.map(msg => 
-        msg.id === loadingMessage.id ? botResponse : msg
-      ));
+      // Replace loading message with actual response; append if placeholder missing
+      setMessages(prev => {
+        let replaced = false;
+        const next = prev.map(msg => {
+          if (msg.id === loadingMessage.id) {
+            replaced = true;
+            return botResponse;
+          }
+          return msg;
+        });
+        return replaced ? next : [...prev, botResponse];
+      });
 
     } catch (error) {
       console.error('Error getting bot response:', error);
@@ -172,10 +185,18 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
         timestamp: new Date()
       };
 
-      // Replace loading message with error response
-      setMessages(prev => prev.map(msg => 
-        msg.id === loadingMessage.id ? errorResponse : msg
-      ));
+      // Replace loading message with error response; append if placeholder missing
+      setMessages(prev => {
+        let replaced = false;
+        const next = prev.map(msg => {
+          if (msg.id === loadingMessage.id) {
+            replaced = true;
+            return errorResponse;
+          }
+          return msg;
+        });
+        return replaced ? next : [...prev, errorResponse];
+      });
     }
   };
 
@@ -357,6 +378,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
                     </div>
                   </div>
                 ))}
+                <div ref={bottomRef} />
               </div>
             </ScrollArea>
 
