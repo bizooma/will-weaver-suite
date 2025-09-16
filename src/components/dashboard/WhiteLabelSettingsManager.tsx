@@ -1,0 +1,209 @@
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { Loader2, Palette, Building2, Image, Globe, Eye } from "lucide-react";
+import { useUserSettings } from "@/hooks/useUserSettings";
+
+export function WhiteLabelSettingsManager() {
+  const { settings, loading, updateSettings } = useUserSettings();
+  const [saving, setSaving] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
+  useEffect(() => {
+    // Generate preview URL with current settings
+    const params = new URLSearchParams();
+    if (settings.company_name) params.set('brand', settings.company_name);
+    if (settings.brand_color) params.set('primary', settings.brand_color);
+    if (settings.logo_url) params.set('logo', settings.logo_url);
+    params.set('demo', '1');
+    
+    setPreviewUrl(`${window.location.origin}/will-creator?${params.toString()}`);
+  }, [settings]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await updateSettings(settings);
+      toast.success('White-label settings saved successfully');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePreview = () => {
+    window.open(previewUrl, '_blank');
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            White Label Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="white-label-enabled"
+              checked={settings.white_label_enabled}
+              onCheckedChange={(checked) => 
+                updateSettings({ white_label_enabled: checked })
+              }
+            />
+            <Label htmlFor="white-label-enabled">Enable White Label Branding</Label>
+          </div>
+
+          {settings.white_label_enabled && (
+            <div className="space-y-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="company-name" className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Company Name
+                </Label>
+                <Input
+                  id="company-name"
+                  value={settings.company_name || ''}
+                  onChange={(e) => updateSettings({ company_name: e.target.value })}
+                  placeholder="Your Law Firm Name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="brand-color" className="flex items-center gap-2">
+                  <Palette className="h-4 w-4" />
+                  Brand Color
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="brand-color"
+                    type="color"
+                    value={settings.brand_color || '#3b82f6'}
+                    onChange={(e) => updateSettings({ brand_color: e.target.value })}
+                    className="w-20 h-10 p-1"
+                  />
+                  <Input
+                    value={settings.brand_color || '#3b82f6'}
+                    onChange={(e) => updateSettings({ brand_color: e.target.value })}
+                    placeholder="#3b82f6"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="logo-url" className="flex items-center gap-2">
+                  <Image className="h-4 w-4" />
+                  Logo URL
+                </Label>
+                <Input
+                  id="logo-url"
+                  value={settings.logo_url || ''}
+                  onChange={(e) => updateSettings({ logo_url: e.target.value })}
+                  placeholder="https://your-firm.com/logo.png"
+                />
+                {settings.logo_url && (
+                  <div className="mt-2">
+                    <img 
+                      src={settings.logo_url} 
+                      alt="Logo preview" 
+                      className="h-12 w-auto border rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="custom-domain" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Custom Domain
+                </Label>
+                <Input
+                  id="custom-domain"
+                  value={settings.custom_domain || ''}
+                  onChange={(e) => updateSettings({ custom_domain: e.target.value })}
+                  placeholder="your-firm.com"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-4 border-t">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Save Settings
+            </Button>
+            
+            {settings.white_label_enabled && (
+              <Button variant="outline" onClick={handlePreview}>
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {settings.white_label_enabled && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Embed Code</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Use this embed code to integrate the will creator into your website:
+              </p>
+              <Textarea
+                readOnly
+                value={`<iframe
+  src="${previewUrl}&embed=1"
+  width="100%"
+  height="800"
+  frameborder="0"
+  title="Will Creator"
+></iframe>`}
+                rows={7}
+                className="font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(`<iframe src="${previewUrl}&embed=1" width="100%" height="800" frameborder="0" title="Will Creator"></iframe>`);
+                  toast.success('Embed code copied to clipboard');
+                }}
+              >
+                Copy Embed Code
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

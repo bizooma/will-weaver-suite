@@ -98,44 +98,44 @@ import { useEffect as useD_IDEffect } from "react";
  function hexToHsl(hex: string): string | null {
    const m = hex.replace('#','').match(new RegExp('(.{2})(.{2})(.{2})'));
    if (!m) return null;
-   const r = parseInt(m[1],16)/255, g=parseInt(m[2],16)/255, b=parseInt(m[3],16)/255;
-   const max=Math.max(r,g,b), min=Math.min(r,g,b);
-   let h=0,s=0,l=(max+min)/2;
-   if(max!==min){
-     const d=max-min;
-     s=l>0.5? d/(2-max-min): d/(max+min);
-     switch(max){
-       case r: h=(g-b)/d+(g<b?6:0); break;
-       case g: h=(b-r)/d+2; break;
-       case b: h=(r-g)/d+4; break;
+   const [,r,g,b] = m.map(x=>parseInt(x,16)/255);
+   const max = Math.max(r,g,b), min = Math.min(r,g,b);
+   let h=0, s=0, l=(max+min)/2;
+   if (max !== min) {
+     const d = max - min;
+     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+     switch (max) {
+       case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+       case g: h = (b - r) / d + 2; break;
+       case b: h = (r - g) / d + 4; break;
      }
-     h/=6;
+     h /= 6;
    }
    return `${Math.round(h*360)} ${Math.round(s*100)}% ${Math.round(l*100)}%`;
  }
 
  const canonical = typeof window !== 'undefined' ? window.location.origin + "/will-creator" : "/will-creator";
 
- const TOTAL_STEPS = 11; // 10 data steps + Review/Generate
+ const TOTAL_STEPS = 10;
 
-  const usStates = [
-    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
-  ];
+ const usStates = [
+     "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
+   ];
 
-  function guessStepForText(text: string): number {
-    const t = text.toLowerCase();
-    if (t.includes('beneficiar') || t.includes('child')) return 3;
-    if (t.includes('executor')) return 4;
-    if (t.includes('guardian')) return 5;
-    if (t.includes('gift') || t.includes('bequest') || t.includes('specific')) return 6;
-    if (t.includes('residu') || t.includes('remainder')) return 7;
-    if (t.includes('pet')) return 8;
-    if (t.includes('funeral') || t.includes('burial') || t.includes('cremat') || t.includes('preference')) return 9;
-    if (t.includes('witness')) return 10;
-    if (t.includes('address') || t.includes('state') || t.includes('dob') || t.includes('marital') || t.includes('name')) return 1;
-    if (t.includes('spouse')) return 2;
-    return 11;
-  }
+   function guessStepForText(text: string): number {
+     const t = text.toLowerCase();
+     if (t.includes('execut')) return 4;
+     if (t.includes('guardian') || t.includes('minor')) return 5;
+     if (t.includes('beneficiar')) return 3;
+     if (t.includes('gift') || t.includes('bequest') || t.includes('specific')) return 6;
+     if (t.includes('residu') || t.includes('remainder')) return 7;
+     if (t.includes('pet')) return 8;
+     if (t.includes('funeral') || t.includes('burial') || t.includes('cremat') || t.includes('preference')) return 9;
+     if (t.includes('witness')) return 10;
+     if (t.includes('address') || t.includes('state') || t.includes('dob') || t.includes('marital') || t.includes('name')) return 1;
+     if (t.includes('spouse')) return 2;
+     return 11;
+   }
 
   const WillCreator = () => {
     const [step, setStep] = useState(1);
@@ -187,8 +187,18 @@ import { useEffect as useD_IDEffect } from "react";
      const primary = params.get('primary');
      const accent = params.get('accent');
      const logo = params.get('logo');
+     const draftSlug = params.get('draft');
+     
      if (brandName) setBrand(brandName);
      if (logo) setLogoUrl(logo);
+
+     // Load existing draft if specified
+     if (draftSlug) {
+       loadDraft(draftSlug);
+     }
+
+     // Load user settings for white-label if authenticated
+     loadUserWhiteLabelSettings();
 
      // Defaults to Legally Innovative palette if not provided
      const primaryHex = primary || '#0a3a64';
@@ -205,6 +215,47 @@ import { useEffect as useD_IDEffect } from "react";
      }
    // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
+
+   const loadDraft = async (slug: string) => {
+     try {
+       const draft = await getDraftBySlug(slug);
+       if (draft && draft.data) {
+         setData({ ...defaultData, ...draft.data as any });
+         if (draft.step) setStep(draft.step);
+         if (draft.tone) setTone(draft.tone as any);
+         toast.success('Draft loaded successfully');
+       } else {
+         toast.error('Draft not found');
+       }
+     } catch (error) {
+       console.error('Error loading draft:', error);
+       toast.error('Failed to load draft');
+     }
+   };
+
+   const loadUserWhiteLabelSettings = async () => {
+     try {
+       const { data: { user } } = await supabase.auth.getUser();
+       if (!user) return;
+
+       const { data: settings } = await supabase
+         .from('user_settings')
+         .select('*')
+         .eq('user_id', user.id)
+         .maybeSingle();
+
+       if (settings && settings.white_label_enabled) {
+         if (settings.company_name && !brand) setBrand(settings.company_name);
+         if (settings.logo_url && !logoUrl) setLogoUrl(settings.logo_url);
+         if (settings.brand_color) {
+           const hsl = hexToHsl(settings.brand_color);
+           if (hsl) document.documentElement.style.setProperty('--primary', hsl);
+         }
+       }
+     } catch (error) {
+       console.error('Error loading white-label settings:', error);
+     }
+   };
 
     // Load persisted state (if any)
     useEffect(() => {
@@ -248,484 +299,388 @@ import { useEffect as useD_IDEffect } from "react";
             if (d.tone) setTone(d.tone as any);
             toast.success('Loaded shared draft');
           } else {
-            toast.error('Draft not found');
+            toast.error('Shared draft not found');
           }
-        } catch (e) {
-          console.error(e);
-          toast.error('Failed to load draft');
+        } catch (_) {
+          toast.error('Failed to load shared draft');
         }
       })();
     }, [isDemo]);
 
+    // Auto-populate demo data for the user
     useEffect(() => {
       if (!isDemo) return;
-      // Seed sample data and auto-advance a few steps
-      setData({
-        ...defaultData,
-        fullName: "Alex Morgan",
-        dob: "1985-04-12",
-        address: "123 Main St, Springfield",
-        state: "CA",
-        maritalStatus: "married",
-        spouse: { name: "Jamie Morgan", dob: "1986-09-07", address: "", relationship: "Spouse" },
-        beneficiaries: [{ name: "Sam Morgan", dob: "2014-06-02", relationship: "Child" }],
-        executor: { name: "Taylor Reed", address: "456 Oak Ave", relationship: "Friend" },
-        gifts: [{ description: "Rolex Submariner", beneficiary: "Taylor Reed" }],
-        residue: [{ beneficiary: "Jamie Morgan", percentage: "100" }],
-        funeralPreference: "no_preference",
-        funeralInstructions: "Celebrate life with a small memorial.",
-        witnesses: ["Jordan A.", "Riley B."]
-      });
-      setStep(1);
-      const id = setInterval(() => {
-        setStep((s) => {
-          if (s >= 6) { clearInterval(id); return s; }
-          return s + 1;
+      // Example demo data
+      if (!data.fullName) {
+        setData({
+          ...defaultData,
+          fullName: "Alex Morgan",
+          dob: "1985-04-12",
+          address: "123 Main St, Springfield",
+          state: "CA",
+          maritalStatus: "married",
+          spouse: { name: "Jamie Morgan", dob: "1986-09-07", address: "", relationship: "Spouse" },
+          beneficiaries: [{ name: "Sam Morgan", dob: "2014-06-02", relationship: "Child" }],
+          executor: { name: "Taylor Reed", address: "456 Oak Ave", relationship: "Friend" },
+          gifts: [{ description: "Rolex Submariner", beneficiary: "Taylor Reed" }],
+          residue: [{ beneficiary: "Jamie Morgan", percentage: "100" }],
+          funeralPreference: "no_preference",
+          funeralInstructions: "Celebrate life with a small memorial.",
+          witnesses: ["Jordan A.", "Riley B."]
         });
-      }, 1200);
-      return () => clearInterval(id);
-    }, [isDemo]);
+        setStep(11); // Go to final review step
+      }
+    }, [isDemo, data.fullName]);
+
+    // Progress bar calculation
+    const progressValue = useMemo(() => (step / TOTAL_STEPS) * 100, [step]);
 
     const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
- 
-    // Draft text
-   const draft = useMemo(() => {
+
+    // Generate draft text (the actual will)
+    const draft = useMemo(() => {
      const bList = data.beneficiaries.filter(b=>b.name).map((b,i)=>`${i+1}) ${b.name}${b.dob?` (b. ${b.dob})`:''} – ${b.relationship}`).join("\n");
      const gList = data.gifts.map((g,i)=>`${i+1}) ${g.description} → ${g.beneficiary}`).join("\n");
-     const rList = data.residue.map(r=>`${r.beneficiary}: ${r.percentage}%`).join(', ');
-     const witnessLine = data.witnesses.filter(Boolean).join(', ');
+     const rList = data.residue.map((r,i)=>`${i+1}) ${r.beneficiary} (${r.percentage}%)`).join("\n");
+     const witnessList = data.witnesses.filter(w=>w).join(", ");
+     
+     return `LAST WILL AND TESTAMENT OF ${data.fullName?.toUpperCase() || 'YOUR NAME'}
 
-     return `This is an automatically generated draft for demonstration purposes only and is not legal advice. Please consult a licensed attorney before signing any legal document.\n\n` +
-`Last Will and Testament\n\n` +
-`I, ${data.fullName || '[Full legal name]'}, born ${data.dob || '[DOB]'}, presently residing at ${data.address || '[Address]'}, in the State of ${data.state || '[State]'}, being of sound mind, declare this to be my Last Will and Testament.\n\n` +
-`Article I – Family\n` +
-`Marital status: ${data.maritalStatus || '[Status]'}${data.spouse?.name ? `; Spouse: ${data.spouse.name}${data.spouse.dob?` (b. ${data.spouse.dob})`:''}`:''}.\n\n` +
-`Article II – Beneficiaries\n` +
-`${bList || '[List primary beneficiaries with relationships]'}\n\n` +
-`Article III – Appointment of Executor\n` +
-`I appoint ${data.executor.name || '[Executor Name]'}${data.executor.relationship?`, my ${data.executor.relationship}`:''}, of ${data.executor.address || '[Executor Address]'}, to serve as Executor of this Will.${data.altExecutor?.name ? ` If ${data.executor.name || 'the Executor'} is unable or unwilling to serve, I appoint ${data.altExecutor.name}${data.altExecutor.relationship?`, my ${data.altExecutor.relationship}`:''} as alternate.`:''}\n\n` +
-`Article IV – Guardians for Minor Children\n` +
-`${data.addGuardians ? `I appoint ${data.guardian?.name || '[Guardian]'}${data.guardian?.relationship?`, my ${data.guardian?.relationship}`:''} of ${data.guardian?.address || '[Address]'} as Guardian of my minor children.${data.altGuardian?.name ? ` If unable or unwilling, I appoint ${data.altGuardian?.name} as alternate.`:''}` : '[If applicable, designate guardians]'}${data.guardianInstructions ? ` ${data.guardianInstructions}` : ''}${data.altGuardianInstructions ? ` ${data.altGuardianInstructions}` : ''}\n\n` +
-`Article V – Specific Gifts\n` +
-`${gList || '[Itemize specific bequests]'}\n\n` +
-`Article VI – Residue of Estate\n` +
-`I give the remainder of my estate as follows: ${rList || '[e.g., 100% to Spouse]'}\n\n` +
-`Article VII – Pet Care Provisions\n` +
-`${data.petName ? `${data.petName} (${data.petType || 'pet'}) to be cared for by ${data.petCaregiver || '[Caregiver]'}.` : '[Optional – designate caregiver for pets]'}${data.petInstructions ? ` ${data.petInstructions}` : ''}\n\n` +
-`Article VIII – Funeral & Burial Wishes\n` +
-`Preference: ${data.funeralPreference || '[No preference]'}${data.funeralInstructions ? `; Instructions: ${data.funeralInstructions}` : ''}.\n\n` +
-`Article IX – Execution\n` +
-`Signed on ____________ at ______________________. Witnesses: ${witnessLine || '[Witnesses]'}\n`;
+I, ${data.fullName || 'your name'}, of ${data.address || 'your address'}, ${data.state || 'your state'}, being of sound mind and memory, do hereby make, publish and declare this to be my Last Will and Testament.
+
+ARTICLE I - REVOCATION
+I hereby revoke all former wills and codicils heretofore made by me.
+
+ARTICLE II - IDENTIFICATION
+${data.dob ? `I was born on ${data.dob}.` : ''} 
+${data.maritalStatus === 'married' && data.spouse?.name ? `I am married to ${data.spouse.name}.` : ''}
+${data.maritalStatus === 'single' ? 'I am unmarried.' : ''}
+${data.maritalStatus === 'divorced' ? 'I am divorced.' : ''}
+${data.maritalStatus === 'widowed' ? 'I am widowed.' : ''}
+
+ARTICLE III - BENEFICIARIES
+${bList || 'No beneficiaries listed.'}
+
+ARTICLE IV - EXECUTOR
+I nominate ${data.executor.name || '[Executor Name]'}${data.executor.address ? `, of ${data.executor.address},` : ''} to serve as Executor of this Will.
+${data.altExecutor?.name ? `If my primary Executor is unable or unwilling to serve, I nominate ${data.altExecutor.name}${data.altExecutor.address ? `, of ${data.altExecutor.address},` : ''} as alternate Executor.` : ''}
+
+${data.addGuardians && data.guardian?.name ? `ARTICLE V - GUARDIANSHIP
+I nominate ${data.guardian.name}${data.guardian.address ? `, of ${data.guardian.address},` : ''} as guardian for any minor children.
+${data.guardianInstructions ? `\nGuardian Instructions: ${data.guardianInstructions}` : ''}
+${data.altGuardian?.name ? `\nIf my primary guardian is unable or unwilling to serve, I nominate ${data.altGuardian.name}${data.altGuardian.address ? `, of ${data.altGuardian.address},` : ''} as alternate guardian.` : ''}
+${data.altGuardianInstructions ? `\nAlternate Guardian Instructions: ${data.altGuardianInstructions}` : ''}` : ''}
+
+${data.gifts.length > 0 ? `ARTICLE VI - SPECIFIC GIFTS
+${gList}` : ''}
+
+ARTICLE VII - RESIDUARY ESTATE
+I give the rest, residue, and remainder of my estate to:
+${rList}
+
+${data.petName ? `ARTICLE VIII - PET CARE
+I direct that my ${data.petType || 'pet'} named ${data.petName} be cared for by ${data.petCaregiver || '[Pet Caregiver]'}.
+${data.petInstructions ? `Pet Care Instructions: ${data.petInstructions}` : ''}` : ''}
+
+${data.funeralInstructions || data.funeralPreference !== '' ? `ARTICLE IX - FUNERAL ARRANGEMENTS
+${data.funeralPreference === 'burial' ? 'I prefer burial.' : ''}
+${data.funeralPreference === 'cremation' ? 'I prefer cremation.' : ''}
+${data.funeralPreference === 'no_preference' ? 'I have no specific preference for burial or cremation.' : ''}
+${data.funeralInstructions ? `\nFuneral Instructions: ${data.funeralInstructions}` : ''}` : ''}
+
+ARTICLE X - EXECUTION
+IN WITNESS WHEREOF, I have executed this Last Will and Testament on the _____ day of __________, 20__.
+
+_________________________________
+${data.fullName || 'Your Signature'}
+
+
+WITNESSES:
+We, the undersigned, certify that the testator signed this Will in our presence, that we witnessed the signing, and that we signed below in the testator's presence and in the presence of each other.
+
+Witness 1: ${data.witnesses[0] || '___________________________'}    Date: ________
+
+Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ________
+
+[Note: This is a draft document. Consult with a licensed attorney before execution.]`;
    }, [data]);
 
-   const progressValue = (step / TOTAL_STEPS) * 100;
-
-   async function generateFuneralInstructionsWithAI() {
-     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
+   const generateFuneralInstructionsWithAI = async () => {
+     setFuneralLoading(true);
      try {
-        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-          body: {
-            field: 'funeral_instructions',
-            data: {
-              fullName: data.fullName,
-              spouse: data.spouse?.name,
-              state: data.state,
-              preference: data.funeralPreference,
-              notes: data.funeralInstructions,
-            },
-            tone,
-          }
-        });
+       const { data: result, error } = await supabase.functions.invoke("ai-generate-clause", {
+         body: { 
+           type: "funeral", 
+           context: data, 
+           tone,
+           existing: data.funeralInstructions || ""
+         }
+       });
        if (error) throw error;
-        if (res?.result) {
-          setPendingSuggestion({ target: 'funeral', suggestion: res.result });
-        } else {
-          toast.error('AI did not return content');
-        }
+       setSeedPrompt(`Based on your preferences, here's a suggestion for funeral instructions:\n\n"${result.suggestion}"\n\nWould you like me to modify or expand on this?`);
+       setPendingSuggestion({ target: 'funeral', suggestion: result.suggestion });
      } catch (e) {
        console.error(e);
-       toast.error('AI drafting failed');
+       toast.error('Failed to generate suggestion');
      } finally {
        setFuneralLoading(false);
      }
-   }
- 
-   async function generateGiftClause(idx: number) {
-     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
+   };
+
+   const generateGiftClause = async (giftIndex: number) => {
+     setGiftLoadingIdx(giftIndex);
      try {
-       setGiftLoadingIdx(idx);
-       const g = data.gifts[idx];
-        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-          body: {
-            field: 'specific_gift',
-            data: {
-              fullName: data.fullName,
-              state: data.state,
-              description: g?.description,
-              beneficiary: g?.beneficiary,
-            },
-            tone,
-          }
-        });
+       const gift = data.gifts[giftIndex];
+       const { data: result, error } = await supabase.functions.invoke("ai-generate-clause", {
+         body: { 
+           type: "gift", 
+           context: { ...data, currentGift: gift, giftIndex }, 
+           tone,
+           existing: gift?.description || ""
+         }
+       });
        if (error) throw error;
-        if (res?.result) {
-          setPendingSuggestion({ target: 'gift', index: idx, suggestion: res.result });
-        } else {
-          toast.error('AI did not return content');
-        }
+       setSeedPrompt(`Here's a suggestion for describing this gift:\n\n"${result.suggestion}"\n\nWould you like me to modify this description?`);
+       setPendingSuggestion({ target: 'gift', index: giftIndex, suggestion: result.suggestion });
      } catch (e) {
        console.error(e);
-       toast.error('AI drafting failed');
+       toast.error('Failed to generate suggestion');
      } finally {
        setGiftLoadingIdx(null);
      }
-   }
- 
-   async function generateGuardianClause(which: 'primary' | 'alternate') {
-     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
+   };
+
+   const generateGuardianClause = async (isPrimary: boolean) => {
+     if (isPrimary) setGuardianLoadingPrimary(true);
+     else setGuardianLoadingAlt(true);
+     
      try {
-       if (which === 'primary') setGuardianLoadingPrimary(true); else setGuardianLoadingAlt(true);
-        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-          body: {
-            field: 'guardian_clause',
-            data: {
-              fullName: data.fullName,
-              state: data.state,
-              guardian: data.guardian,
-              altGuardian: data.altGuardian,
-              addGuardians: data.addGuardians,
-            },
-            tone,
-          }
-        });
+       const guardianData = isPrimary ? data.guardian : data.altGuardian;
+       const existingInstructions = isPrimary ? data.guardianInstructions : data.altGuardianInstructions;
+       
+       const { data: result, error } = await supabase.functions.invoke("ai-generate-clause", {
+         body: { 
+           type: isPrimary ? "guardian" : "altGuardian", 
+           context: { ...data, currentGuardian: guardianData }, 
+           tone,
+           existing: existingInstructions || ""
+         }
+       });
        if (error) throw error;
-        if (res?.result) {
-          setPendingSuggestion({ target: which === 'primary' ? 'guardian' : 'altGuardian', suggestion: res.result });
-        } else {
-          toast.error('AI did not return content');
-        }
+       setSeedPrompt(`Here's a suggestion for guardian instructions:\n\n"${result.suggestion}"\n\nWould you like me to modify or expand on this?`);
+       setPendingSuggestion({ target: isPrimary ? 'guardian' : 'altGuardian', suggestion: result.suggestion });
      } catch (e) {
        console.error(e);
-       toast.error('AI drafting failed');
+       toast.error('Failed to generate suggestion');
      } finally {
-       if (which === 'primary') setGuardianLoadingPrimary(false); else setGuardianLoadingAlt(false);
+       if (isPrimary) setGuardianLoadingPrimary(false);
+       else setGuardianLoadingAlt(false);
      }
-   }
- 
-   async function generatePetClause() {
-     if (isDemo) { toast.info('Demo mode: AI actions are disabled here.'); return; }
+   };
+
+   const generatePetClause = async () => {
+     setPetLoading(true);
      try {
-       setPetLoading(true);
-        const { data: res, error } = await supabase.functions.invoke('ai-generate-clause', {
-          body: {
-            field: 'pet_care',
-            data: {
-              fullName: data.fullName,
-              state: data.state,
-              petName: data.petName,
-              petType: data.petType,
-              caregiver: data.petCaregiver,
-            },
-            tone,
-          }
-        });
+       const { data: result, error } = await supabase.functions.invoke("ai-generate-clause", {
+         body: { 
+           type: "pet", 
+           context: data, 
+           tone,
+           existing: data.petInstructions || ""
+         }
+       });
        if (error) throw error;
-        if (res?.result) {
-          setPendingSuggestion({ target: 'pet', suggestion: res.result });
-        } else {
-          toast.error('AI did not return content');
-        }
+       setSeedPrompt(`Based on your pet information, here's a suggestion for care instructions:\n\n"${result.suggestion}"\n\nWould you like me to modify this?`);
+       setPendingSuggestion({ target: 'pet', suggestion: result.suggestion });
      } catch (e) {
        console.error(e);
-       toast.error('AI drafting failed');
+       toast.error('Failed to generate suggestion');
      } finally {
        setPetLoading(false);
      }
-   }
- 
-   async function runAIReview() {
-     if (isDemo) { toast.info('Demo mode: AI review is disabled.'); return; }
+   };
+
+   const runAIReview = async () => {
+     setReviewLoading(true);
      try {
-       setReviewLoading(true);
-       const { data: res, error } = await supabase.functions.invoke('ai-review-will', {
-         body: { draft, state: data.state }
+       const { data: result, error } = await supabase.functions.invoke("ai-review-will", {
+         body: { draft, data, tone }
        });
        if (error) throw error;
-       if (res) {
-         const normalized = {
-           issues: (res as any).issues || [],
-           risks: (res as any).risks || [],
-           missing: (res as any).missing || (res as any).missingInfo || [],
-           summary: (res as any).summary || '',
-           checklist: (res as any).checklist || [],
-         };
-         setAiReview(normalized);
-         toast.success('AI review ready');
-       }
+       setAiReview(result);
+       toast.success('AI review completed');
      } catch (e) {
        console.error(e);
-       toast.error('AI review failed');
-      } finally {
-        setReviewLoading(false);
-      }
-    }
+       toast.error('Failed to run AI review');
+     } finally {
+       setReviewLoading(false);
+     }
+   };
 
-    const stepToTarget = (s: number): 'funeral' | 'pet' | 'guardian' | 'altGuardian' | 'gift' | null => {
-      switch (s) {
-        case 5: return 'guardian';
-        case 6: return 'gift';
-        case 8: return 'pet';
-        case 9: return 'funeral';
-        default: return null;
-      }
-    };
+   const handleFixIssue = (item: string) => {
+     setFixingKey(item);
+     const targetStep = guessStepForText(item);
+     if (targetStep <= TOTAL_STEPS) {
+       setStep(targetStep);
+       setSeedPrompt(`Explain and propose exact wording to fix this in my will: "${item}"`);
+       setOpenCopilot(true);
+     } else {
+       // General issue
+       setSeedPrompt(`Explain this issue and how to address it in my will: "${item}"`);
+       setOpenCopilot(true);
+     }
+     setTimeout(() => setFixingKey(null), 3000);
+   };
 
-    async function handleFixIssue(item: string) {
-      setFixingKey(item);
-      try {
-        const stepGuess = guessStepForText(item);
-        const target = stepToTarget(stepGuess);
-        if (!target) {
-          setSeedPrompt(`Explain and propose exact wording to fix this in my will: "${item}"`);
-          setOpenCopilot(true);
-          return;
-        }
-        const { data: res, error } = await supabase.functions.invoke('ai-copilot', {
-          body: {
-            messages: [
-              { role: 'user', content: `Draft or revise the ${target} clause to address: ${item}. Return only the clause text.` }
-            ],
-            data,
-            draft,
-            tone
-          }
-        });
-        if (error) throw error;
-        const suggestion = (res as any)?.reply || '';
-        if (suggestion) {
-          setPendingSuggestion({ target, index: target==='gift' ? 0 : undefined, suggestion });
-          toast.success('AI suggestion ready');
-        } else {
-          toast.error('AI did not return content');
-        }
-      } catch (e) {
-        console.error(e);
-        toast.error('AI drafting failed');
-      } finally {
-        setFixingKey(null);
-      }
-    }
+   const handleExplainIssue = (item: string) => {
+     const targetStep = guessStepForText(item);
+     if (targetStep <= TOTAL_STEPS) {
+       setStep(targetStep);
+     }
+     setSeedPrompt(`Explain this review point and how to fix it in my will. Provide clear steps and example wording:\n\n"${item}"`);
+     setOpenCopilot(true);
+   };
 
-    function handleExplainIssue(item: string) {
-      setSeedPrompt(`Explain this review point and how to fix it in my will. Provide clear steps and example wording:\n\n"${item}"`);
-      setOpenCopilot(true);
-    }
+   const handleVoiceAutoFill = async (extractedData: ExtractedData) => {
+     try {
+       const preview = await generateAutoFillPreview(extractedData);
+       if (preview && Object.keys(preview).length > 0) {
+         const confirmed = confirm(`Voice data detected:\n\n${Object.entries(preview).map(([key, value]) => `${key}: ${value}`).join('\n')}\n\nApply these changes?`);
+         if (confirmed) {
+           const updatedData = applyAutoFill(data, preview);
+           setData(updatedData);
+           toast.success("Form updated with voice data");
+         }
+       } else {
+         toast.info("No new information found to fill the form");
+       }
+     } catch (error) {
+       console.error("Voice auto-fill error:", error);
+       toast.error("Failed to process voice data");
+     }
+   };
 
-    const handleVoiceAutoFill = (extractedData: ExtractedData, confidence: Record<string, number>) => {
-      try {
-        const changes = generateAutoFillPreview(data, extractedData, confidence);
-        if (changes.length === 0) {
-          toast.info("No new information found to fill the form");
-          return;
-        }
-        const highConfidenceChanges = changes.filter(change => change.confidence >= 0.8);
-        if (highConfidenceChanges.length > 0) {
-          const newData = applyAutoFill(data, extractedData, highConfidenceChanges);
-          const prevData = data;
-          setData(newData);
-          setUndoAction(() => () => setData(prevData));
-          toast.success(`Auto-filled ${highConfidenceChanges.length} field(s) with high confidence`);
-        }
-      } catch (error) {
-        console.error("Voice auto-fill error:", error);
-        toast.error("Failed to process voice data");
-      }
-    };
-
-    // Auto-run review on Review step
-    useEffect(() => {
-      if (isDemo) return; // do not auto-run in demo
-      if (step === 11 && !aiReview && !reviewLoading) {
-        runAIReview();
-      }
-    }, [step, aiReview, reviewLoading, isDemo]);
-
-  // Load D-ID script for floating avatar widget
-  useEffect(() => {
-    if (didAvatarLoaded) return;
-    
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.src = 'https://agent.d-id.com/v2/index.js';
-    script.setAttribute('data-mode', 'fabio');
-    script.setAttribute('data-client-key', 'Z29vZ2xlLW9hdXRoMnwxMDc0NjQ2Njc4OTg3MTA5ODM4ODA6b0ZNWUp4Xy1oV01PYzJtVFFQYkhP');
-    script.setAttribute('data-agent-id', 'v2_agt_gURW8-bU');
-    script.setAttribute('data-name', 'did-agent');
-    script.setAttribute('data-monitor', 'true');
-    script.setAttribute('data-orientation', 'horizontal');
-    script.setAttribute('data-position', 'right');
-    
-    script.onload = () => {
-      console.log('D-ID script loaded successfully');
-      setDidAvatarLoaded(true);
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load D-ID script');
-    };
-    
-    document.head.appendChild(script);
-    
-    return () => {
-      // Cleanup script on unmount
-      const existingScript = document.querySelector('script[src="https://agent.d-id.com/v2/index.js"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
-    };
-  }, []);
-  
+   // Export functions
    async function handleExportPDF() {
-      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
-      if (validationIssues.length) {
-        const proceed = window.confirm(`There are ${validationIssues.length} validation issue(s). Proceed to download anyway?`);
-        if (!proceed) return;
-      }
+     if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
      try {
        const pdfDoc = await PDFDocument.create();
        const times = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-
-       // Page + margins
-       const page = pdfDoc.addPage([612, 792]); // Letter
-       const { width } = page.getSize();
+       const timesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+       
        const margin = 50;
-       let cursorY = 742;
-
-        // Header (brand)
-        const header = brand || 'Legally Innovative';
-        // Try to embed logo if provided
-        try {
-          if (logoUrl) {
-            const imgBytes = await fetch(logoUrl).then(r => r.arrayBuffer());
-            let logoEmbed: any = null;
-            try { logoEmbed = await pdfDoc.embedPng(imgBytes); } catch (_) { logoEmbed = await pdfDoc.embedJpg(imgBytes); }
-            if (logoEmbed) {
-              const targetW = 80;
-              const scale = targetW / (logoEmbed.width || targetW);
-              const drawnW = (logoEmbed.width || targetW) * scale;
-              const drawnH = (logoEmbed.height || targetW) * scale;
-              page.drawImage(logoEmbed, { x: width - margin - drawnW, y: cursorY - drawnH + 4, width: drawnW, height: drawnH });
-            }
-          }
-        } catch (_) { /* ignore logo errors */ }
-        page.drawText(header, { x: margin, y: cursorY, size: 16, font: times, color: rgb(0.06, 0.23, 0.39) });
-        cursorY -= 10;
-        // Divider
-        page.drawLine({ start: { x: margin, y: cursorY }, end: { x: width - margin, y: cursorY }, thickness: 1, color: rgb(0.88, 0.69, 0.29) });
-        cursorY -= 24;
-
-       // Title
-       const title = 'Last Will and Testament (Draft)';
-       page.drawText(title, { x: margin, y: cursorY, size: 18, font: times });
-       cursorY -= 28;
-
-       // Disclaimer
-       const disclaimer = 'This is an automatically generated draft for demonstration purposes only and is not legal advice. Please consult a licensed attorney before signing any legal document.';
-        const wrapText = (text: string, maxWidth: number, size = 11) => {
-          // First split by newlines to preserve existing line breaks
-          const paragraphs = text.split('\n');
-          const lines: string[] = [];
-          
-          for (const paragraph of paragraphs) {
-            if (paragraph.trim() === '') {
-              lines.push(''); // Preserve empty lines
-              continue;
-            }
-            
-            const words = paragraph.split(' ');
-            let line = '';
-            for (const w of words) {
-              const test = line ? line + ' ' + w : w;
-              try {
-                const width = times.widthOfTextAtSize(test, size);
-                if (width > maxWidth) { 
-                  if (line) lines.push(line); 
-                  line = w; 
-                } else { 
-                  line = test; 
-                }
-              } catch (error) {
-                // If there's an encoding error, just use the word as-is
-                console.warn('Text encoding error:', error);
-                if (line) lines.push(line);
-                line = w;
-              }
-            }
-            if (line) lines.push(line);
-          }
-          return lines;
-        };
-       const maxWidth = width - margin * 2;
-       for (const line of wrapText(disclaimer, maxWidth)) {
-         page.drawText(line, { x: margin, y: cursorY, size: 10, font: times, color: rgb(0.2,0.2,0.2) });
-         cursorY -= 14;
-       }
-       cursorY -= 6;
-
-       // Body (draft)
-       const lines = wrapText(draft, maxWidth, 12);
-       for (const ln of lines) {
-         if (cursorY < margin + 40) {
-           // new page
-           const p = pdfDoc.addPage([612,792]);
-           cursorY = 742;
-           p.drawText(header, { x: margin, y: cursorY, size: 12, font: times, color: rgb(0.06, 0.23, 0.39) });
-           cursorY -= 18;
+       const width = 612; // Letter size width
+       let page = pdfDoc.addPage([width, 792]);
+       let yPos = 742;
+       
+       const wrapText = (text: string, maxWidth: number, fontSize: number): string[] => {
+         const words = text.split(' ');
+         const lines: string[] = [];
+         let currentLine = words[0];
+         
+         for (let i = 1; i < words.length; i++) {
+           const word = words[i];
+           const testLine = `${currentLine} ${word}`;
+           const testWidth = times.widthOfTextAtSize(testLine, fontSize);
+           
+           if (testWidth < maxWidth && currentLine.length < 80) {
+             currentLine = testLine;
+           } else {
+             lines.push(currentLine);
+             currentLine = word;
+           }
          }
-         pdfDoc.getPage(pdfDoc.getPageCount()-1).drawText(ln, { x: margin, y: cursorY, size: 12, font: times });
-         cursorY -= 16;
+         lines.push(currentLine);
+         return lines;
+       };
+       
+       // Title
+       const titleText = `LAST WILL AND TESTAMENT OF ${data.fullName?.toUpperCase() || 'YOUR NAME'}`;
+       page.drawText(titleText, {
+         x: margin,
+         y: yPos,
+         size: 16,
+         font: timesBold,
+       });
+       yPos -= 40;
+       
+       // Content
+       const lines = draft.split('\n');
+       const maxWidth = width - margin * 2;
+       
+       for (const line of lines) {
+         if (yPos < margin + 40) {
+           page = pdfDoc.addPage([width, 792]);
+           yPos = 742;
+         }
+         
+         if (line.trim() === '') {
+           yPos -= 12;
+           continue;
+         }
+         
+         const isHeader = line.startsWith('ARTICLE') || line.includes('LAST WILL AND TESTAMENT');
+         const fontSize = isHeader ? 14 : 12;
+         const font = isHeader ? timesBold : times;
+         
+         const wrappedLines = wrapText(line, maxWidth, fontSize);
+         for (const wrappedLine of wrappedLines) {
+           if (yPos < margin + 20) {
+             page = pdfDoc.addPage([width, 792]);
+             yPos = 742;
+           }
+           
+           page.drawText(wrappedLine, {
+             x: margin,
+             y: yPos,
+             size: fontSize,
+             font: font,
+           });
+           yPos -= fontSize + 4;
+         }
+         yPos -= 6;
        }
-
-        // Append AI review summary & checklist if available
-        if (aiReview) {
-          let p = pdfDoc.addPage([612, 792]);
-          let y = 742;
-          const maxWidth = width - margin * 2;
-          p.drawText('AI Review Summary', { x: margin, y, size: 16, font: times });
-          y -= 24;
-          for (const line of wrapText(aiReview.summary || '', maxWidth, 12)) {
-            if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
-            p.drawText(line, { x: margin, y, size: 12, font: times });
-            y -= 16;
-          }
-          y -= 10;
-          if (aiReview.checklist?.length) {
-            if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
-            p.drawText('Checklist', { x: margin, y, size: 14, font: times });
-            y -= 20;
-            for (const item of aiReview.checklist) {
-              for (const line of wrapText(`• ${item}`, maxWidth, 12)) {
-                if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
-                p.drawText(line, { x: margin, y, size: 12, font: times });
-                y -= 16;
-              }
-            }
-          }
-        }
-
-        const pdfBytes = await pdfDoc.save();
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Will_Draft_${data.fullName?.split(' ').slice(-1)[0] || 'Preview'}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        toast.success('PDF downloaded');
+       
+       // Add AI Review if available
+       if (aiReview) {
+         let p = pdfDoc.addPage([612, 792]);
+         let y = 742;
+         const maxWidth = width - margin * 2;
+         p.drawText('AI Review Summary', { x: margin, y, size: 16, font: times });
+         y -= 24;
+         for (const line of wrapText(aiReview.summary || '', maxWidth, 12)) {
+           if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+           p.drawText(line, { x: margin, y, size: 12, font: times });
+           y -= 16;
+         }
+         y -= 10;
+         if (aiReview.checklist?.length) {
+           if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+           p.drawText('Checklist', { x: margin, y, size: 14, font: times });
+           y -= 20;
+           for (const item of aiReview.checklist) {
+             for (const line of wrapText(`• ${item}`, maxWidth, 12)) {
+               if (y < margin + 40) { p = pdfDoc.addPage([612, 792]); y = 742; }
+               p.drawText(line, { x: margin, y, size: 12, font: times });
+               y -= 16;
+             }
+           }
+         }
+       }
+       
+       const bytes = await pdfDoc.save();
+       const blob = new Blob([bytes], { type: 'application/pdf' });
+       const url = URL.createObjectURL(blob);
+       const a = document.createElement('a');
+       a.href = url;
+       a.download = 'will-draft.pdf';
+       a.click();
+       URL.revokeObjectURL(url);
+       
+       toast.success('PDF downloaded');
      } catch (e) {
        console.error(e);
-       toast.error('Failed to generate PDF');
+       toast.error('Failed to export PDF');
      }
    }
 
@@ -746,13 +701,15 @@ import { useEffect as useD_IDEffect } from "react";
 
     async function handleSaveShare() {
       if (isDemo) { toast.info('Demo mode: Saving is disabled.'); return; }
+      if (!data.fullName) { toast.error('Please enter your full name first'); return; }
+      
       try {
         setSaving(true);
         const slug = await createDraft({ data, tone, step });
-        const url = `${window.location.origin}/drafts/${slug}`;
+        const url = `${window.location.origin}/draft/${slug}`;
         try { await navigator.clipboard.writeText(url); } catch (_) {}
         toast.success('Draft saved & link copied');
-        navigate(`/drafts/${slug}`);
+        navigate(`/draft/${slug}`);
       } catch (e) {
         console.error(e);
         toast.error('Failed to save draft');
@@ -761,7 +718,20 @@ import { useEffect as useD_IDEffect } from "react";
       }
     }
 
-    // UI bits
+   // Load D-ID script for avatar
+   useD_IDEffect(() => {
+     if (didAvatarLoaded) return;
+     const existingScript = document.querySelector('script[src="https://agent.d-id.com/v2/index.js"]');
+     if (existingScript) return;
+     
+     const script = document.createElement('script');
+     script.src = 'https://agent.d-id.com/v2/index.js';
+     script.async = true;
+     script.onload = () => setDidAvatarLoaded(true);
+     document.head.appendChild(script);
+   }, [didAvatarLoaded]);
+
+   // UI bits
    const StepActions = (
      <div className="mt-6 flex items-center justify-between">
        <Button variant="outline" onClick={prev} disabled={step===1}>Back</Button>
@@ -848,34 +818,34 @@ import { useEffect as useD_IDEffect } from "react";
 
            {/* Steps */}
            {step === 1 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">1. Personal Information</h2>
+             <div>
+               <h2 className="text-2xl mb-4">Personal Information</h2>
                <div className="grid gap-4 md:grid-cols-2">
                  <div>
-                   <Label>Full legal name</Label>
-                   <Input value={data.fullName} onChange={(e)=>setData({...data, fullName:e.target.value})} />
+                   <Label htmlFor="fullName">Full Legal Name *</Label>
+                   <Input id="fullName" value={data.fullName} onChange={(e)=> setData({...data, fullName: e.target.value})} placeholder="John Doe" />
                  </div>
                  <div>
-                   <Label>Date of birth</Label>
-                   <Input type="date" value={data.dob} onChange={(e)=>setData({...data, dob:e.target.value})} />
+                   <Label htmlFor="dob">Date of Birth</Label>
+                   <Input id="dob" type="date" value={data.dob} onChange={(e)=> setData({...data, dob: e.target.value})} />
                  </div>
                  <div className="md:col-span-2">
-                   <Label>Current address</Label>
-                   <Textarea value={data.address} onChange={(e)=>setData({...data, address:e.target.value})} />
+                   <Label htmlFor="address">Address</Label>
+                   <Input id="address" value={data.address} onChange={(e)=> setData({...data, address: e.target.value})} placeholder="123 Main St, City, ST 12345" />
                  </div>
                  <div>
-                   <Label>State of residence</Label>
-                   <Select value={data.state} onValueChange={(v)=>setData({...data, state:v})}>
-                     <SelectTrigger><SelectValue placeholder="Select state"/></SelectTrigger>
+                   <Label htmlFor="state">State *</Label>
+                   <Select value={data.state} onValueChange={(v)=> setData({...data, state: v})}>
+                     <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
                      <SelectContent>
-                       {usStates.map(s=> <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                       {usStates.map(state => <SelectItem key={state} value={state}>{state}</SelectItem>)}
                      </SelectContent>
                    </Select>
                  </div>
                  <div>
-                   <Label>Marital status</Label>
-                   <Select value={data.maritalStatus} onValueChange={(v)=>setData({...data, maritalStatus: v as WizardData['maritalStatus']})}>
-                     <SelectTrigger><SelectValue placeholder="Select status"/></SelectTrigger>
+                   <Label htmlFor="maritalStatus">Marital Status</Label>
+                   <Select value={data.maritalStatus} onValueChange={(v)=> setData({...data, maritalStatus: v as any})}>
+                     <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                      <SelectContent>
                        <SelectItem value="single">Single</SelectItem>
                        <SelectItem value="married">Married</SelectItem>
@@ -885,518 +855,660 @@ import { useEffect as useD_IDEffect } from "react";
                    </Select>
                  </div>
                </div>
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
+               </div>
                {StepActions}
              </div>
            )}
 
            {step === 2 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">2. Spouse Information (if applicable)</h2>
-               <div className="grid gap-4 md:grid-cols-2">
-                 <div>
-                   <Label>Full name</Label>
-                   <Input value={data.spouse?.name || ''} onChange={(e)=>setData({...data, spouse: { ...(data.spouse||{}), name:e.target.value } })} />
+             <div>
+               <h2 className="text-2xl mb-4">Spouse Information</h2>
+               {data.maritalStatus === 'married' ? (
+                 <div className="grid gap-4 md:grid-cols-2">
+                   <div>
+                     <Label htmlFor="spouseName">Spouse's Name</Label>
+                     <Input id="spouseName" value={data.spouse?.name || ''} onChange={(e)=> setData({...data, spouse: {...(data.spouse||emptyPerson()), name: e.target.value}})} placeholder="Jane Doe" />
+                   </div>
+                   <div>
+                     <Label htmlFor="spouseDob">Spouse's Date of Birth</Label>
+                     <Input id="spouseDob" type="date" value={data.spouse?.dob || ''} onChange={(e)=> setData({...data, spouse: {...(data.spouse||emptyPerson()), dob: e.target.value}})} />
+                   </div>
+                   <div className="md:col-span-2">
+                     <Label htmlFor="spouseAddress">Spouse's Address (if different)</Label>
+                     <Input id="spouseAddress" value={data.spouse?.address || ''} onChange={(e)=> setData({...data, spouse: {...(data.spouse||emptyPerson()), address: e.target.value}})} placeholder="Optional if same as yours" />
+                   </div>
                  </div>
-                 <div>
-                   <Label>Date of birth</Label>
-                   <Input type="date" value={data.spouse?.dob || ''} onChange={(e)=>setData({...data, spouse: { ...(data.spouse || { name:'', dob:'', address:'', relationship:'' }), dob:e.target.value } })} />
-                 </div>
+               ) : (
+                 <p className="text-muted-foreground">You indicated you are not married. Skip to the next step.</p>
+               )}
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 3 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">3. Children / Beneficiaries</h2>
-               <div className="space-y-4">
-                 {data.beneficiaries.map((b, idx) => (
-                   <div key={idx} className="grid gap-3 md:grid-cols-3">
-                     <div>
-                       <Label>Full name</Label>
-                       <Input value={b.name} onChange={(e)=>{
-                         const list=[...data.beneficiaries]; list[idx] = { ...b, name:e.target.value }; setData({...data, beneficiaries:list});
-                       }} />
+             <div>
+               <h2 className="text-2xl mb-4">Beneficiaries</h2>
+               <p className="text-sm text-muted-foreground mb-4">List the people who will inherit from your estate.</p>
+               {data.beneficiaries.map((b, i) => (
+                 <Card key={i} className="mb-4">
+                   <CardHeader>
+                     <CardTitle className="text-lg">Beneficiary {i + 1}</CardTitle>
+                   </CardHeader>
+                   <CardContent>
+                     <div className="grid gap-4 md:grid-cols-3">
+                       <div>
+                         <Label htmlFor={`ben-name-${i}`}>Name</Label>
+                         <Input id={`ben-name-${i}`} value={b.name} onChange={(e)=> {
+                           const list = [...data.beneficiaries];
+                           list[i] = {...b, name: e.target.value};
+                           setData({...data, beneficiaries: list});
+                         }} placeholder="Full name" />
+                       </div>
+                       <div>
+                         <Label htmlFor={`ben-dob-${i}`}>Date of Birth</Label>
+                         <Input id={`ben-dob-${i}`} type="date" value={b.dob} onChange={(e)=> {
+                           const list = [...data.beneficiaries];
+                           list[i] = {...b, dob: e.target.value};
+                           setData({...data, beneficiaries: list});
+                         }} />
+                       </div>
+                       <div>
+                         <Label htmlFor={`ben-rel-${i}`}>Relationship</Label>
+                         <Input id={`ben-rel-${i}`} value={b.relationship} onChange={(e)=> {
+                           const list = [...data.beneficiaries];
+                           list[i] = {...b, relationship: e.target.value};
+                           setData({...data, beneficiaries: list});
+                         }} placeholder="Son, Daughter, Friend" />
+                       </div>
                      </div>
-                     <div>
-                       <Label>Date of birth</Label>
-                       <Input type="date" value={b.dob} onChange={(e)=>{
-                         const list=[...data.beneficiaries]; list[idx] = { ...b, dob:e.target.value }; setData({...data, beneficiaries:list});
-                       }} />
-                     </div>
-                     <div>
-                       <Label>Relationship</Label>
-                       <Input value={b.relationship} onChange={(e)=>{
-                         const list=[...data.beneficiaries]; list[idx] = { ...b, relationship:e.target.value }; setData({...data, beneficiaries:list});
-                       }} />
-                     </div>
-                     <div className="md:col-span-3 flex justify-end">
-                       <Button variant="outline" onClick={() => {
-                         const list = data.beneficiaries.filter((_,i)=>i!==idx); setData({...data, beneficiaries:list.length?list:[{name:'',dob:'',relationship:''}]});
+                     {data.beneficiaries.length > 1 && (
+                       <Button variant="destructive" size="sm" className="mt-2" onClick={()=> {
+                         const list = data.beneficiaries.filter((_, idx) => idx !== i);
+                         setData({...data, beneficiaries: list});
                        }}>Remove</Button>
-                     </div>
-                   </div>
-                 ))}
-                 <div className="flex justify-end">
-                   <Button variant="secondary" onClick={()=> setData({...data, beneficiaries:[...data.beneficiaries, {name:'', dob:'', relationship:''}]})}>Add Beneficiary</Button>
-                 </div>
+                     )}
+                   </CardContent>
+                 </Card>
+               ))}
+               <Button variant="outline" onClick={()=> setData({...data, beneficiaries: [...data.beneficiaries, {name: '', dob: '', relationship: ''}]})}>Add Beneficiary</Button>
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 4 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">4. Executor Information</h2>
-               <div className="grid gap-4 md:grid-cols-2">
-                 <div>
-                   <Label>Full name</Label>
-                   <Input value={data.executor.name} onChange={(e)=>setData({...data, executor:{...data.executor, name:e.target.value}})} />
-                 </div>
-                 <div>
-                   <Label>Relationship</Label>
-                   <Input value={data.executor.relationship || ''} onChange={(e)=>setData({...data, executor:{...data.executor, relationship:e.target.value}})} />
-                 </div>
-                 <div className="md:col-span-2">
-                   <Label>Address</Label>
-                   <Textarea value={data.executor.address || ''} onChange={(e)=>setData({...data, executor:{...data.executor, address:e.target.value}})} />
-                 </div>
-               </div>
-               <h3 className="text-xl font-serifBrand">Alternate Executor (optional)</h3>
-               <div className="grid gap-4 md:grid-cols-2">
-                 <div>
-                   <Label>Full name</Label>
-                   <Input value={data.altExecutor?.name || ''} onChange={(e)=>setData({...data, altExecutor:{...(data.altExecutor||{}), name:e.target.value}})} />
-                 </div>
-                 <div>
-                   <Label>Relationship</Label>
-                   <Input value={data.altExecutor?.relationship || ''} onChange={(e)=>setData({...data, altExecutor:{...(data.altExecutor || { name:'', dob:'', address:'', relationship:'' }), relationship:e.target.value}})} />
-                 </div>
-                 <div className="md:col-span-2">
-                   <Label>Address</Label>
-                   <Textarea value={data.altExecutor?.address || ''} onChange={(e)=>setData({...data, altExecutor:{...(data.altExecutor || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
-                 </div>
+             <div>
+               <h2 className="text-2xl mb-4">Executor</h2>
+               <p className="text-sm text-muted-foreground mb-4">Choose someone you trust to carry out your wishes.</p>
+               
+               <Card className="mb-4">
+                 <CardHeader>
+                   <CardTitle className="text-lg">Primary Executor</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <div className="grid gap-4 md:grid-cols-2">
+                     <div>
+                       <Label htmlFor="exec-name">Name *</Label>
+                       <Input id="exec-name" value={data.executor.name || ''} onChange={(e)=> setData({...data, executor: {...data.executor, name: e.target.value}})} placeholder="Full name" />
+                     </div>
+                     <div>
+                       <Label htmlFor="exec-rel">Relationship</Label>
+                       <Input id="exec-rel" value={data.executor.relationship || ''} onChange={(e)=> setData({...data, executor: {...data.executor, relationship: e.target.value}})} placeholder="Friend, Family, Attorney" />
+                     </div>
+                     <div className="md:col-span-2">
+                       <Label htmlFor="exec-address">Address</Label>
+                       <Input id="exec-address" value={data.executor.address || ''} onChange={(e)=> setData({...data, executor: {...data.executor, address: e.target.value}})} placeholder="123 Main St, City, ST 12345" />
+                     </div>
+                   </div>
+                 </CardContent>
+               </Card>
+
+               <Card>
+                 <CardHeader>
+                   <CardTitle className="text-lg">Alternate Executor (Optional)</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <div className="grid gap-4 md:grid-cols-2">
+                     <div>
+                       <Label htmlFor="alt-exec-name">Name</Label>
+                       <Input id="alt-exec-name" value={data.altExecutor?.name || ''} onChange={(e)=> setData({...data, altExecutor: {...(data.altExecutor||emptyPerson()), name: e.target.value}})} placeholder="Full name" />
+                     </div>
+                     <div>
+                       <Label htmlFor="alt-exec-rel">Relationship</Label>
+                       <Input id="alt-exec-rel" value={data.altExecutor?.relationship || ''} onChange={(e)=> setData({...data, altExecutor: {...(data.altExecutor||emptyPerson()), relationship: e.target.value}})} placeholder="Friend, Family, Attorney" />
+                     </div>
+                     <div className="md:col-span-2">
+                       <Label htmlFor="alt-exec-address">Address</Label>
+                       <Input id="alt-exec-address" value={data.altExecutor?.address || ''} onChange={(e)=> setData({...data, altExecutor: {...(data.altExecutor||emptyPerson()), address: e.target.value}})} placeholder="123 Main St, City, ST 12345" />
+                     </div>
+                   </div>
+                 </CardContent>
+               </Card>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 5 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">5. Guardians for Minor Children (optional)</h2>
-               <div>
-                 <Label className="mr-3">Add guardians?</Label>
-                 <Select value={data.addGuardians ? 'yes':'no'} onValueChange={(v)=>setData({...data, addGuardians: v==='yes'})}>
-                   <SelectTrigger className="w-44"><SelectValue placeholder="Select"/></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="yes">Yes</SelectItem>
-                     <SelectItem value="no">No</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
-               {data.addGuardians && (
-                 <div className="space-y-6">
-                   <div className="grid gap-4 md:grid-cols-2">
-                     <div>
-                       <Label>Guardian full name</Label>
-                       <Input value={data.guardian?.name || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian||{}), name:e.target.value}})} />
-                     </div>
-                     <div>
-                       <Label>Relationship</Label>
-                       <Input value={data.guardian?.relationship || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), relationship:e.target.value}})} />
-                     </div>
-                      <div className="md:col-span-2">
-                         <Label>Address</Label>
-                         <Textarea value={data.guardian?.address || ''} onChange={(e)=>setData({...data, guardian:{...(data.guardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
-                       </div>
-                        <div className="md:col-span-2">
-                          <div className="flex items-center justify-between">
-                            <Label>Guardian clause (optional)</Label>
-                            <div className="flex items-center gap-2">
-                              <VoiceButton onResult={(t)=> setData({ ...data, guardianInstructions: (data.guardianInstructions ? data.guardianInstructions + ' ' : '') + t })} />
-                              <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('primary')} disabled={guardianLoadingPrimary}>
-                                {guardianLoadingPrimary ? 'Drafting…' : 'Ask AI'}
-                              </Button>
-                            </div>
-                          </div>
-                          <Textarea value={data.guardianInstructions || ''} onChange={(e)=>setData({...data, guardianInstructions:e.target.value})} />
-                        </div>
-                   </div>
-                   <h3 className="text-xl font-serifBrand">Alternate Guardian (optional)</h3>
-                   <div className="grid gap-4 md:grid-cols-2">
-                     <div>
-                       <Label>Full name</Label>
-                       <Input value={data.altGuardian?.name || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian||{}), name:e.target.value}})} />
-                     </div>
-                     <div>
-                       <Label>Relationship</Label>
-                       <Input value={data.altGuardian?.relationship || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), relationship:e.target.value}})} />
-                     </div>
-                      <div className="md:col-span-2">
-                         <Label>Address</Label>
-                         <Textarea value={data.altGuardian?.address || ''} onChange={(e)=>setData({...data, altGuardian:{...(data.altGuardian || { name:'', dob:'', address:'', relationship:'' }), address:e.target.value}})} />
-                       </div>
-                        <div className="md:col-span-2">
-                          <div className="flex items-center justify-between">
-                            <Label>Alternate guardian clause (optional)</Label>
-                            <div className="flex items-center gap-2">
-                              <VoiceButton onResult={(t)=> setData({ ...data, altGuardianInstructions: (data.altGuardianInstructions ? data.altGuardianInstructions + ' ' : '') + t })} />
-                              <Button variant="outline" size="sm" onClick={()=>generateGuardianClause('alternate')} disabled={guardianLoadingAlt}>
-                                {guardianLoadingAlt ? 'Drafting…' : 'Ask AI'}
-                              </Button>
-                            </div>
-                          </div>
-                          <Textarea value={data.altGuardianInstructions || ''} onChange={(e)=>setData({...data, altGuardianInstructions:e.target.value})} />
-                        </div>
-                   </div>
+             <div>
+               <h2 className="text-2xl mb-4">Guardians for Minor Children</h2>
+               <p className="text-sm text-muted-foreground mb-4">If you have minor children, specify who should care for them.</p>
+               
+               <div className="mb-6">
+                 <div className="flex items-center space-x-2">
+                   <input
+                     type="checkbox"
+                     id="addGuardians"
+                     checked={data.addGuardians}
+                     onChange={(e) => setData({ ...data, addGuardians: e.target.checked })}
+                     className="rounded border-input"
+                   />
+                   <Label htmlFor="addGuardians">I have minor children and need to designate guardians</Label>
                  </div>
+               </div>
+
+               {data.addGuardians && (
+                 <>
+                   <Card className="mb-4">
+                     <CardHeader>
+                       <CardTitle className="text-lg">Primary Guardian</CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                       <div className="grid gap-4 md:grid-cols-2">
+                         <div>
+                           <Label htmlFor="guard-name">Name *</Label>
+                           <Input id="guard-name" value={data.guardian?.name || ''} onChange={(e)=> setData({...data, guardian: {...(data.guardian||emptyPerson()), name: e.target.value}})} placeholder="Full name" />
+                         </div>
+                         <div>
+                           <Label htmlFor="guard-rel">Relationship</Label>
+                           <Input id="guard-rel" value={data.guardian?.relationship || ''} onChange={(e)=> setData({...data, guardian: {...(data.guardian||emptyPerson()), relationship: e.target.value}})} placeholder="Sister, Brother, Friend" />
+                         </div>
+                         <div className="md:col-span-2">
+                           <Label htmlFor="guard-address">Address</Label>
+                           <Input id="guard-address" value={data.guardian?.address || ''} onChange={(e)=> setData({...data, guardian: {...(data.guardian||emptyPerson()), address: e.target.value}})} placeholder="123 Main St, City, ST 12345" />
+                         </div>
+                       </div>
+                       <div className="mt-4">
+                         <Label htmlFor="guard-instructions">Special Instructions for Guardian</Label>
+                         <div className="flex gap-2 mt-1">
+                           <Textarea 
+                             id="guard-instructions" 
+                             value={data.guardianInstructions || ''} 
+                             onChange={(e)=> setData({...data, guardianInstructions: e.target.value})} 
+                             placeholder="Any specific wishes about how your children should be raised..." 
+                             className="flex-1"
+                           />
+                           <Button 
+                             size="sm" 
+                             variant="outline" 
+                             onClick={() => generateGuardianClause(true)}
+                             disabled={guardianLoadingPrimary}
+                           >
+                             {guardianLoadingPrimary ? 'AI...' : 'AI Suggest'}
+                           </Button>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
+
+                   <Card>
+                     <CardHeader>
+                       <CardTitle className="text-lg">Alternate Guardian (Optional)</CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                       <div className="grid gap-4 md:grid-cols-2">
+                         <div>
+                           <Label htmlFor="alt-guard-name">Name</Label>
+                           <Input id="alt-guard-name" value={data.altGuardian?.name || ''} onChange={(e)=> setData({...data, altGuardian: {...(data.altGuardian||emptyPerson()), name: e.target.value}})} placeholder="Full name" />
+                         </div>
+                         <div>
+                           <Label htmlFor="alt-guard-rel">Relationship</Label>
+                           <Input id="alt-guard-rel" value={data.altGuardian?.relationship || ''} onChange={(e)=> setData({...data, altGuardian: {...(data.altGuardian||emptyPerson()), relationship: e.target.value}})} placeholder="Sister, Brother, Friend" />
+                         </div>
+                         <div className="md:col-span-2">
+                           <Label htmlFor="alt-guard-address">Address</Label>
+                           <Input id="alt-guard-address" value={data.altGuardian?.address || ''} onChange={(e)=> setData({...data, altGuardian: {...(data.altGuardian||emptyPerson()), address: e.target.value}})} placeholder="123 Main St, City, ST 12345" />
+                         </div>
+                       </div>
+                       <div className="mt-4">
+                         <Label htmlFor="alt-guard-instructions">Special Instructions for Alternate Guardian</Label>
+                         <div className="flex gap-2 mt-1">
+                           <Textarea 
+                             id="alt-guard-instructions" 
+                             value={data.altGuardianInstructions || ''} 
+                             onChange={(e)=> setData({...data, altGuardianInstructions: e.target.value})} 
+                             placeholder="Any specific wishes for the alternate guardian..." 
+                             className="flex-1"
+                           />
+                           <Button 
+                             size="sm" 
+                             variant="outline" 
+                             onClick={() => generateGuardianClause(false)}
+                             disabled={guardianLoadingAlt}
+                           >
+                             {guardianLoadingAlt ? 'AI...' : 'AI Suggest'}
+                           </Button>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
+                 </>
                )}
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
+               </div>
                {StepActions}
              </div>
            )}
 
            {step === 6 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">6. Specific Gifts</h2>
-               <div className="space-y-4">
-                 {data.gifts.map((g, idx) => (
-                   <div key={idx} className="grid gap-3 md:grid-cols-2">
-                    <div>
-                        <div className="flex items-center justify-between">
-                          <Label>Item or amount</Label>
-                          <div className="flex items-center gap-2">
-                            <VoiceButton onResult={(t)=>{ const list=[...data.gifts]; list[idx] = { ...g, description: t }; setData({ ...data, gifts: list }); }} />
-                            <Button variant="outline" size="sm" onClick={()=>generateGiftClause(idx)} disabled={giftLoadingIdx===idx}>
-                              {giftLoadingIdx===idx ? 'Drafting…' : 'Ask AI'}
-                            </Button>
-                          </div>
-                        </div>
-                       <Input value={g.description} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, description:e.target.value}; setData({...data, gifts:list}); }} />
+             <div>
+               <h2 className="text-2xl mb-4">Specific Gifts</h2>
+               <p className="text-sm text-muted-foreground mb-4">Leave specific items to specific people (optional).</p>
+               
+               {data.gifts.map((gift, i) => (
+                 <Card key={i} className="mb-4">
+                   <CardHeader>
+                     <CardTitle className="text-lg">Gift {i + 1}</CardTitle>
+                   </CardHeader>
+                   <CardContent>
+                     <div className="grid gap-4 md:grid-cols-2">
+                       <div>
+                         <Label htmlFor={`gift-desc-${i}`}>Item Description</Label>
+                         <div className="flex gap-2">
+                           <Input 
+                             id={`gift-desc-${i}`} 
+                             value={gift.description} 
+                             onChange={(e)=> {
+                               const list = [...data.gifts];
+                               list[i] = {...gift, description: e.target.value};
+                               setData({...data, gifts: list});
+                             }} 
+                             placeholder="e.g., Grandmother's ring, Car, $5000" 
+                             className="flex-1"
+                           />
+                           <Button 
+                             size="sm" 
+                             variant="outline" 
+                             onClick={() => generateGiftClause(i)}
+                             disabled={giftLoadingIdx === i}
+                           >
+                             {giftLoadingIdx === i ? 'AI...' : 'AI'}
+                           </Button>
+                         </div>
+                       </div>
+                       <div>
+                         <Label htmlFor={`gift-ben-${i}`}>Give to</Label>
+                         <Input 
+                           id={`gift-ben-${i}`} 
+                           value={gift.beneficiary} 
+                           onChange={(e)=> {
+                             const list = [...data.gifts];
+                             list[i] = {...gift, beneficiary: e.target.value};
+                             setData({...data, gifts: list});
+                           }} 
+                           placeholder="Beneficiary name" 
+                         />
+                       </div>
                      </div>
-                     <div>
-                        <div className="flex items-center justify-between">
-                          <Label>Beneficiary name</Label>
-                          <VoiceButton onResult={(t)=>{ const list=[...data.gifts]; list[idx] = { ...g, beneficiary: t }; setData({ ...data, gifts: list }); }} />
-                        </div>
-                        <Input value={g.beneficiary} onChange={(e)=>{ const list=[...data.gifts]; list[idx]={...g, beneficiary:e.target.value}; setData({...data, gifts:list}); }} />
-                     </div>
-                     <div className="md:col-span-2 flex justify-end">
-                       <Button variant="outline" onClick={()=>{ const list=data.gifts.filter((_,i)=>i!==idx); setData({...data, gifts:list}); }}>Remove</Button>
-                     </div>
-                   </div>
-                 ))}
-                 <div className="flex justify-end">
-                   <Button variant="secondary" onClick={()=> setData({...data, gifts:[...data.gifts, { description:'', beneficiary:'' }]})}>Add Gift</Button>
-                 </div>
+                     <Button variant="destructive" size="sm" className="mt-2" onClick={()=> {
+                       const list = data.gifts.filter((_, idx) => idx !== i);
+                       setData({...data, gifts: list});
+                     }}>Remove Gift</Button>
+                   </CardContent>
+                 </Card>
+               ))}
+               
+               <Button variant="outline" onClick={()=> setData({...data, gifts: [...data.gifts, {description: '', beneficiary: ''}]})}>Add Gift</Button>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 7 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">7. Residue of Estate</h2>
-               <p className="text-sm text-muted-foreground">Specify who receives the remainder of your estate. Total should be 100%.</p>
-               <div className="space-y-4">
-                 {data.residue.map((r, idx) => (
-                   <div key={idx} className="grid gap-3 md:grid-cols-3">
-                     <div className="md:col-span-2">
-                       <Label>Beneficiary</Label>
-                       <Input value={r.beneficiary} onChange={(e)=>{ const list=[...data.residue]; list[idx] = { ...r, beneficiary:e.target.value }; setData({...data, residue:list}); }} />
+             <div>
+               <h2 className="text-2xl mb-4">Residuary Estate</h2>
+               <p className="text-sm text-muted-foreground mb-4">How should the rest of your estate be distributed?</p>
+               
+               {data.residue.map((r, i) => (
+                 <Card key={i} className="mb-4">
+                   <CardHeader>
+                     <CardTitle className="text-lg">Residue Split {i + 1}</CardTitle>
+                   </CardHeader>
+                   <CardContent>
+                     <div className="grid gap-4 md:grid-cols-2">
+                       <div>
+                         <Label htmlFor={`res-ben-${i}`}>Beneficiary</Label>
+                         <Input 
+                           id={`res-ben-${i}`} 
+                           value={r.beneficiary} 
+                           onChange={(e)=> {
+                             const list = [...data.residue];
+                             list[i] = {...r, beneficiary: e.target.value};
+                             setData({...data, residue: list});
+                           }} 
+                           placeholder="Full name" 
+                         />
+                       </div>
+                       <div>
+                         <Label htmlFor={`res-pct-${i}`}>Percentage</Label>
+                         <Input 
+                           id={`res-pct-${i}`} 
+                           type="number" 
+                           min="0" 
+                           max="100" 
+                           value={r.percentage} 
+                           onChange={(e)=> {
+                             const list = [...data.residue];
+                             list[i] = {...r, percentage: e.target.value};
+                             setData({...data, residue: list});
+                           }} 
+                           placeholder="0-100" 
+                         />
+                       </div>
                      </div>
-                     <div>
-                       <Label>Percentage</Label>
-                       <Input type="number" min="0" max="100" value={r.percentage} onChange={(e)=>{ const list=[...data.residue]; list[idx] = { ...r, percentage:e.target.value }; setData({...data, residue:list}); }} />
-                     </div>
-                     <div className="md:col-span-3 flex justify-end">
-                       <Button variant="outline" onClick={()=>{ const list=data.residue.filter((_,i)=>i!==idx); setData({...data, residue:list.length?list:[{beneficiary:'',percentage:'100'}]}); }}>Remove</Button>
-                     </div>
-                   </div>
-                 ))}
-                 <div className="flex items-center justify-between">
-                   <div className={`text-sm ${Math.round(residueSum)===100 ? 'text-foreground' : 'text-destructive'}`}>Total: {residueSum}%</div>
-                   <Button variant="secondary" onClick={()=> setData({...data, residue:[...data.residue, { beneficiary:'', percentage:'0' }]})}>Add Split</Button>
-                 </div>
+                     {data.residue.length > 1 && (
+                       <Button variant="destructive" size="sm" className="mt-2" onClick={()=> {
+                         const list = data.residue.filter((_, idx) => idx !== i);
+                         setData({...data, residue: list});
+                       }}>Remove</Button>
+                     )}
+                   </CardContent>
+                 </Card>
+               ))}
+               
+               <div className="mb-4">
+                 <p className="text-sm">Total: {residueSum}% {residueSum !== 100 && <span className="text-destructive">(Must equal 100%)</span>}</p>
+               </div>
+               
+               <Button variant="outline" onClick={()=> setData({...data, residue: [...data.residue, {beneficiary: '', percentage: '0'}]})}>Add Split</Button>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 8 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">8. Pet Care Provisions (optional)</h2>
-               <div className="grid gap-4 md:grid-cols-3">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label>Pet name</Label>
-                      <VoiceButton onResult={(t)=> setData({ ...data, petName: t })} />
-                    </div>
-                    <Input value={data.petName || ''} onChange={(e)=>setData({...data, petName:e.target.value})} />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label>Type</Label>
-                      <VoiceButton onResult={(t)=> setData({ ...data, petType: t })} />
-                    </div>
-                    <Input value={data.petType || ''} onChange={(e)=>setData({...data, petType:e.target.value})} />
-                  </div>
-                   <div>
-                      <div className="flex items-center justify-between">
-                        <Label>Caregiver</Label>
-                        <VoiceButton onResult={(t)=> setData({ ...data, petCaregiver: t })} />
-                      </div>
-                      <Input value={data.petCaregiver || ''} onChange={(e)=>setData({...data, petCaregiver:e.target.value})} />
-                    </div>
-                   <div className="md:col-span-3">
-                      <div className="flex items-center justify-between">
-                        <Label>Pet care clause (optional)</Label>
-                        <div className="flex items-center gap-2">
-                          <VoiceButton onResult={(t)=> setData({ ...data, petInstructions: (data.petInstructions ? data.petInstructions + ' ' : '') + t })} />
-                          <Button variant="outline" size="sm" onClick={generatePetClause} disabled={petLoading}>
-                            {petLoading ? 'Drafting…' : 'Ask AI'}
-                          </Button>
-                        </div>
-                      </div>
-                     <Textarea value={data.petInstructions || ''} onChange={(e)=>setData({...data, petInstructions:e.target.value})} />
-                   </div>
+             <div>
+               <h2 className="text-2xl mb-4">Pet Care</h2>
+               <p className="text-sm text-muted-foreground mb-4">Arrangements for pets (optional).</p>
+               
+               <div className="grid gap-4 md:grid-cols-2 mb-4">
+                 <div>
+                   <Label htmlFor="petName">Pet Name</Label>
+                   <Input id="petName" value={data.petName || ''} onChange={(e)=> setData({...data, petName: e.target.value})} placeholder="Fluffy" />
+                 </div>
+                 <div>
+                   <Label htmlFor="petType">Pet Type</Label>
+                   <Input id="petType" value={data.petType || ''} onChange={(e)=> setData({...data, petType: e.target.value})} placeholder="Dog, Cat, etc." />
+                 </div>
+                 <div className="md:col-span-2">
+                   <Label htmlFor="petCaregiver">Pet Caregiver</Label>
+                   <Input id="petCaregiver" value={data.petCaregiver || ''} onChange={(e)=> setData({...data, petCaregiver: e.target.value})} placeholder="Name of person to care for pet" />
+                 </div>
+               </div>
+               
+               <div className="mb-4">
+                 <Label htmlFor="petInstructions">Pet Care Instructions</Label>
+                 <div className="flex gap-2 mt-1">
+                   <Textarea 
+                     id="petInstructions" 
+                     value={data.petInstructions || ''} 
+                     onChange={(e)=> setData({...data, petInstructions: e.target.value})} 
+                     placeholder="Special care instructions, preferred vet, etc." 
+                     className="flex-1"
+                   />
+                   <Button 
+                     size="sm" 
+                     variant="outline" 
+                     onClick={generatePetClause}
+                     disabled={petLoading}
+                   >
+                     {petLoading ? 'AI...' : 'AI Suggest'}
+                   </Button>
+                 </div>
+               </div>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 9 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">9. Funeral & Burial Wishes (optional)</h2>
-               <div className="grid gap-4 md:grid-cols-2">
-                 <div>
-                   <Label>Preference</Label>
-                   <Select value={data.funeralPreference} onValueChange={(v)=>setData({...data, funeralPreference: v as WizardData['funeralPreference']})}>
-                     <SelectTrigger><SelectValue placeholder="Select preference"/></SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="burial">Burial</SelectItem>
-                       <SelectItem value="cremation">Cremation</SelectItem>
-                       <SelectItem value="no_preference">No preference</SelectItem>
-                     </SelectContent>
-                   </Select>
+             <div>
+               <h2 className="text-2xl mb-4">Funeral Arrangements</h2>
+               <p className="text-sm text-muted-foreground mb-4">Your preferences for final arrangements.</p>
+               
+               <div className="mb-4">
+                 <Label htmlFor="funeralPreference">Preference</Label>
+                 <Select value={data.funeralPreference} onValueChange={(v)=> setData({...data, funeralPreference: v as any})}>
+                   <SelectTrigger><SelectValue placeholder="Select preference" /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="burial">Burial</SelectItem>
+                     <SelectItem value="cremation">Cremation</SelectItem>
+                     <SelectItem value="no_preference">No Preference</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+               
+               <div className="mb-4">
+                 <Label htmlFor="funeralInstructions">Special Instructions</Label>
+                 <div className="flex gap-2 mt-1">
+                   <Textarea 
+                     id="funeralInstructions" 
+                     value={data.funeralInstructions} 
+                     onChange={(e)=> setData({...data, funeralInstructions: e.target.value})} 
+                     placeholder="Memorial service preferences, specific requests, etc." 
+                     className="flex-1"
+                   />
+                   <Button 
+                     size="sm" 
+                     variant="outline" 
+                     onClick={generateFuneralInstructionsWithAI}
+                     disabled={funeralLoading}
+                   >
+                     {funeralLoading ? 'AI...' : 'AI Suggest'}
+                   </Button>
                  </div>
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Special instructions</Label>
-                      <div className="flex items-center gap-2">
-                        <VoiceButton onResult={(t)=> setData({ ...data, funeralInstructions: (data.funeralInstructions ? data.funeralInstructions + ' ' : '') + t })} />
-                        <Button variant="outline" size="sm" onClick={generateFuneralInstructionsWithAI} disabled={funeralLoading}>
-                          {funeralLoading ? 'Drafting…' : 'Ask AI to draft'}
-                        </Button>
-                      </div>
-                    </div>
-                    <Textarea value={data.funeralInstructions} onChange={(e)=>setData({...data, funeralInstructions:e.target.value})} />
-                    <p className="text-xs text-muted-foreground mt-1">AI can suggest a concise, respectful clause based on your info.</p>
-                  </div>
+               </div>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 10 && (
-             <div className="grid gap-4">
-               <h2 className="text-2xl font-serifBrand">10. Witnesses (optional)</h2>
-               <div className="space-y-3">
-                 {data.witnesses.map((w, idx)=> (
-                   <div key={idx} className="grid gap-3 md:grid-cols-2">
-                     <div>
-                       <Label>Witness name</Label>
-                       <Input value={w} onChange={(e)=>{ const list=[...data.witnesses]; list[idx]=e.target.value; setData({...data, witnesses:list}); }} />
-                     </div>
-                     <div className="flex items-end">
-                       <Button variant="outline" onClick={()=>{ const list=data.witnesses.filter((_,i)=>i!==idx); setData({...data, witnesses:list}); }}>Remove</Button>
-                     </div>
-                   </div>
-                 ))}
-                 <div className="flex justify-end">
-                   <Button variant="secondary" onClick={()=> setData({...data, witnesses:[...data.witnesses, ""]})}>Add Witness</Button>
+             <div>
+               <h2 className="text-2xl mb-4">Witnesses</h2>
+               <p className="text-sm text-muted-foreground mb-4">Names of people who will witness your signature.</p>
+               
+               <div className="grid gap-4">
+                 <div>
+                   <Label htmlFor="witness1">Witness 1</Label>
+                   <Input 
+                     id="witness1" 
+                     value={data.witnesses[0] || ''} 
+                     onChange={(e)=> {
+                       const list = [...data.witnesses];
+                       list[0] = e.target.value;
+                       setData({...data, witnesses: list});
+                     }} 
+                     placeholder="Full name" 
+                   />
                  </div>
+                 <div>
+                   <Label htmlFor="witness2">Witness 2</Label>
+                   <Input 
+                     id="witness2" 
+                     value={data.witnesses[1] || ''} 
+                     onChange={(e)=> {
+                       const list = [...data.witnesses];
+                       list[1] = e.target.value;
+                       setData({...data, witnesses: list});
+                     }} 
+                     placeholder="Full name" 
+                   />
+                 </div>
+               </div>
+               
+               <div className="mt-4">
+                 <VoiceButton onVoiceComplete={handleVoiceAutoFill} />
                </div>
                {StepActions}
              </div>
            )}
 
            {step === 11 && (
-              <div className="grid gap-4">
-                <h2 className="text-2xl font-serifBrand">Review & Generate</h2>
-                <p className="text-muted-foreground">Review your entries below before downloading your PDF.</p>
-                {validationIssues.length > 0 && (
-                  <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm">
-                    <div className="font-medium mb-2">Blocking issues</div>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {validationIssues.map((it, i)=> (
-                        <li key={i} className="flex items-start justify-between gap-3">
-                          <span className="flex-1">{it}</span>
-                          <Button size="sm" variant="outline" onClick={()=> setStep(guessStepForText(it))}>Go fix</Button>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="text-xs text-muted-foreground mt-2">You can still download, but we recommend fixing these first.</p>
-                  </div>
-                )}
-
-               <div className="grid gap-6">
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Personal</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Name:</strong> {data.fullName || '—'}</div>
-                     <div><strong>DOB:</strong> {data.dob || '—'}</div>
-                     <div><strong>Address:</strong> {data.address || '—'}</div>
-                     <div><strong>State:</strong> {data.state || '—'}</div>
-                     <div><strong>Marital status:</strong> {data.maritalStatus || '—'}</div>
+             <div>
+               <h2 className="text-2xl mb-4">Review & Export</h2>
+               
+               {validationIssues.length > 0 && (
+                 <div className="mb-6 p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                   <h3 className="font-medium text-orange-800 mb-2">Please address these issues:</h3>
+                   <ul className="list-disc list-inside text-sm text-orange-700 space-y-1">
+                     {validationIssues.map((issue, i) => (
+                       <li key={i}>{issue}</li>
+                     ))}
+                   </ul>
+                 </div>
+               )}
+               
+               <div className="mb-6">
+                 <div className="flex items-center justify-between mb-4">
+                   <h3 className="text-xl font-medium">AI Review</h3>
+                   <Button 
+                     variant="outline" 
+                     onClick={runAIReview} 
+                     disabled={reviewLoading}
+                   >
+                     {reviewLoading ? 'Reviewing...' : 'Run AI Review'}
+                   </Button>
+                 </div>
+                 
+                 {aiReview && (
+                   <div className="space-y-4">
+                     {aiReview.issues.length > 0 && (
+                       <Card className="border-red-200">
+                         <CardHeader>
+                           <CardTitle className="text-red-800">Issues Found</CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                           <ul className="space-y-2">
+                             {aiReview.issues.map((issue, i) => (
+                               <li key={i} className="flex items-center justify-between p-2 bg-red-50 rounded">
+                                 <span className="text-sm text-red-700">{issue}</span>
+                                 <div className="flex gap-1">
+                                   <Button 
+                                     size="sm" 
+                                     variant="outline" 
+                                     onClick={() => handleFixIssue(issue)}
+                                     disabled={fixingKey === issue}
+                                   >
+                                     {fixingKey === issue ? 'Fixing...' : 'Fix'}
+                                   </Button>
+                                   <Button 
+                                     size="sm" 
+                                     variant="ghost" 
+                                     onClick={() => handleExplainIssue(issue)}
+                                   >
+                                     Explain
+                                   </Button>
+                                 </div>
+                               </li>
+                             ))}
+                           </ul>
+                         </CardContent>
+                       </Card>
+                     )}
+                     
+                     {aiReview.risks.length > 0 && (
+                       <Card className="border-orange-200">
+                         <CardHeader>
+                           <CardTitle className="text-orange-800">Potential Risks</CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                           <ul className="space-y-2">
+                             {aiReview.risks.map((risk, i) => (
+                               <li key={i} className="flex items-center justify-between p-2 bg-orange-50 rounded">
+                                 <span className="text-sm text-orange-700">{risk}</span>
+                                 <Button 
+                                   size="sm" 
+                                   variant="ghost" 
+                                   onClick={() => handleExplainIssue(risk)}
+                                 >
+                                   Explain
+                                 </Button>
+                               </li>
+                             ))}
+                           </ul>
+                         </CardContent>
+                       </Card>
+                     )}
+                     
+                     {aiReview.missing.length > 0 && (
+                       <Card className="border-blue-200">
+                         <CardHeader>
+                           <CardTitle className="text-blue-800">Suggestions</CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                           <ul className="space-y-2">
+                             {aiReview.missing.map((suggestion, i) => (
+                               <li key={i} className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                 <span className="text-sm text-blue-700">{suggestion}</span>
+                                 <Button 
+                                   size="sm" 
+                                   variant="ghost" 
+                                   onClick={() => handleExplainIssue(suggestion)}
+                                 >
+                                   Explain
+                                 </Button>
+                               </li>
+                             ))}
+                           </ul>
+                         </CardContent>
+                       </Card>
+                     )}
+                     
+                     {aiReview.summary && (
+                       <Card className="border-green-200">
+                         <CardHeader>
+                           <CardTitle className="text-green-800">Summary</CardTitle>
+                         </CardHeader>
+                         <CardContent>
+                           <p className="text-sm text-green-700">{aiReview.summary}</p>
+                         </CardContent>
+                       </Card>
+                     )}
                    </div>
+                 )}
+               </div>
+               
+               <div>
+                 <div className="flex items-center justify-between mb-4">
+                   <h3 className="text-xl font-serifBrand">Draft Preview</h3>
                  </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Spouse</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Name:</strong> {data.spouse?.name || '—'}</div>
-                     <div><strong>DOB:</strong> {data.spouse?.dob || '—'}</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Beneficiaries</h3>
-                   <div className="text-sm leading-7">
-                     {data.beneficiaries.filter(b=>b.name).length ? data.beneficiaries.map((b,i)=>(
-                       <div key={i}>• {b.name} {b.dob?`(b. ${b.dob})`:''} – {b.relationship}</div>
-                     )): '—'}
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Executor</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Primary:</strong> {data.executor.name || '—'}{data.executor.relationship?` (${data.executor.relationship})`:''}</div>
-                     <div><strong>Alt:</strong> {data.altExecutor?.name || '—'}{data.altExecutor?.relationship?` (${data.altExecutor?.relationship})`:''}</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Guardians</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Guardian:</strong> {data.addGuardians ? (data.guardian?.name || '—') : 'Not added'}</div>
-                     <div><strong>Alternate:</strong> {data.addGuardians ? (data.altGuardian?.name || '—') : '—'}</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Specific Gifts</h3>
-                   <div className="text-sm leading-7">
-                     {data.gifts.length ? data.gifts.map((g,i)=>(<div key={i}>• {g.description} → {g.beneficiary}</div>)) : '—'}
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Residue</h3>
-                   <div className="text-sm leading-7">
-                     {data.residue.map((r,i)=>(<div key={i}>• {r.beneficiary || '—'} – {r.percentage}%</div>))}
-                     <div className={`mt-1 ${Math.round(residueSum)===100?'text-muted-foreground':'text-destructive'}`}>Total: {residueSum}%</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Pets</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Pet:</strong> {data.petName ? `${data.petName} (${data.petType||'—'})` : '—'}</div>
-                     <div><strong>Caregiver:</strong> {data.petCaregiver || '—'}</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Funeral & Burial</h3>
-                   <div className="text-sm leading-7">
-                     <div><strong>Preference:</strong> {data.funeralPreference || '—'}</div>
-                     <div><strong>Instructions:</strong> {data.funeralInstructions || '—'}</div>
-                   </div>
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-serifBrand">Witnesses</h3>
-                   <div className="text-sm leading-7">{data.witnesses.filter(Boolean).length ? data.witnesses.filter(Boolean).join(', ') : '—'}</div>
-                 </div>
-
-                  <div>
-                    <h3 className="text-xl font-serifBrand">AI Review</h3>
-                    <div className="flex items-center gap-3 mb-2">
-                      <Button variant="secondary" onClick={runAIReview} disabled={reviewLoading}>
-                        {reviewLoading ? 'Reviewing…' : (aiReview ? 'Re‑run review' : 'Run AI Review')}
-                      </Button>
-                      {aiReview && <span className="text-sm text-muted-foreground">Review ready</span>}
-                    </div>
-                    {aiReview && (
-                      <div className="space-y-3">
-                        <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
-                          <strong>Summary:</strong> {aiReview.summary}
-                        </div>
-                        <div className="grid gap-3 md:grid-cols-3">
-                          {aiReview.issues?.length ? (
-                            <Card>
-                              <CardHeader><CardTitle>Issues</CardTitle></CardHeader>
-                              <CardContent>
-                                <ul className="space-y-2">
-                                  {aiReview.issues.map((item, i)=> (
-                                    <li key={i} className="flex items-start justify-between gap-3">
-                                      <span className="flex-1">{item}</span>
-                                      <div className="flex items-center gap-2">
-                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
-                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </CardContent>
-                            </Card>
-                          ) : null}
-                          {aiReview.risks?.length ? (
-                            <Card>
-                              <CardHeader><CardTitle>Risks</CardTitle></CardHeader>
-                              <CardContent>
-                                <ul className="space-y-2">
-                                  {aiReview.risks.map((item, i)=> (
-                                    <li key={i} className="flex items-start justify-between gap-3">
-                                      <span className="flex-1">{item}</span>
-                                      <div className="flex items-center gap-2">
-                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
-                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </CardContent>
-                            </Card>
-                          ) : null}
-                          {aiReview.missing?.length ? (
-                            <Card>
-                              <CardHeader><CardTitle>Missing Info</CardTitle></CardHeader>
-                              <CardContent>
-                                <ul className="space-y-2">
-                                  {aiReview.missing.map((item, i)=> (
-                                    <li key={i} className="flex items-start justify-between gap-3">
-                                      <span className="flex-1">{item}</span>
-                                      <div className="flex items-center gap-2">
-                                        <Button size="sm" variant="secondary" onClick={()=> handleFixIssue(item)} disabled={fixingKey===item}>{fixingKey===item ? 'Working…' : 'Fix with AI'}</Button>
-                                        <Button size="sm" variant="outline" onClick={()=> handleExplainIssue(item)}>Explain</Button>
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </CardContent>
-                            </Card>
-                          ) : null}
-                        </div>
-                        {aiReview.checklist?.length ? (
-                          <div className="text-sm leading-7 bg-secondary/60 p-4 rounded-md">
-                            <strong>Checklist:</strong>
-                            <ul className="list-disc pl-5">
-                              {aiReview.checklist.map((item, i)=> (<li key={i}>{item}</li>))}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-serifBrand">Draft Preview</h3>
-                    <pre className="whitespace-pre-wrap bg-secondary/60 p-4 rounded-md text-sm">{draft}</pre>
-                  </div>
-
+                 <pre className="whitespace-pre-wrap bg-secondary/60 p-4 rounded-md text-sm mb-6">{draft}</pre>
+                 
                  <div className="flex items-center justify-between">
                    <Button variant="outline" onClick={()=> setStep(1)}>Edit from Start</Button>
                    <div className="flex gap-2">
@@ -1405,13 +1517,12 @@ import { useEffect as useD_IDEffect } from "react";
                      <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
                    </div>
                  </div>
-                </div>
-              </div>
+               </div>
+             </div>
            )}
-            </div>
-          </div>
-            
-        </div>
+             </div>
+           </div>
+         </div>
 
          {/* White-label embed note */}
          <section className="pt-8">
@@ -1516,4 +1627,4 @@ import { useEffect as useD_IDEffect } from "react";
     );
   };
 
- export default WillCreator;
+export default WillCreator;
