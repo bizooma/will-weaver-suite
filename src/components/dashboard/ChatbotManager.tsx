@@ -335,7 +335,7 @@ export function ChatbotManager() {
 
           {/* Preview Dialog */}
           <Dialog open={!!previewChatbot} onOpenChange={() => setPreviewChatbot(null)}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Chatbot Preview</DialogTitle>
               </DialogHeader>
