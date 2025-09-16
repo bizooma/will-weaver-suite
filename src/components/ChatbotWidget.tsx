@@ -117,7 +117,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
     }
   };
 
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       text,
@@ -125,15 +125,57 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e" }: C
       timestamp: new Date()
     };
 
-    const botResponse: ChatMessage = {
+    // Add user message immediately
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+
+    // Add loading message
+    const loadingMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
-      text: "Thanks for your message! This is a demo response.",
+      text: "Thinking...",
       isBot: true,
       timestamp: new Date()
     };
+    setMessages(prev => [...prev, loadingMessage]);
 
-    setMessages(prev => [...prev, userMessage, botResponse]);
-    setInput("");
+    try {
+      // Call the chatbot response function
+      const { data, error } = await supabase.functions.invoke('chatbot-response', {
+        body: {
+          message: text,
+          chatbotId: chatbotId
+        }
+      });
+
+      if (error) throw error;
+
+      const botResponse: ChatMessage = {
+        id: (Date.now() + 2).toString(),
+        text: data.response || "I apologize, but I'm having trouble responding right now. Please try again later.",
+        isBot: true,
+        timestamp: new Date()
+      };
+
+      // Replace loading message with actual response
+      setMessages(prev => prev.map(msg => 
+        msg.id === loadingMessage.id ? botResponse : msg
+      ));
+
+    } catch (error) {
+      console.error('Error getting bot response:', error);
+      
+      const errorResponse: ChatMessage = {
+        id: (Date.now() + 2).toString(),
+        text: "I apologize, but I'm having trouble responding right now. Please try again later or contact us directly for assistance.",
+        isBot: true,
+        timestamp: new Date()
+      };
+
+      // Replace loading message with error response
+      setMessages(prev => prev.map(msg => 
+        msg.id === loadingMessage.id ? errorResponse : msg
+      ));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

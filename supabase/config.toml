@@ -75,3 +75,6 @@ verify_jwt = true
 
 [functions.widget-config]
 verify_jwt = false
+
+[functions.chatbot-response]
+verify_jwt = false
