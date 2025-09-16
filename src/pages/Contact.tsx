@@ -84,8 +84,8 @@ const Contact = () => {
             </div>
             <div>
               <h3 className="font-semibold text-foreground mb-1">Address</h3>
-              <p>2465 US-1S, Suite 1045</p>
-              <p>St. Augustine, FL 32086</p>
+              <p>200 N Laura St</p>
+              <p>Jacksonville, FL 32202</p>
             </div>
           </div>
         </div>
