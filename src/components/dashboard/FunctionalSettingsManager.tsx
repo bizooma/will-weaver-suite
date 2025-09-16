@@ -10,6 +10,8 @@ import { Settings, User, CreditCard, Shield, Palette, Copy, RefreshCw } from "lu
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ApiDocumentation } from "./ApiDocumentation";
+import { SdkDownloader } from "./SdkDownloader";
 
 interface UserSettings {
   white_label_enabled: boolean;
@@ -57,6 +59,8 @@ export function FunctionalSettingsManager() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showApiDocs, setShowApiDocs] = useState(false);
+  const [showSdkDownloader, setShowSdkDownloader] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -508,11 +512,23 @@ export function FunctionalSettingsManager() {
           )}
           
           <div className="flex gap-2">
-            <Button variant="outline">View Documentation</Button>
-            <Button variant="outline">Download SDKs</Button>
+            <Button variant="outline" onClick={() => setShowApiDocs(!showApiDocs)}>
+              {showApiDocs ? 'Hide Documentation' : 'View Documentation'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowSdkDownloader(!showSdkDownloader)}>
+              {showSdkDownloader ? 'Hide SDKs' : 'Download SDKs'}
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {showApiDocs && (
+        <ApiDocumentation apiKey={apiKeys.find(key => key.is_active)?.api_key} />
+      )}
+
+      {showSdkDownloader && (
+        <SdkDownloader apiKey={apiKeys.find(key => key.is_active)?.api_key} />
+      )}
     </div>
   );
 }
