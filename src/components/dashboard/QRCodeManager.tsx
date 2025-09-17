@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, Plus, Eye, Edit, Trash2, Copy, BarChart3 } from "lucide-react";
+import { QrCode, Plus, Eye, Edit, Trash2, Copy, BarChart3, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -40,6 +40,9 @@ export function QRCodeManager() {
   const [selectedQRCode, setSelectedQRCode] = useState<QRCodeData | null>(null);
   const [analytics, setAnalytics] = useState<QRScanData | null>(null);
   const [qrCodeImage, setQRCodeImage] = useState<string>("");
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewQRCode, setPreviewQRCode] = useState<QRCodeData | null>(null);
+  const [previewImage, setPreviewImage] = useState<string>("");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -68,6 +71,48 @@ export function QRCodeManager() {
       toast.error('Failed to load QR codes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateQRCodeImage = async (qrCode: QRCodeData): Promise<string> => {
+    const redirectUrl = `https://fmcgsxdtyvssvwtxufll.supabase.co/functions/v1/qr-redirect/${qrCode.slug}`;
+    return await QRCodeLib.toDataURL(redirectUrl, {
+      color: {
+        dark: qrCode.qr_config.foregroundColor || '#000000',
+        light: qrCode.qr_config.backgroundColor || '#ffffff',
+      },
+      width: qrCode.qr_config.size || 256,
+    });
+  };
+
+  const downloadQRCode = async (qrCode: QRCodeData, format: string = 'png') => {
+    try {
+      const dataUrl = await generateQRCodeImage(qrCode);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `${qrCode.name.replace(/\s+/g, '_')}_qr_code.${format}`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('QR code downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      toast.error('Failed to download QR code');
+    }
+  };
+
+  const showPreview = async (qrCode: QRCodeData) => {
+    try {
+      const image = await generateQRCodeImage(qrCode);
+      setPreviewImage(image);
+      setPreviewQRCode(qrCode);
+      setPreviewDialogOpen(true);
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast.error('Failed to generate QR code preview');
     }
   };
 
@@ -105,6 +150,12 @@ export function QRCodeManager() {
         backgroundColor: "#ffffff",
         size: 256,
       });
+      
+      // Show preview with the newly created QR code
+      if (data?.qrCode) {
+        await showPreview(data.qrCode);
+      }
+      
       fetchQRCodes();
     } catch (error) {
       console.error('Error creating QR code:', error);
@@ -155,14 +206,7 @@ export function QRCodeManager() {
       setSelectedQRCode(qrCode);
       
       // Generate QR code image
-      const redirectUrl = `https://fmcgsxdtyvssvwtxufll.supabase.co/functions/v1/qr-redirect/${qrCode.slug}`;
-      const qrImage = await QRCodeLib.toDataURL(redirectUrl, {
-        color: {
-          dark: qrCode.qr_config.foregroundColor || '#000000',
-          light: qrCode.qr_config.backgroundColor || '#ffffff',
-        },
-        width: qrCode.qr_config.size || 256,
-      });
+      const qrImage = await generateQRCodeImage(qrCode);
       setQRCodeImage(qrImage);
       setAnalyticsDialogOpen(true);
     } catch (error) {
@@ -316,6 +360,15 @@ export function QRCodeManager() {
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => downloadQRCode(qrCode)}
+                    className="gap-1"
+                  >
+                    <Download className="h-3 w-3" />
+                    Download
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => updateQRCode(qrCode.id, { is_active: !qrCode.is_active })}
                     className="gap-1"
                   >
@@ -354,7 +407,18 @@ export function QRCodeManager() {
             <div className="space-y-6">
               <div className="flex items-center gap-6">
                 {qrCodeImage && (
-                  <img src={qrCodeImage} alt="QR Code" className="w-24 h-24" />
+                  <div className="flex flex-col items-center gap-2">
+                    <img src={qrCodeImage} alt="QR Code" className="w-24 h-24" />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => selectedQRCode && downloadQRCode(selectedQRCode)}
+                      className="gap-1"
+                    >
+                      <Download className="h-3 w-3" />
+                      Download
+                    </Button>
+                  </div>
                 )}
                 <div className="grid grid-cols-3 gap-4 flex-1">
                   <div className="text-center">
@@ -401,6 +465,42 @@ export function QRCodeManager() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>QR Code Created!</DialogTitle>
+            <DialogDescription>
+              Your QR code "{previewQRCode?.name}" has been created successfully
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {previewImage && (
+              <div className="flex flex-col items-center gap-4">
+                <img src={previewImage} alt="Generated QR Code" className="w-48 h-48 border rounded" />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => previewQRCode && downloadQRCode(previewQRCode)}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download PNG
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => previewQRCode && copyQRUrl(previewQRCode.slug)}
+                    className="gap-2"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy URL
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
