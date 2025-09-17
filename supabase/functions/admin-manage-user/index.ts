@@ -63,22 +63,7 @@ serve(async (req) => {
     }
 
     if (action === 'createUser') {
-      // First create the database records with temporary user ID
-      const { data: tempUserData, error: tempCreateError } = await supabase.rpc('admin_create_user_with_subscription', {
-        _email: userData.email,
-        _display_name: userData.displayName,
-        _plan_type: userData.planType
-      });
-
-      if (tempCreateError) {
-        console.error('Error creating temporary user records:', tempCreateError);
-        return new Response(JSON.stringify({ error: 'Failed to create user records' }), { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        });
-      }
-
-      // Create the actual auth user with the provided password
+      // Create the actual auth user first so we have a valid user_id for FKs
       const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         email: userData.email,
         password: userData.password,
@@ -88,7 +73,7 @@ serve(async (req) => {
         }
       });
 
-      if (authError) {
+      if (authError || !authUser?.user) {
         console.error('Error creating auth user:', authError);
         return new Response(JSON.stringify({ error: 'Failed to create user account' }), { 
           status: 500, 
@@ -96,15 +81,49 @@ serve(async (req) => {
         });
       }
 
-      // Update the database records with the real auth user ID
-      const { error: updateError } = await supabase.rpc('admin_update_created_user', {
-        _temp_user_id: tempUserData.user_id,
-        _auth_user_id: authUser.user.id
+      const newUserId = authUser.user.id;
+
+      // Insert profile
+      const { error: profileError } = await supabase.from('profiles').insert({
+        user_id: newUserId,
+        email: userData.email,
+        display_name: userData.displayName,
+        account_status: 'active'
       });
 
-      if (updateError) {
-        console.error('Error updating user records with auth ID:', updateError);
-        return new Response(JSON.stringify({ error: 'Failed to finalize user creation' }), { 
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        return new Response(JSON.stringify({ error: 'Failed to create user profile' }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      // Insert subscription
+      const { error: subscriptionError } = await supabase.from('user_subscriptions').insert({
+        user_id: newUserId,
+        plan_type: userData.planType,
+        purchase_date: new Date().toISOString()
+      });
+
+      if (subscriptionError) {
+        console.error('Error creating subscription:', subscriptionError);
+        return new Response(JSON.stringify({ error: 'Failed to create user subscription' }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      // Assign appropriate role based on plan type
+      const role = userData.planType === 'free' ? 'free' : 'user';
+      const { error: roleError } = await supabase.from('user_roles').insert({
+        user_id: newUserId,
+        role
+      });
+
+      if (roleError) {
+        console.error('Error assigning role:', roleError);
+        return new Response(JSON.stringify({ error: 'Failed to assign user role' }), { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
@@ -112,8 +131,10 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({ 
         user: {
-          ...tempUserData,
-          user_id: authUser.user.id,
+          user_id: newUserId,
+          email: userData.email,
+          display_name: userData.displayName,
+          plan_type: userData.planType,
           auth_created: true
         }
       }), {
