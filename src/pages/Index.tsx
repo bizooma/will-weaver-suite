@@ -199,12 +199,18 @@ const Index = () => {
       <section className="container pb-24">
         <h2 className="text-3xl mb-6">Testimonials</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {[1,2,3].map(i => (
-            <blockquote key={i} className="rounded-lg border p-5 bg-card text-sm text-muted-foreground">
-              “This platform made our intake and drafting so much faster.”
-              <div className="mt-3 text-foreground font-medium">Attorney {i}</div>
-            </blockquote>
-          ))}
+          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground">
+            "The AI-powered chatbot has revolutionized our client intake process. We're capturing leads 24/7 and converting them at twice the rate we used to. The voice search simulator helped us optimize for exactly how our clients search for legal help."
+            <div className="mt-3 text-foreground font-medium">Sarah</div>
+          </blockquote>
+          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground">
+            "As a solo practitioner, I was drowning in administrative tasks. The will creator and automated document drafting tools gave me my weekends back. My clients love the professional video chatbot experience on my website."
+            <div className="mt-3 text-foreground font-medium">Michael</div>
+          </blockquote>
+          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground">
+            "The SEO analyzer identified issues I never would have found on my own. Our organic traffic increased 300% in just six months. The QR code system for client documents is brilliant - so much more professional than email attachments."
+            <div className="mt-3 text-foreground font-medium">Jennifer</div>
+          </blockquote>
         </div>
       </section>
 
@@ -385,7 +391,7 @@ const Index = () => {
                   <div className="font-medium">Mobile App</div>
                   <div className="text-sm text-muted-foreground">Native iOS and Android applications</div>
                 </div>
-               </li>
+              </li>
             </ul>
             
             <Button asChild variant="hero" size="lg" className="w-full">
