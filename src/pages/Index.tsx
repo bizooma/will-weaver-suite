@@ -89,7 +89,7 @@ const Index = () => {
 
       <section className="relative py-16">
         <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-20"
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: `url(${techDataBackground})` }}
         ></div>
         <div className="container relative z-10">
