@@ -423,6 +423,20 @@ const Index = () => {
               Whether you're rebranding, expanding, or building from the ground up, we'll create a website that doesn't just look good—it works hard for your firm 24/7.
             </p>
           </div>
+          
+          {/* Calendly inline widget */}
+          <div className="mt-12">
+            <div 
+              className="calendly-inline-widget" 
+              data-url="https://calendly.com/joe-bizooma/30min" 
+              style={{ minWidth: '320px', height: '700px' }}
+            ></div>
+            <script 
+              type="text/javascript" 
+              src="https://assets.calendly.com/assets/external/widget.js" 
+              async
+            ></script>
+          </div>
         </div>
       </section>
     </main>
