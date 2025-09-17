@@ -92,10 +92,10 @@ const Index = () => {
           <h2 className="text-3xl mb-6">The Future of Legal Practice is Here</h2>
           <div className="prose prose-lg mx-auto text-muted-foreground">
             <p className="mb-4">
-              [Your about content will go here - please replace this placeholder text with your copy]
+              AmicusEdge is a comprehensive legal technology platform designed to empower modern law firms with the tools they need to thrive in an increasingly digital landscape. We provide a suite of AI-powered solutions that automate repetitive tasks, streamline workflows, and enhance client engagement. Our mission is to combine cutting-edge technology with the traditional values of trust and reliability that have always been at the heart of the legal profession.
             </p>
             <p className="mb-4">
-              [Add additional paragraphs as needed for your about section content]
+              Whether you're looking to automate document drafting, optimize your online presence, or offer innovative client services like voice-activated legal assistance, AmicusEdge has you covered. Our platform is built for performance, with a focus on security, scalability, and ease of use. We're committed to helping you save time, reduce costs, and deliver exceptional legal services to your clients.
             </p>
           </div>
         </div>
