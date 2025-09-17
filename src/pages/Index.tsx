@@ -133,7 +133,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Video Chatbots</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">AI-powered video assistants for your website with customizable branding.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Transform your client experience with our customizable video chatbots. Provide instant answers to frequently asked questions, schedule appointments, or offer chat support to gather case details. Enhance client satisfaction and free up your staff to handle more complex inquiries.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/video-chatbots">Learn More</Link>
