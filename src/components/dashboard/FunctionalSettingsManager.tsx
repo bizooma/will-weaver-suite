@@ -138,11 +138,16 @@ export function FunctionalSettingsManager() {
       
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          display_name: profile.display_name,
-          email: profile.email,
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            display_name: profile.display_name,
+            email: profile.email,
+          },
+          {
+            onConflict: 'user_id'
+          }
+        );
       
       if (error) throw error;
       
