@@ -476,6 +476,9 @@ const Index = () => {
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-serifBrand mb-2">Start Free Today</h3>
                   <p className="text-muted-foreground mb-4">Get instant access to our marketing calendar and explore our tools</p>
+                  <p className="text-sm text-foreground mb-4">
+                    Keeping your firm's social media fresh, relevant, and professional doesn't have to be a challenge. The Amicus Edge Legal Marketing Calendar gives you a year's worth of ready-to-post content ideas, curated from landmark events in U.S. legal history.
+                  </p>
                   <div className="text-4xl font-bold mb-1 text-primary">Free</div>
                   <div className="text-sm text-muted-foreground">No credit card required</div>
                 </div>
