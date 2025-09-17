@@ -88,8 +88,15 @@ const Index = () => {
       <section className="container py-16">
         <h2 className="text-3xl mb-8">Featured Tools</h2>
         <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/20 p-4">
-          <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
-          <article className="glass-card rounded-xl p-5">
+          <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-6">
+            <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">QR Code Generator</h3>
+              <p className="text-sm text-muted-foreground mb-4">Create trackable QR codes for campaigns, events, and redirects with analytics.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to={user ? "/dashboard/qr-codes" : "/auth"}>Generate QR</Link>
+              </Button>
+            </article>
+            <article className="glass-card rounded-xl p-5">
               <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
               <p className="text-sm text-muted-foreground mb-4">Comprehensive website analysis for SEO, Voice SEO, and AI Overview optimization.</p>
               <Button asChild variant="outline" size="sm">
