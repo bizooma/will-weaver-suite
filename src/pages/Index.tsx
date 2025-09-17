@@ -61,7 +61,7 @@ const Index = () => {
           <div>
             <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              A clean, conversion‑focused demo of our real‑time Will & Trust Creator, Alexa skill, and mobile app integrations.
+              Modernize Your Law Firm with AI-Powered Legal Solutions
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {user ? (
