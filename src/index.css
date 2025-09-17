@@ -51,6 +51,11 @@ All colors MUST be HSL.
 
     /* Motion & effects */
     --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Glass effects */
+    --glass-bg: hsla(var(--background) / 0.3);
+    --glass-border: hsla(var(--border) / 0.2);
+    --glass-shadow: 0 8px 32px hsla(var(--foreground) / 0.1);
   }
 
   .dark {
@@ -107,5 +112,21 @@ All colors MUST be HSL.
 
   a {
     @apply underline-offset-4 transition-colors;
+  }
+
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-smooth);
+  }
+
+  .glass-card:hover {
+    background: hsla(var(--background) / 0.4);
+    border-color: hsla(var(--border) / 0.3);
+    box-shadow: 0 12px 40px hsla(var(--foreground) / 0.15);
+    transform: translateY(-2px);
   }
 }
