@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 import { generateMetaTags, generateStructuredData } from "@/lib/seo";
 
@@ -13,6 +14,22 @@ const canonical = typeof window !== 'undefined' ? window.location.origin + "/" :
 
 const Index = () => {
   const { user } = useAuth();
+
+  // Load Calendly script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://assets.calendly.com/assets/external/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      const existingScript = document.querySelector('script[src="https://assets.calendly.com/assets/external/widget.js"]');
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   const seoConfig = {
     title: 'Legal Tech SaaS Demo | AI-Powered Will Generator & Legal Tools',
@@ -430,12 +447,7 @@ const Index = () => {
               className="calendly-inline-widget" 
               data-url="https://calendly.com/joe-bizooma/30min" 
               style={{ minWidth: '320px', height: '700px' }}
-            ></div>
-            <script 
-              type="text/javascript" 
-              src="https://assets.calendly.com/assets/external/widget.js" 
-              async
-            ></script>
+            />
           </div>
         </div>
       </section>
