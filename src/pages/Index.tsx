@@ -88,9 +88,9 @@ const Index = () => {
       </section>
 
       <section className="container py-16">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl mb-6">The Future of Legal Practice is Here</h2>
-          <div className="prose prose-lg mx-auto text-muted-foreground">
+          <div className="prose prose-lg text-muted-foreground">
             <p className="mb-4">
               AmicusEdge is a comprehensive legal technology platform designed to empower modern law firms with the tools they need to thrive in an increasingly digital landscape. We provide a suite of AI-powered solutions that automate repetitive tasks, streamline workflows, and enhance client engagement. Our mission is to combine cutting-edge technology with the traditional values of trust and reliability that have always been at the heart of the legal profession.
             </p>
