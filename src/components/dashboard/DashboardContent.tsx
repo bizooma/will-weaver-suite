@@ -97,7 +97,7 @@ export function DashboardContent() {
           </ProtectedContent>
         } />
         <Route path="/settings" element={
-          <ProtectedContent>
+          <ProtectedContent requiredRole="free">
             <FunctionalSettingsManager />
           </ProtectedContent>
         } />
