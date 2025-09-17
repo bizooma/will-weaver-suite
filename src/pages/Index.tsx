@@ -165,7 +165,7 @@ const Index = () => {
 
       <section className="relative pb-24">
         <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-20"
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-30"
           style={{ backgroundImage: `url(${lawOfficeBackground})` }}
         ></div>
         <div className="container relative z-10">
