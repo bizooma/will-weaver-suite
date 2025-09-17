@@ -1,5 +1,6 @@
 import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
+import lawOfficeBackground from "@/assets/law-office-background.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -162,7 +163,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container pb-24">
+      <section className="container pb-24 relative">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 rounded-3xl"
+          style={{ backgroundImage: `url(${lawOfficeBackground})` }}
+        ></div>
+        <div className="relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl mb-4">Choose Your Plan</h2>
           <p className="text-lg text-muted-foreground">Select the package that best fits your firm's needs</p>
@@ -341,6 +347,7 @@ const Index = () => {
               <Link to="/contact">Get Started</Link>
             </Button>
           </div>
+        </div>
         </div>
       </section>
     </main>
