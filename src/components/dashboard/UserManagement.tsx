@@ -184,7 +184,6 @@ export const UserManagement = () => {
                 <TableHead>Package</TableHead>
                 <TableHead>Purchase Date</TableHead>
                 <TableHead>Account Status</TableHead>
-                <TableHead>Subscription Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -209,8 +208,9 @@ export const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       {subscription ? (
-                        <Badge variant="secondary">
+                        <Badge variant={subscription.cancelled_at ? "destructive" : "secondary"}>
                           {subscription.plan_type}
+                          {subscription.cancelled_at && " (Cancelled)"}
                         </Badge>
                       ) : (
                         <Badge variant="outline">No package</Badge>
@@ -232,17 +232,6 @@ export const UserManagement = () => {
                       >
                         {accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1)}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {subscription ? (
-                        subscription.cancelled_at ? (
-                          <Badge variant="destructive">Cancelled</Badge>
-                        ) : (
-                          <Badge variant="default">Active</Badge>
-                        )
-                      ) : (
-                        <Badge variant="outline">No subscription</Badge>
-                      )}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
