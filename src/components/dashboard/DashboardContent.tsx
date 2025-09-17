@@ -13,6 +13,7 @@ import { QRCodeManager } from "./QRCodeManager";
 import { VoiceSearchManager } from "./VoiceSearchManager";
 import { UserManagement } from "./UserManagement";
 import { SystemMessages } from "./SystemMessages";
+import { MarketingCalendar } from "./MarketingCalendar";
 
 export function DashboardContent() {
   return (
@@ -24,6 +25,7 @@ export function DashboardContent() {
         <Route path="/chatbots/*" element={<ChatbotManager />} />
         <Route path="/chatbots/conversations/:chatbotId" element={<ChatbotConversations />} />
         <Route path="/qr-codes" element={<QRCodeManager />} />
+        <Route path="/marketing-calendar" element={<MarketingCalendar />} />
         <Route path="/voice-search" element={<VoiceSearchManager />} />
         <Route path="/wills" element={<WillManager />} />
         <Route path="/alexa" element={<AlexaManager />} />

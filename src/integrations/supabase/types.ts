@@ -148,6 +148,48 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_events: {
+        Row: {
+          content_suggestions: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          event_type: string
+          id: string
+          is_active: boolean
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_suggestions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          is_active?: boolean
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_suggestions?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_status: string | null

@@ -13,7 +13,8 @@ import {
   QrCode,
   Users,
   Bell,
-  MicIcon
+  MicIcon,
+  Calendar
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const items = [
   { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
   { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon },
   { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
+  { title: "Marketing Calendar", url: "/dashboard/marketing-calendar", icon: Calendar },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
   { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },
