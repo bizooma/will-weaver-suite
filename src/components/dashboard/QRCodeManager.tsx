@@ -197,11 +197,23 @@ export function QRCodeManager() {
 
   const fetchAnalytics = async (qrCode: QRCodeData) => {
     try {
-      const { data, error } = await supabase.functions.invoke('qr-analytics', {
-        body: { qr_code_id: qrCode.id }
-      });
+      const response = await fetch(
+        `https://fmcgsxdtyvssvwtxufll.supabase.co/functions/v1/qr-analytics?qr_code_id=${qrCode.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtY2dzeGR0eXZzc3Z3dHh1ZmxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NTk2MjcsImV4cCI6MjA3MDMzNTYyN30.VC_lIcDwR_0EJrIROf7E8809pxkUPco8mPKd_s30UVU',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch analytics: ${response.statusText}`);
+      }
+
+      const data = await response.json();
       setAnalytics(data);
       setSelectedQRCode(qrCode);
       
