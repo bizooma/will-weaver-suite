@@ -17,51 +17,64 @@ const plans = [
   {
     name: "Basic",
     price: "$1,500",
-    description: "Perfect for solo practitioners",
+    description: "Essential tools for modern law firms",
     features: [
+      "AIO SEO Analyzer",
       "Video Chatbots",
-      "Marketing Calendar", 
       "QR Code Generator",
-      "Basic Analytics",
+      "Marketing Calendar",
       "Email Support"
     ],
     icon: Check,
     popular: false,
-    priceId: "price_basic_monthly" // You'll need to create this in Stripe
+    priceId: "price_basic_monthly"
+  },
+  {
+    name: "Standard",
+    price: "$2,500",
+    description: "Enhanced tools with document creation",
+    features: [
+      "Everything in Basic",
+      "Will & Trust Creator",
+      "Advanced Analytics",
+      "Priority Support"
+    ],
+    icon: Star,
+    popular: false,
+    priceId: "price_standard_monthly"
   },
   {
     name: "Pro PI", 
     price: "$3,500",
-    description: "Ideal for growing law firms",
+    description: "Advanced tools with voice and mobile",
     features: [
       "Everything in Basic",
+      "Alexa Skill",
+      "Mobile App",
       "Voice Search Optimization",
-      "Will Creator Tool", 
-      "Alexa Skill Integration",
-      "Advanced Analytics",
-      "Priority Support",
-      "White Label Options"
+      "White Label Options",
+      "Premium Support"
     ],
-    icon: Star,
-    popular: true,
-    priceId: "price_professional_monthly" // You'll need to create this in Stripe
+    icon: Zap,
+    popular: false,
+    priceId: "price_pro_pi_monthly"
   },
   {
-    name: "Enterprise",
-    price: "$7,500", 
-    description: "For large law firms and enterprises",
+    name: "Pro Estate",
+    price: "$4,500", 
+    description: "Complete legal technology suite",
     features: [
-      "Everything in Pro PI",
-      "Custom Integrations",
+      "Everything in Standard",
+      "Alexa Skill",
+      "Mobile App",
       "Advanced User Management",
       "Custom Branding",
       "Dedicated Account Manager",
-      "24/7 Phone Support",
-      "Custom Training"
+      "24/7 Phone Support"
     ],
     icon: Crown,
-    popular: false,
-    priceId: "price_enterprise_monthly" // You'll need to create this in Stripe
+    popular: true,
+    priceId: "price_pro_estate_monthly"
   }
 ];
 
@@ -112,7 +125,7 @@ export function PricingTable({ title, description, onClose }: PricingTableProps)
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {plans.map((plan, index) => (
           <Card 
             key={plan.name} 
