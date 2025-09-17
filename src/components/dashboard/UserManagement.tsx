@@ -231,12 +231,31 @@ export const UserManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant={accountStatus === 'active' ? 'default' : 
-                               accountStatus === 'paused' ? 'secondary' : 'destructive'}
-                      >
-                        {accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1)}
-                      </Badge>
+                      {(() => {
+                        const status = user.account_status || 'active';
+                        const subscription = user.user_subscriptions?.[0];
+                        const isManuallyUnsubscribed = subscription?.cancelled_at && status !== 'deleted';
+                        
+                        if (status === 'deleted' || isManuallyUnsubscribed) {
+                          return (
+                            <Badge className="bg-red-600 text-white border-red-600 hover:bg-red-700">
+                              Unsubscribed
+                            </Badge>
+                          );
+                        } else if (status === 'paused') {
+                          return (
+                            <Badge className="bg-black text-white border-black hover:bg-gray-800">
+                              Paused
+                            </Badge>
+                          );
+                        } else {
+                          return (
+                            <Badge className="bg-green-600 text-white border-green-600 hover:bg-green-700">
+                              Active
+                            </Badge>
+                          );
+                        }
+                      })()}
                     </TableCell>
                     <TableCell>
                       {user.email === 'joe@bizooma.com' ? (
