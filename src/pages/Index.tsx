@@ -313,8 +313,8 @@ const Index = () => {
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                 </div>
                 <div>
-                  <div className="font-medium">Everything in Pro PI</div>
-                  <div className="text-sm text-muted-foreground">All Pro PI features included</div>
+                  <div className="font-medium">Everything in Standard</div>
+                  <div className="text-sm text-muted-foreground">All Standard features included</div>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -322,8 +322,8 @@ const Index = () => {
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                 </div>
                 <div>
-                  <div className="font-medium">Will & Trust Creator</div>
-                  <div className="text-sm text-muted-foreground">AI-powered legal document generation</div>
+                  <div className="font-medium">Alexa Skill</div>
+                  <div className="text-sm text-muted-foreground">Voice-powered legal assistance</div>
                 </div>
               </li>
               <li className="flex items-start gap-3">
