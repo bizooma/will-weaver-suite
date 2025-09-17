@@ -108,6 +108,9 @@ const Index = () => {
         ></div>
         <div className="container relative z-10">
           <h2 className="text-3xl mb-8">Featured Tools</h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-4xl">
+            Streamline your practice, automate document drafting, and enhance client services with our all-in-one legal technology platform. From AI-powered will and trust generation to advanced SEO and voice search optimization, AmicusEdge provides the tools you need to stay ahead in a digital world.
+          </p>
           <div className="rounded-2xl backdrop-blur-sm bg-gradient-to-br from-background/80 to-background/60 border p-4">
           <div className="flex flex-col gap-4 max-w-4xl mx-auto">
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
