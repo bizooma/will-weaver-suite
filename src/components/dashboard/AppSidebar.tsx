@@ -10,7 +10,9 @@ import {
   Settings,
   LogOut,
   Search,
-  QrCode
+  QrCode,
+  Users,
+  Bell
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { Button } from "@/components/ui/button";
 
 const items = [
@@ -45,6 +48,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { isAdmin } = useAdminRole();
   const currentPath = location.pathname;
 
   const isActive = (path: string, end?: boolean) => {
@@ -99,6 +103,38 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to="/dashboard/users" 
+                      className={getNavCls("/dashboard/users")}
+                    >
+                      <Users className="h-4 w-4" />
+                      {open && <span>User Management</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to="/dashboard/system-messages" 
+                      className={getNavCls("/dashboard/system-messages")}
+                    >
+                      <Bell className="h-4 w-4" />
+                      {open && <span>System Messages</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border/5">

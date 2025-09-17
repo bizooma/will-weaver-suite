@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { NotificationIcon } from "@/components/NotificationIcon";
 
 const navLinkCls = ({ isActive }: { isActive: boolean }) =>
   `${isActive ? "text-primary" : "text-foreground/80 hover:text-foreground"} px-3 py-2 rounded-md transition-colors`;
@@ -51,6 +52,7 @@ const SiteHeader = () => {
               <Button asChild variant="outline" size="sm">
                 <NavLink to="/dashboard">Dashboard</NavLink>
               </Button>
+              <NotificationIcon />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">

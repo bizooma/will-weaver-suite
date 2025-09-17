@@ -294,6 +294,36 @@ export type Database = {
         }
         Relationships: []
       }
+      system_notifications: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          message: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_content: {
         Row: {
           chunk_index: number
@@ -415,6 +445,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          notification_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "system_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -480,31 +542,37 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          cancelled_at: string | null
           created_at: string
           custom_domain: string | null
           features: Json
           id: string
           plan_type: string
+          purchase_date: string | null
           updated_at: string
           user_id: string
           white_label_enabled: boolean
         }
         Insert: {
+          cancelled_at?: string | null
           created_at?: string
           custom_domain?: string | null
           features?: Json
           id?: string
           plan_type?: string
+          purchase_date?: string | null
           updated_at?: string
           user_id: string
           white_label_enabled?: boolean
         }
         Update: {
+          cancelled_at?: string | null
           created_at?: string
           custom_domain?: string | null
           features?: Json
           id?: string
           plan_type?: string
+          purchase_date?: string | null
           updated_at?: string
           user_id?: string
           white_label_enabled?: boolean

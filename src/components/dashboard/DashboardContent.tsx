@@ -10,6 +10,8 @@ import { FunctionalSettingsManager } from "./FunctionalSettingsManager";
 import { AIOManager } from "./AIOManager";
 import { ChatbotConversations } from "./ChatbotConversations";
 import { QRCodeManager } from "./QRCodeManager";
+import { UserManagement } from "./UserManagement";
+import { SystemMessages } from "./SystemMessages";
 
 export function DashboardContent() {
   return (
@@ -26,6 +28,8 @@ export function DashboardContent() {
         <Route path="/mobile" element={<MobileManager />} />
         <Route path="/analytics" element={<AnalyticsManager />} />
         <Route path="/settings" element={<FunctionalSettingsManager />} />
+        <Route path="/users" element={<UserManagement />} />
+        <Route path="/system-messages" element={<SystemMessages />} />
       </Routes>
     </div>
   );
