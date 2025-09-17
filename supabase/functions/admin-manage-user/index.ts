@@ -63,22 +63,60 @@ serve(async (req) => {
     }
 
     if (action === 'createUser') {
-      // Create new user with subscription
-      const { data: newUser, error: createError } = await supabase.rpc('admin_create_user_with_subscription', {
+      // First create the database records with temporary user ID
+      const { data: tempUserData, error: tempCreateError } = await supabase.rpc('admin_create_user_with_subscription', {
         _email: userData.email,
         _display_name: userData.displayName,
         _plan_type: userData.planType
       });
 
-      if (createError) {
-        console.error('Error creating user:', createError);
-        return new Response(JSON.stringify({ error: 'Failed to create user' }), { 
+      if (tempCreateError) {
+        console.error('Error creating temporary user records:', tempCreateError);
+        return new Response(JSON.stringify({ error: 'Failed to create user records' }), { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
       }
 
-      return new Response(JSON.stringify({ user: newUser }), {
+      // Create the actual auth user with the temporary password
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: tempUserData.temp_password,
+        email_confirm: true,
+        user_metadata: {
+          display_name: userData.displayName
+        }
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        return new Response(JSON.stringify({ error: 'Failed to create user account' }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      // Update the database records with the real auth user ID
+      const { error: updateError } = await supabase.rpc('admin_update_created_user', {
+        _temp_user_id: tempUserData.user_id,
+        _auth_user_id: authUser.user.id
+      });
+
+      if (updateError) {
+        console.error('Error updating user records with auth ID:', updateError);
+        return new Response(JSON.stringify({ error: 'Failed to finalize user creation' }), { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+      }
+
+      return new Response(JSON.stringify({ 
+        user: {
+          ...tempUserData,
+          user_id: authUser.user.id,
+          auth_created: true
+        }
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }

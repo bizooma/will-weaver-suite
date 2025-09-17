@@ -933,6 +933,10 @@ export type Database = {
         Args: { _display_name: string; _email: string; _plan_type: string }
         Returns: Json
       }
+      admin_update_created_user: {
+        Args: { _auth_user_id: string; _temp_user_id: string }
+        Returns: undefined
+      }
       admin_update_user_status: {
         Args: { _status: string; _user_id: string }
         Returns: undefined
