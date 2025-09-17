@@ -8,99 +8,8 @@ const SiteFooter = () => {
   return (
     <footer className="border-t bg-secondary/50" role="contentinfo">
       <div className="container py-12">
-        {/* Main footer content */}
-        <div className="grid gap-8 md:grid-cols-4">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <img 
-              src="/lovable-uploads/4ffe9938-1a7b-48ff-bede-e8a8b46f4d7a.png" 
-              alt="Amicus Edge - Law Firm Technology logo" 
-              className="h-12 w-auto" 
-              width={240} 
-              height={48}
-              loading="lazy"
-            />
-            <p className="text-sm text-muted-foreground">
-              AI-powered legal document generation platform for demonstration purposes.
-            </p>
-            <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
-              <strong>Demo Only:</strong> Not for actual legal use.
-            </div>
-          </div>
-          
-          {/* Products */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Products</h4>
-            <nav className="flex flex-col space-y-2">
-              <a href="/will-creator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Will & Trust Creator
-              </a>
-              <a href="/alexa" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Alexa Skill Demo
-              </a>
-              <a href="/mobile-app" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Mobile App
-              </a>
-              <a href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Blog
-              </a>
-            </nav>
-          </div>
-          
-          {/* Company */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Company</h4>
-            <nav className="flex flex-col space-y-2">
-              <a href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                About Us
-              </a>
-              <a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Contact
-              </a>
-              {user && (
-                <>
-                  <a href="/production-dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Dashboard
-                  </a>
-                  <a href="/data-privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Privacy Settings
-                  </a>
-                </>
-              )}
-            </nav>
-          </div>
-          
-          {/* Legal & Environment */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Legal</h4>
-            <nav className="flex flex-col space-y-2">
-              <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Privacy Policy
-              </a>
-              <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Terms of Service
-              </a>
-              <a href="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Cookie Policy
-              </a>
-            </nav>
-            
-            <div className="pt-2">
-              <h5 className="font-semibold text-xs mb-2">Environment</h5>
-              <div className="flex flex-wrap gap-1">
-                <span className={`text-xs px-2 py-1 rounded ${ENV_CONFIG.isDevelopment ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                  {ENV_CONFIG.isDevelopment ? 'Development' : 'Production'}
-                </span>
-                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
-                  v{ENV_CONFIG.app.version}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Google Maps Section */}
-        <div className="border-t py-8">
+        {/* Google Maps Section - Now First */}
+        <div className="pb-8">
           <div className="text-center mb-4">
             <h4 className="font-semibold text-sm mb-2">Our Location</h4>
             <p className="text-sm text-muted-foreground">Visit Bizooma Digital Marketing Agency</p>
@@ -118,6 +27,99 @@ const SiteFooter = () => {
                 title="Bizooma Digital Marketing Agency Location"
                 className="rounded-lg shadow-sm"
               />
+            </div>
+          </div>
+        </div>
+        
+        {/* Main footer content - Now Second */}
+        <div className="border-t pt-8">
+          <div className="grid gap-8 md:grid-cols-4">
+            {/* Company Info */}
+            <div className="space-y-4">
+              <img 
+                src="/lovable-uploads/4ffe9938-1a7b-48ff-bede-e8a8b46f4d7a.png" 
+                alt="Amicus Edge - Law Firm Technology logo" 
+                className="h-12 w-auto" 
+                width={240} 
+                height={48}
+                loading="lazy"
+              />
+              <p className="text-sm text-muted-foreground">
+                AI-powered legal document generation platform for demonstration purposes.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
+                <strong>Demo Only:</strong> Not for actual legal use.
+              </div>
+            </div>
+            
+            {/* Products */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm">Products</h4>
+              <nav className="flex flex-col space-y-2">
+                <a href="/will-creator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Will & Trust Creator
+                </a>
+                <a href="/alexa" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Alexa Skill Demo
+                </a>
+                <a href="/mobile-app" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Mobile App
+                </a>
+                <a href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Blog
+                </a>
+              </nav>
+            </div>
+            
+            {/* Company */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm">Company</h4>
+              <nav className="flex flex-col space-y-2">
+                <a href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  About Us
+                </a>
+                <a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Contact
+                </a>
+                {user && (
+                  <>
+                    <a href="/production-dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      Dashboard
+                    </a>
+                    <a href="/data-privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      Privacy Settings
+                    </a>
+                  </>
+                )}
+              </nav>
+            </div>
+            
+            {/* Legal & Environment */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm">Legal</h4>
+              <nav className="flex flex-col space-y-2">
+                <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Terms of Service
+                </a>
+                <a href="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Cookie Policy
+                </a>
+              </nav>
+              
+              <div className="pt-2">
+                <h5 className="font-semibold text-xs mb-2">Environment</h5>
+                <div className="flex flex-wrap gap-1">
+                  <span className={`text-xs px-2 py-1 rounded ${ENV_CONFIG.isDevelopment ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                    {ENV_CONFIG.isDevelopment ? 'Development' : 'Production'}
+                  </span>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">
+                    v{ENV_CONFIG.app.version}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
