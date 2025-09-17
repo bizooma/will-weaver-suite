@@ -98,6 +98,7 @@ const AppContent = () => {
         <Route path="/drafts/:slug" element={<DraftView />} />
         <Route path="/qr-codes" element={<QRCodes />} />
         <Route path="/video-chatbots" element={<VideoChatbots />} />
+        <Route path="/voice-search-simulator" element={<VoiceSearchSimulator />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
