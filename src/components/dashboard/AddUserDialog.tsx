@@ -27,6 +27,7 @@ interface AddUserDialogProps {
 }
 
 const planOptions = [
+  { value: 'free', label: 'Free' },
   { value: 'basic', label: 'Basic' },
   { value: 'standard', label: 'Standard' },
   { value: 'pro_pi', label: 'Pro PI' },
