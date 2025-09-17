@@ -439,6 +439,9 @@ const Index = () => {
             <p>
               Whether you're rebranding, expanding, or building from the ground up, we'll create a website that doesn't just look good—it works hard for your firm 24/7.
             </p>
+            <p className="mt-4">
+              Click on a date and time below to schedule a meeting to discuss your new website or redesign of a current site.
+            </p>
           </div>
           
           {/* Calendly inline widget */}
