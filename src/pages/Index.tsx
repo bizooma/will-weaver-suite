@@ -161,6 +161,118 @@ const Index = () => {
           ))}
         </div>
       </section>
+
+      <section className="container pb-24">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl mb-4">Choose Your Plan</h2>
+          <p className="text-lg text-muted-foreground">Select the package that best fits your firm's needs</p>
+        </div>
+        
+        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+          {/* Standard Package */}
+          <div className="glass-card rounded-2xl p-8 relative">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-serifBrand mb-2">Standard</h3>
+              <p className="text-muted-foreground mb-4">Essential tools for modern law firms</p>
+              <div className="text-4xl font-bold mb-1">Contact</div>
+              <div className="text-sm text-muted-foreground">for pricing</div>
+            </div>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">AIO SEO Analyzer</div>
+                  <div className="text-sm text-muted-foreground">Comprehensive website analysis and optimization</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Video Chatbots</div>
+                  <div className="text-sm text-muted-foreground">AI-powered video assistants for your website</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">QR Code Generator</div>
+                  <div className="text-sm text-muted-foreground">Trackable QR codes with analytics</div>
+                </div>
+              </li>
+            </ul>
+            
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link to="/contact">Get Started</Link>
+            </Button>
+          </div>
+
+          {/* Pro Package */}
+          <div className="glass-card rounded-2xl p-8 relative border-primary">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                Most Popular
+              </span>
+            </div>
+            
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-serifBrand mb-2">Pro</h3>
+              <p className="text-muted-foreground mb-4">Complete legal technology suite</p>
+              <div className="text-4xl font-bold mb-1">Contact</div>
+              <div className="text-sm text-muted-foreground">for pricing</div>
+            </div>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Everything in Standard</div>
+                  <div className="text-sm text-muted-foreground">All Standard features included</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Will & Trust Creator</div>
+                  <div className="text-sm text-muted-foreground">AI-powered legal document generation</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Alexa Skill</div>
+                  <div className="text-sm text-muted-foreground">Voice-first client guidance and FAQs</div>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Mobile App</div>
+                  <div className="text-sm text-muted-foreground">Native iOS and Android applications</div>
+                </div>
+              </li>
+            </ul>
+            
+            <Button asChild variant="hero" size="lg" className="w-full">
+              <Link to="/contact">Get Started</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </main>
   );
 };
