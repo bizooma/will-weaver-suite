@@ -27,58 +27,119 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === 'POST') {
-      // Check if user has admin role for creating notifications
-      const { data: hasAdminRole } = await supabase.rpc('has_role', { 
-        _user_id: user.id, 
-        _role: 'admin' 
-      });
+    // Safely parse body (may be empty when invoked via supabase.functions.invoke)
+    let payload: any = null;
+    try {
+      payload = await req.json();
+    } catch (_) {
+      payload = null;
+    }
 
-      if (!hasAdminRole) {
-        return new Response(JSON.stringify({ error: 'Admin access required' }), { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    if (req.method === 'POST') {
+      const hasCreateFields = payload && typeof payload.title === 'string' && typeof payload.message === 'string';
+      const markReadId = payload?.notificationId as string | undefined;
+
+      // 1) CREATE notification (admin only)
+      if (hasCreateFields) {
+        // Check if user has admin role for creating notifications
+        const { data: hasAdminRole } = await supabase.rpc('has_role', { 
+          _user_id: user.id, 
+          _role: 'admin' 
+        });
+
+        if (!hasAdminRole) {
+          return new Response(JSON.stringify({ error: 'Admin access required' }), { 
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          });
+        }
+
+        const { title, message } = payload as { title: string; message: string };
+
+        // Create system notification
+        const { data: notification, error } = await supabase
+          .from('system_notifications')
+          .insert({
+            title,
+            message,
+            created_by: user.id
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error creating notification:', error);
+          return new Response(JSON.stringify({ error: 'Failed to create notification' }), { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          });
+        }
+
+        // Get all users to create user_notifications entries
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id');
+
+        if (profiles) {
+          const userNotifications = profiles.map((profile: { user_id: string }) => ({
+            user_id: profile.user_id,
+            notification_id: notification.id
+          }));
+
+          await supabase
+            .from('user_notifications')
+            .insert(userNotifications);
+        }
+
+        return new Response(JSON.stringify({ notification }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      const { title, message } = await req.json();
+      // 2) MARK READ (if notificationId provided)
+      if (markReadId) {
+        const { error } = await supabase
+          .from('user_notifications')
+          .update({ read_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+          .eq('notification_id', markReadId);
 
-      // Create system notification
-      const { data: notification, error } = await supabase
+        if (error) {
+          console.error('Error marking notification as read:', error);
+          return new Response(JSON.stringify({ error: 'Failed to mark notification as read' }), { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          });
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // 3) LIST (default when POST has no/unknown payload)
+      const { data: notifications, error } = await supabase
         .from('system_notifications')
-        .insert({
-          title,
-          message,
-          created_by: user.id
-        })
-        .select()
-        .single();
+        .select(`
+          *,
+          user_notifications!inner (
+            read_at
+          )
+        `)
+        .eq('user_notifications.user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
       if (error) {
-        console.error('Error creating notification:', error);
-        return new Response(JSON.stringify({ error: 'Failed to create notification' }), { 
+        console.error('Error fetching notifications:', error);
+        return new Response(JSON.stringify({ error: 'Failed to fetch notifications' }), { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         });
       }
 
-      // Get all users to create user_notifications entries
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id');
-
-      if (profiles) {
-        const userNotifications = profiles.map(profile => ({
-          user_id: profile.user_id,
-          notification_id: notification.id
-        }));
-
-        await supabase
-          .from('user_notifications')
-          .insert(userNotifications);
-      }
-
-      return new Response(JSON.stringify({ notification }), {
+      return new Response(JSON.stringify({ notifications }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -113,7 +174,7 @@ serve(async (req) => {
 
     if (req.method === 'PATCH') {
       // Mark notification as read
-      const { notificationId } = await req.json();
+      const { notificationId } = (payload || {}) as { notificationId?: string };
 
       const { error } = await supabase
         .from('user_notifications')
