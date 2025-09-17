@@ -67,7 +67,7 @@ const Index = () => {
               {user ? (
                 <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
               ) : (
-                <a href="/auth"><Button variant="hero" size="lg">Get Started</Button></a>
+                <a href="#pricing"><Button variant="hero" size="lg">Get Started</Button></a>
               )}
             </div>
           </div>
@@ -208,7 +208,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="relative pt-16 pb-24">
+      <section id="pricing" className="relative pt-16 pb-24">
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: `url(${lawOfficeBackground})` }}
