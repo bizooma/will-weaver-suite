@@ -16,7 +16,7 @@ interface PricingTableProps {
 const plans = [
   {
     name: "Basic",
-    price: "$29",
+    price: "$1,500",
     description: "Perfect for solo practitioners",
     features: [
       "Video Chatbots",
@@ -31,7 +31,7 @@ const plans = [
   },
   {
     name: "Professional", 
-    price: "$79",
+    price: "$3,500",
     description: "Ideal for growing law firms",
     features: [
       "Everything in Basic",
@@ -48,7 +48,7 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "$199", 
+    price: "$7,500", 
     description: "For large law firms and enterprises",
     features: [
       "Everything in Professional",
