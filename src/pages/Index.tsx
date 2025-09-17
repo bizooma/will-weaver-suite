@@ -87,6 +87,20 @@ const Index = () => {
         </div>
       </section>
 
+      <section className="container py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl mb-6">About Our Platform</h2>
+          <div className="prose prose-lg mx-auto text-muted-foreground">
+            <p className="mb-4">
+              [Your about content will go here - please replace this placeholder text with your copy]
+            </p>
+            <p className="mb-4">
+              [Add additional paragraphs as needed for your about section content]
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="relative py-16">
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
