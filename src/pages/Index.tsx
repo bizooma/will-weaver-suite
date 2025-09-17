@@ -87,42 +87,44 @@ const Index = () => {
 
       <section className="container py-16">
         <h2 className="text-3xl mb-8">Featured Tools</h2>
-        <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
-          <article className="glass-card rounded-lg p-5">
-            <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
-            <p className="text-sm text-muted-foreground mb-4">Comprehensive website analysis for SEO, Voice SEO, and AI Overview optimization.</p>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/aio-analyzer">Analyze Site</Link>
-            </Button>
-          </article>
-          <article className="glass-card rounded-lg p-5">
-            <h3 className="text-xl font-serifBrand mb-2">Video Chatbots</h3>
-            <p className="text-sm text-muted-foreground mb-4">AI-powered video assistants for your website with customizable branding.</p>
-            <Button asChild variant="outline" size="sm">
-              <Link to={user ? "/dashboard/chatbots" : "/auth"}>Get Started</Link>
-            </Button>
-          </article>
-          <article className="glass-card rounded-lg p-5">
-            <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
-            <p className="text-sm text-muted-foreground mb-4">Step‑by‑step guided drafting with firm‑ready outputs. White‑label capable.</p>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/will-creator">Explore</Link>
-            </Button>
-          </article>
-          <article className="glass-card rounded-lg p-5">
-            <h3 className="text-xl font-serifBrand mb-2">Alexa Skill</h3>
-            <p className="text-sm text-muted-foreground mb-4">Voice‑first guidance for FAQs and client reminders.</p>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/alexa">Try Demo</Link>
-            </Button>
-          </article>
-          <article className="glass-card rounded-lg p-5">
-            <h3 className="text-xl font-serifBrand mb-2">Mobile App</h3>
-            <p className="text-sm text-muted-foreground mb-4">Native iOS and Android app with offline capabilities.</p>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/mobile-app">Download</Link>
-            </Button>
-          </article>
+        <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/20 p-4">
+          <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
+          <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
+              <p className="text-sm text-muted-foreground mb-4">Comprehensive website analysis for SEO, Voice SEO, and AI Overview optimization.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/aio-analyzer">Analyze Site</Link>
+              </Button>
+            </article>
+            <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">Video Chatbots</h3>
+              <p className="text-sm text-muted-foreground mb-4">AI-powered video assistants for your website with customizable branding.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to={user ? "/dashboard/chatbots" : "/auth"}>Get Started</Link>
+              </Button>
+            </article>
+            <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
+              <p className="text-sm text-muted-foreground mb-4">Step‑by‑step guided drafting with firm‑ready outputs. White‑label capable.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/will-creator">Explore</Link>
+              </Button>
+            </article>
+            <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">Alexa Skill</h3>
+              <p className="text-sm text-muted-foreground mb-4">Voice‑first guidance for FAQs and client reminders.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/alexa">Try Demo</Link>
+              </Button>
+            </article>
+            <article className="glass-card rounded-xl p-5">
+              <h3 className="text-xl font-serifBrand mb-2">Mobile App</h3>
+              <p className="text-sm text-muted-foreground mb-4">Native iOS and Android app with offline capabilities.</p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/mobile-app">Download</Link>
+              </Button>
+            </article>
+          </div>
         </div>
       </section>
 
