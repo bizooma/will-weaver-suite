@@ -210,7 +210,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="relative pb-24">
+      <section className="relative pt-16 pb-24">
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: `url(${lawOfficeBackground})` }}
