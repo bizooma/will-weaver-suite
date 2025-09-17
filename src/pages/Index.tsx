@@ -181,7 +181,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container pb-20 grid gap-10 md:grid-cols-2 items-center">
+      <section className="container pt-16 pb-20 grid gap-10 md:grid-cols-2 items-center">
         <div>
           <img src={appMock} alt="Mobile app mockup" className="rounded-xl shadow" loading="lazy" />
         </div>
