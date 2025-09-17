@@ -14,26 +14,103 @@ import { VoiceSearchManager } from "./VoiceSearchManager";
 import { UserManagement } from "./UserManagement";
 import { SystemMessages } from "./SystemMessages";
 import { MarketingCalendar } from "./MarketingCalendar";
+import { ProtectedContent } from "@/components/ProtectedContent";
 
 export function DashboardContent() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Routes>
         <Route path="/" element={<DashboardOverview />} />
-        <Route path="/aio" element={<AIOManager />} />
-        <Route path="/chatbots" element={<ChatbotManager />} />
-        <Route path="/chatbots/*" element={<ChatbotManager />} />
-        <Route path="/chatbots/conversations/:chatbotId" element={<ChatbotConversations />} />
-        <Route path="/qr-codes" element={<QRCodeManager />} />
+        <Route path="/aio" element={
+          <ProtectedContent 
+            fallbackTitle="AIO Analyzer - Premium Feature"
+            fallbackDescription="Analyze your online presence and get AI-powered insights to optimize your legal practice."
+          >
+            <AIOManager />
+          </ProtectedContent>
+        } />
+        <Route path="/chatbots" element={
+          <ProtectedContent 
+            fallbackTitle="Video Chatbots - Premium Feature"
+            fallbackDescription="Create intelligent video chatbots to engage with your clients and generate leads 24/7."
+          >
+            <ChatbotManager />
+          </ProtectedContent>
+        } />
+        <Route path="/chatbots/*" element={
+          <ProtectedContent>
+            <ChatbotManager />
+          </ProtectedContent>
+        } />
+        <Route path="/chatbots/conversations/:chatbotId" element={
+          <ProtectedContent>
+            <ChatbotConversations />
+          </ProtectedContent>
+        } />
+        <Route path="/qr-codes" element={
+          <ProtectedContent 
+            fallbackTitle="QR Code Generator - Premium Feature"
+            fallbackDescription="Generate trackable QR codes for your marketing campaigns and measure their performance."
+          >
+            <QRCodeManager />
+          </ProtectedContent>
+        } />
         <Route path="/marketing-calendar" element={<MarketingCalendar />} />
-        <Route path="/voice-search" element={<VoiceSearchManager />} />
-        <Route path="/wills" element={<WillManager />} />
-        <Route path="/alexa" element={<AlexaManager />} />
-        <Route path="/mobile" element={<MobileManager />} />
-        <Route path="/analytics" element={<AnalyticsManager />} />
-        <Route path="/settings" element={<FunctionalSettingsManager />} />
-        <Route path="/users" element={<UserManagement />} />
-        <Route path="/system-messages" element={<SystemMessages />} />
+        <Route path="/voice-search" element={
+          <ProtectedContent 
+            fallbackTitle="Voice Search Optimizer - Premium Feature"
+            fallbackDescription="Optimize your practice for voice search and capture clients using voice assistants."
+          >
+            <VoiceSearchManager />
+          </ProtectedContent>
+        } />
+        <Route path="/wills" element={
+          <ProtectedContent 
+            fallbackTitle="Will Creator - Premium Feature"
+            fallbackDescription="Create professional wills and estate planning documents with AI assistance."
+          >
+            <WillManager />
+          </ProtectedContent>
+        } />
+        <Route path="/alexa" element={
+          <ProtectedContent 
+            fallbackTitle="Alexa Skill - Premium Feature"
+            fallbackDescription="Build custom Alexa skills to help clients access legal information through voice."
+          >
+            <AlexaManager />
+          </ProtectedContent>
+        } />
+        <Route path="/mobile" element={
+          <ProtectedContent 
+            fallbackTitle="Mobile App Builder - Premium Feature"
+            fallbackDescription="Create a custom mobile app for your law firm to better serve your clients."
+          >
+            <MobileManager />
+          </ProtectedContent>
+        } />
+        <Route path="/analytics" element={
+          <ProtectedContent 
+            fallbackTitle="Advanced Analytics - Premium Feature"
+            fallbackDescription="Get detailed insights into your marketing performance and client engagement."
+          >
+            <AnalyticsManager />
+          </ProtectedContent>
+        } />
+        <Route path="/settings" element={
+          <ProtectedContent>
+            <FunctionalSettingsManager />
+          </ProtectedContent>
+        } />
+        <Route path="/users" element={
+          <ProtectedContent requiredRole="admin">
+            <UserManagement />
+          </ProtectedContent>
+        } />
+        <Route path="/system-messages" element={
+          <ProtectedContent requiredRole="admin">
+            <SystemMessages />
+          </ProtectedContent>
+        } />
       </Routes>
     </div>
   );
