@@ -124,7 +124,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Comprehensive website analysis for SEO, Voice SEO, and AI Overview optimization.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Get a comprehensive analysis of your website's SEO performance, including voice search and AI overview optimization. Our AIO SEO Analyzer identifies opportunities for improvement and provides actionable recommendations to help you rank higher in search results. Attract more qualified leads and grow your firm with a powerful, data-driven SEO strategy.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/aio-analyzer">Learn More</Link>
