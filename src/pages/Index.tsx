@@ -399,7 +399,7 @@ const Index = () => {
       </section>
 
       <section className="container py-16">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl mb-6">Custom Website Development</h2>
           <div className="prose prose-lg text-muted-foreground">
             <p className="mb-4">
