@@ -174,8 +174,8 @@ const Index = () => {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-serifBrand mb-2">Standard</h3>
               <p className="text-muted-foreground mb-4">Essential tools for modern law firms</p>
-              <div className="text-4xl font-bold mb-1">Contact</div>
-              <div className="text-sm text-muted-foreground">for pricing</div>
+              <div className="text-4xl font-bold mb-1">$1,500</div>
+              <div className="text-sm text-muted-foreground">per month</div>
             </div>
             
             <ul className="space-y-4 mb-8">
@@ -224,8 +224,8 @@ const Index = () => {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-serifBrand mb-2">Pro</h3>
               <p className="text-muted-foreground mb-4">Complete legal technology suite</p>
-              <div className="text-4xl font-bold mb-1">Contact</div>
-              <div className="text-sm text-muted-foreground">for pricing</div>
+              <div className="text-4xl font-bold mb-1">$4,500</div>
+              <div className="text-sm text-muted-foreground">per month</div>
             </div>
             
             <ul className="space-y-4 mb-8">
