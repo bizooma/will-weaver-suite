@@ -150,7 +150,7 @@ const Index = () => {
               </div>
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
-              <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
+              <h3 className="text-xl font-serifBrand mb-2">AI-Powered Will & Trust Creator</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Our intelligent will and trust generator guides you through the drafting process with step-by-step instructions and real-time feedback. Create customized, firm-ready estate plans in a fraction of the time, with white-label options available to match your brand. Reduce errors, ensure compliance, and free up your team to focus on high-value client interactions.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
