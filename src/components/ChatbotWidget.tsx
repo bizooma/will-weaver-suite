@@ -236,7 +236,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     return url;
   };
   const wrapperClass = embedded ? "relative w-full" : "fixed bottom-20 left-4 z-50";
-  const cardSizeClass = embedded ? "w-full h-[500px]" : "mb-2 w-80 max-h-[calc(100vh-8rem)]";
+  const cardSizeClass = embedded ? "w-full h-[500px]" : "mb-2 w-80 h-[600px]";
 
   if (loading) {
     return (
@@ -369,7 +369,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
               </div>
             )}
 
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
+            <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -389,7 +389,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
                 ))}
                 <div ref={bottomRef} />
               </div>
-            </div>
+            </ScrollArea>
 
             {chatbotData.showSuggestedResponses && chatbotData.suggestedResponses.length > 0 && (
               <div className="p-2 border-t flex-shrink-0">
