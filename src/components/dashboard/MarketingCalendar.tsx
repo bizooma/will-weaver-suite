@@ -57,8 +57,15 @@ export function MarketingCalendar() {
     }
   };
 
+  // Parse dates properly to avoid timezone issues
+  const parseEventDate = (dateString: string) => {
+    // Parse as local date to avoid timezone conversion issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed
+  };
+
   const selectedDateEvents = events.filter(event => 
-    selectedDate && isSameDay(new Date(event.event_date), selectedDate)
+    selectedDate && isSameDay(parseEventDate(event.event_date), selectedDate)
   );
 
   const filteredEvents = selectedDateEvents.filter(event => {
@@ -66,7 +73,7 @@ export function MarketingCalendar() {
     return event.event_type === filterType;
   });
 
-  const eventDates = events.map(event => new Date(event.event_date));
+  const eventDates = events.map(event => parseEventDate(event.event_date));
 
   const handleEventAdded = () => {
     fetchEvents();
