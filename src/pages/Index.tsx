@@ -519,6 +519,11 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="container">
+        <div className="border-t border-border/50"></div>
+      </div>
+
       <section className="container py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl mb-6">Custom Website Development</h2>
