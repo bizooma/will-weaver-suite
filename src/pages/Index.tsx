@@ -163,12 +163,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container pb-24 relative">
+      <section className="relative pb-24">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 rounded-3xl"
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5"
           style={{ backgroundImage: `url(${lawOfficeBackground})` }}
         ></div>
-        <div className="relative z-10">
+        <div className="container relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl mb-4">Choose Your Plan</h2>
           <p className="text-lg text-muted-foreground">Select the package that best fits your firm's needs</p>
