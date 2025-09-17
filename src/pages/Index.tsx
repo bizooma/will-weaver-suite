@@ -115,7 +115,7 @@ const Index = () => {
           <div className="flex flex-col gap-4 max-w-4xl mx-auto">
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">QR Code Generator</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Create trackable QR codes for campaigns, events, and redirects with analytics.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Make offline marketing trackable and interactive. Our QR Code Builder creates branded, scannable codes that link directly to your website, intake forms, or chatbot. Perfect for business cards, print ads, billboards, and community events.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/qr-codes">Learn More</Link>
