@@ -487,24 +487,6 @@ const Index = () => {
                     </div>
                     <span>Full marketing calendar access</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    </div>
-                    <span>Basic chatbot builder</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    </div>
-                    <span>QR code generator (3 codes/month)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    </div>
-                    <span>SEO analysis tool (1 scan/month)</span>
-                  </li>
                 </ul>
                 
                 <Button asChild variant="hero" size="lg" className="w-full mb-3">
