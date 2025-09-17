@@ -11,8 +11,27 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { formatDistanceToNow } from 'date-fns';
-import { Search } from 'lucide-react';
+import { Search, MoreHorizontal, UserPlus, Pause, Play, Trash2 } from 'lucide-react';
+import { AddUserDialog } from './AddUserDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserData {
   id: string;
@@ -20,6 +39,7 @@ interface UserData {
   email: string;
   display_name: string;
   created_at: string;
+  account_status?: string;
   user_subscriptions: {
     id: string;
     plan_type: string;
@@ -34,6 +54,10 @@ export const UserManagement = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const { toast } = useToast();
 
   const fetchUsers = async () => {
     try {
@@ -53,6 +77,54 @@ export const UserManagement = () => {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUserAction = async (userId: string, action: 'pause' | 'activate' | 'delete') => {
+    try {
+      const status = action === 'pause' ? 'paused' : action === 'activate' ? 'active' : 'deleted';
+      
+      const { error } = await supabase.functions.invoke('admin-manage-user', {
+        body: {
+          action: 'updateStatus',
+          userId,
+          status
+        },
+        headers: {
+          authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: `User ${action}d successfully`
+      });
+      
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast({
+        title: "Error",
+        description: `Failed to ${action} user`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const openDeleteDialog = (user: UserData) => {
+    setSelectedUser(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedUser) {
+      handleUserAction(selectedUser.user_id, 'delete');
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
     }
   };
 
@@ -84,7 +156,13 @@ export const UserManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>All Users</CardTitle>
+            <Button onClick={() => setAddUserOpen(true)} className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Add User
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -103,13 +181,15 @@ export const UserManagement = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Package</TableHead>
                 <TableHead>Purchase Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Cancelled Date</TableHead>
+                <TableHead>Account Status</TableHead>
+                <TableHead>Subscription Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => {
                 const subscription = user.user_subscriptions?.[0];
+                const accountStatus = user.account_status || 'active';
                 return (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
@@ -135,6 +215,14 @@ export const UserManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
+                      <Badge 
+                        variant={accountStatus === 'active' ? 'default' : 
+                               accountStatus === 'paused' ? 'secondary' : 'destructive'}
+                      >
+                        {accountStatus.charAt(0).toUpperCase() + accountStatus.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       {subscription ? (
                         subscription.cancelled_at ? (
                           <Badge variant="destructive">Cancelled</Badge>
@@ -146,13 +234,33 @@ export const UserManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      {subscription?.cancelled_at ? (
-                        <span className="text-sm">
-                          {formatDistanceToNow(new Date(subscription.cancelled_at), { addSuffix: true })}
-                        </span>
-                      ) : (
-                        'N/A'
-                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {accountStatus === 'paused' ? (
+                            <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'activate')}>
+                              <Play className="mr-2 h-4 w-4" />
+                              Activate
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'pause')}>
+                              <Pause className="mr-2 h-4 w-4" />
+                              Pause
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => openDeleteDialog(user)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 );
@@ -166,6 +274,30 @@ export const UserManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      <AddUserDialog 
+        open={addUserOpen} 
+        onOpenChange={setAddUserOpen}
+        onUserAdded={fetchUsers}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account for{' '}
+              <strong>{selectedUser?.display_name || selectedUser?.email}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

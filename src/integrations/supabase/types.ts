@@ -150,6 +150,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -158,6 +159,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -166,6 +168,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -881,6 +884,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_user_with_subscription: {
+        Args: { _display_name: string; _email: string; _plan_type: string }
+        Returns: Json
+      }
+      admin_update_user_status: {
+        Args: { _status: string; _user_id: string }
+        Returns: undefined
+      }
       assign_user_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
