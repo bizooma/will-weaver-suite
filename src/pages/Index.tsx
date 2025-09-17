@@ -1,6 +1,7 @@
 import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
 import lawOfficeBackground from "@/assets/law-office-background.jpg";
+import techDataBackground from "@/assets/tech-data-background.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -86,9 +87,14 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container py-16">
-        <h2 className="text-3xl mb-8">Featured Tools</h2>
-        <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/20 p-4">
+      <section className="relative py-16">
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-20"
+          style={{ backgroundImage: `url(${techDataBackground})` }}
+        ></div>
+        <div className="container relative z-10">
+          <h2 className="text-3xl mb-8">Featured Tools</h2>
+          <div className="rounded-2xl backdrop-blur-sm bg-gradient-to-br from-background/80 to-background/60 border p-4">
           <div className="flex flex-col gap-4 max-w-4xl mx-auto">
             <article className="glass-card rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">QR Code Generator</h3>
@@ -154,6 +160,7 @@ const Index = () => {
               </div>
             </article>
           </div>
+        </div>
         </div>
       </section>
 
