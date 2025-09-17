@@ -69,8 +69,6 @@ const Index = () => {
               ) : (
                 <a href="/auth"><Button variant="hero" size="lg">Get Started</Button></a>
               )}
-              <a href="/alexa"><Button variant="outline" size="lg">Try Alexa Demo</Button></a>
-              <a href="/mobile-app"><Button variant="secondary" size="lg">Download Our App</Button></a>
             </div>
           </div>
           <div>
