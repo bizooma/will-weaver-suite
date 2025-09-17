@@ -169,10 +169,10 @@ const Index = () => {
         </div>
         
         <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-          {/* Standard Package */}
+          {/* Basic Package */}
           <div className="glass-card rounded-2xl p-8 relative">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-serifBrand mb-2">Standard</h3>
+              <h3 className="text-2xl font-serifBrand mb-2">Basic</h3>
               <p className="text-muted-foreground mb-4">Essential tools for modern law firms</p>
               <div className="text-4xl font-bold mb-1">$1,500</div>
               <div className="text-sm text-muted-foreground">per month</div>
@@ -234,8 +234,8 @@ const Index = () => {
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                 </div>
                 <div>
-                  <div className="font-medium">Everything in Standard</div>
-                  <div className="text-sm text-muted-foreground">All Standard features included</div>
+                  <div className="font-medium">Everything in Basic</div>
+                  <div className="text-sm text-muted-foreground">All Basic features included</div>
                 </div>
               </li>
               <li className="flex items-start gap-3">
