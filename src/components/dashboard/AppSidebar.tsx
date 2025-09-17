@@ -9,7 +9,8 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Search
+  Search,
+  QrCode
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
   { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search },
   { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
+  { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
   { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },

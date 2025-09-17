@@ -13,7 +13,8 @@ import {
   TrendingUp,
   Users,
   Clock,
-  Search
+  Search,
+  QrCode
 } from "lucide-react";
 import { ProductionReadinessPanel } from "./ProductionReadinessPanel";
 
@@ -39,6 +40,13 @@ export function DashboardOverview() {
       icon: MessageSquare,
       action: "/dashboard/chatbots/new",
       color: "bg-blue-500"
+    },
+    {
+      title: "Generate QR Code",
+      description: "Create trackable QR codes with analytics",
+      icon: QrCode,
+      action: "/dashboard/qr-codes",
+      color: "bg-teal-500"
     },
     {
       title: "Start Will Creator",

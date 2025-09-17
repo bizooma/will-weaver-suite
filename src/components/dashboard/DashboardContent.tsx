@@ -9,6 +9,7 @@ import { AnalyticsManager } from "./AnalyticsManager";
 import { FunctionalSettingsManager } from "./FunctionalSettingsManager";
 import { AIOManager } from "./AIOManager";
 import { ChatbotConversations } from "./ChatbotConversations";
+import { QRCodeManager } from "./QRCodeManager";
 
 export function DashboardContent() {
   return (
@@ -19,6 +20,7 @@ export function DashboardContent() {
         <Route path="/chatbots" element={<ChatbotManager />} />
         <Route path="/chatbots/*" element={<ChatbotManager />} />
         <Route path="/chatbots/conversations/:chatbotId" element={<ChatbotConversations />} />
+        <Route path="/qr-codes" element={<QRCodeManager />} />
         <Route path="/wills" element={<WillManager />} />
         <Route path="/alexa" element={<AlexaManager />} />
         <Route path="/mobile" element={<MobileManager />} />

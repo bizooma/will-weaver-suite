@@ -175,6 +175,86 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_codes: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          qr_config: Json
+          slug: string
+          target_url: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          qr_config?: Json
+          slug: string
+          target_url: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          qr_config?: Json
+          slug?: string
+          target_url?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      qr_scans: {
+        Row: {
+          city: string | null
+          country: string | null
+          id: string
+          ip_address: unknown | null
+          qr_code_id: string
+          referrer: string | null
+          region: string | null
+          scanned_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          id?: string
+          ip_address?: unknown | null
+          qr_code_id: string
+          referrer?: string | null
+          region?: string | null
+          scanned_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          id?: string
+          ip_address?: unknown | null
+          qr_code_id?: string
+          referrer?: string | null
+          region?: string | null
+          scanned_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_scans_qr_code_id_fkey"
+            columns: ["qr_code_id"]
+            isOneToOne: false
+            referencedRelation: "qr_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seo_analyses: {
         Row: {
           ai_overview_score: number | null
