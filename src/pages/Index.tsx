@@ -1,7 +1,7 @@
 import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
 import lawOfficeBackground from "@/assets/law-office-background.jpg";
-import techDataBackground from "@/assets/tech-data-background.jpg";
+import financialTechBackground from "@/assets/financial-tech-background.jpg";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -104,7 +104,7 @@ const Index = () => {
       <section className="relative py-16">
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40"
-          style={{ backgroundImage: `url(${techDataBackground})` }}
+          style={{ backgroundImage: `url(${financialTechBackground})` }}
         ></div>
         <div className="container relative z-10">
           <h2 className="text-3xl mb-8">Featured Tools</h2>
