@@ -142,7 +142,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Voice Search Simulator</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Test and optimize your law firm's voice search presence across multiple platforms.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Test how your firm shows up when people ask Google, Siri, Alexa, or Bing for legal help. The Voice Search Simulator reveals exactly what answers clients hear—and gives you tailored optimization suggestions to ensure your firm is the one they call.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/voice-search-simulator">Learn More</Link>
