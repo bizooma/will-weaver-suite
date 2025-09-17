@@ -51,9 +51,6 @@ const SiteHeader = () => {
               <Button asChild variant="outline" size="sm">
                 <NavLink to="/dashboard">Dashboard</NavLink>
               </Button>
-              <Button asChild size="sm">
-                <NavLink to="/will-creator">Create My Will</NavLink>
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
