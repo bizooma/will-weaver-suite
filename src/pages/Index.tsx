@@ -419,6 +419,110 @@ const Index = () => {
         </div>
       </section>
 
+      <section className="relative py-16">
+        <div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-30"
+          style={{ backgroundImage: `url(${financialTechBackground})` }}
+        ></div>
+        <div className="container relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl mb-4">Stay Ahead with Our Legal Marketing Calendar</h2>
+              <p className="text-lg text-foreground max-w-3xl mx-auto">
+                Never miss another marketing opportunity! Get access to our comprehensive legal marketing calendar featuring 300+ significant legal events, holidays, and awareness days throughout the year. Perfect for planning content, social media posts, and client engagement campaigns.
+              </p>
+            </div>
+            
+            <div className="grid gap-8 md:grid-cols-2 items-center">
+              <div className="glass-card rounded-2xl p-8">
+                <h3 className="text-2xl font-serifBrand mb-4">What's Included</h3>
+                <ul className="space-y-3 text-foreground">
+                  <li className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    </div>
+                    <div>
+                      <div className="font-medium">300+ Legal Events & Holidays</div>
+                      <div className="text-sm text-muted-foreground">Supreme Court decisions, constitutional milestones, legal awareness days</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Content Suggestions</div>
+                      <div className="text-sm text-muted-foreground">Ready-made ideas for blog posts, social media, and client communications</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Practice Area Tags</div>
+                      <div className="text-sm text-muted-foreground">Organized by legal specialty to match your firm's focus</div>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Interactive Calendar View</div>
+                      <div className="text-sm text-muted-foreground">Easy-to-use interface for planning your marketing campaigns</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="glass-card rounded-2xl p-8 border-primary">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-serifBrand mb-2">Start Free Today</h3>
+                  <p className="text-muted-foreground mb-4">Get instant access to our marketing calendar and explore our tools</p>
+                  <div className="text-4xl font-bold mb-1 text-primary">Free</div>
+                  <div className="text-sm text-muted-foreground">No credit card required</div>
+                </div>
+                
+                <ul className="space-y-3 mb-6 text-sm">
+                  <li className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <span>Full marketing calendar access</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <span>Basic chatbot builder</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <span>QR code generator (3 codes/month)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <span>SEO analysis tool (1 scan/month)</span>
+                  </li>
+                </ul>
+                
+                <Button asChild variant="hero" size="lg" className="w-full mb-3">
+                  <Link to="/auth">Sign Up Free</Link>
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Upgrade anytime to unlock all premium features
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="container py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl mb-6">Custom Website Development</h2>
