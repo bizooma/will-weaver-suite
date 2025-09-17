@@ -101,17 +101,50 @@ export function AddEventDialog({ open, onOpenChange, onEventAdded, selectedDate 
     form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
   };
 
+  const checkForDuplicates = async (title: string, eventDate: string) => {
+    try {
+      const { data: existingEvents } = await supabase
+        .from('marketing_events')
+        .select('id, title, event_type')
+        .eq('event_date', eventDate)
+        .eq('is_active', true)
+        .ilike('title', `%${title.trim()}%`);
+
+      return existingEvents || [];
+    } catch (error) {
+      console.error('Error checking for duplicates:', error);
+      return [];
+    }
+  };
+
   const onSubmit = async (data: EventFormData) => {
     if (!user) return;
 
     try {
       setLoading(true);
+      
+      const eventDateString = format(data.event_date, 'yyyy-MM-dd');
+      
+      // Check for potential duplicates
+      const duplicates = await checkForDuplicates(data.title, eventDateString);
+      
+      if (duplicates.length > 0) {
+        const confirmed = window.confirm(
+          `Similar event(s) already exist on this date:\n${duplicates.map(d => `• ${d.title}`).join('\n')}\n\nDo you want to add this event anyway?`
+        );
+        
+        if (!confirmed) {
+          setLoading(false);
+          return;
+        }
+      }
+      
       const { error } = await supabase
         .from('marketing_events')
         .insert({
           title: data.title,
           description: data.description || null,
-          event_date: format(data.event_date, 'yyyy-MM-dd'),
+          event_date: eventDateString,
           event_type: 'user',
           created_by: user.id,
           tags: data.tags,
