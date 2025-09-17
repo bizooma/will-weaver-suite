@@ -160,7 +160,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Alexa Skill</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Voice‑first guidance for FAQs and client reminders.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Bring your firm into clients' living rooms with a branded Alexa skill. Prospects can ask legal questions, access firm resources, or connect with your office—all hands-free. Build authority and stay top-of-mind in the fastest-growing search channel: voice.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/alexa">Learn More</Link>
