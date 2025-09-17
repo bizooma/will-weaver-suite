@@ -8,26 +8,24 @@ const SiteFooter = () => {
   return (
     <footer className="border-t bg-secondary/50" role="contentinfo">
       <div className="container py-12">
-        {/* Google Maps Section - Now First */}
-        <div className="pb-8">
-          <div className="text-center mb-4">
+        {/* Google Maps Section - Now First and Full Width */}
+        <div className="pb-8 -mx-4 md:-mx-8 lg:-mx-12">
+          <div className="text-center mb-4 px-4 md:px-8 lg:px-12">
             <h4 className="font-semibold text-sm mb-2">Our Location</h4>
             <p className="text-sm text-muted-foreground">Visit Bizooma Digital Marketing Agency</p>
           </div>
-          <div className="flex justify-center">
-            <div className="w-full max-w-2xl">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5672.395785425484!2d-81.6591862!3d30.3283615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88e5b7ba8c79c7b7%3A0x29d0d337ce7701c4!2sBizooma%20Digital%20Marketing%20Agency!5e1!3m2!1sen!2sus!4v1758071711766!5m2!1sen!2sus" 
-                width="100%" 
-                height="300" 
-                style={{ border: 0 }} 
-                allowFullScreen 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Bizooma Digital Marketing Agency Location"
-                className="rounded-lg shadow-sm"
-              />
-            </div>
+          <div className="w-full">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5672.395785425484!2d-81.6591862!3d30.3283615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88e5b7ba8c79c7b7%3A0x29d0d337ce7701c4!2sBizooma%20Digital%20Marketing%20Agency!5e1!3m2!1sen!2sus!4v1758071711766!5m2!1sen!2sus" 
+              width="100%" 
+              height="300" 
+              style={{ border: 0 }} 
+              allowFullScreen 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Bizooma Digital Marketing Agency Location"
+              className="w-full"
+            />
           </div>
         </div>
         
