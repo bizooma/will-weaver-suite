@@ -12,7 +12,8 @@ import {
   Search,
   QrCode,
   Users,
-  Bell
+  Bell,
+  MicIcon
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
   { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search },
   { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
+  { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon },
   { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
