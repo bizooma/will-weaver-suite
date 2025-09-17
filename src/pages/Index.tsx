@@ -96,7 +96,7 @@ const Index = () => {
           <h2 className="text-3xl mb-8">Featured Tools</h2>
           <div className="rounded-2xl backdrop-blur-sm bg-gradient-to-br from-background/80 to-background/60 border p-4">
           <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">QR Code Generator</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Create trackable QR codes for campaigns, events, and redirects with analytics.</p>
               <div className="mt-auto flex justify-center">
@@ -105,7 +105,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Comprehensive website analysis for SEO, Voice SEO, and AI Overview optimization.</p>
               <div className="mt-auto flex justify-center">
@@ -114,7 +114,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Video Chatbots</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">AI-powered video assistants for your website with customizable branding.</p>
               <div className="mt-auto flex justify-center">
@@ -123,7 +123,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Voice Search Simulator</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Test and optimize your law firm's voice search presence across multiple platforms.</p>
               <div className="mt-auto flex justify-center">
@@ -132,7 +132,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Step‑by‑step guided drafting with firm‑ready outputs. White‑label capable.</p>
               <div className="mt-auto flex justify-center">
@@ -141,7 +141,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Alexa Skill</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Voice‑first guidance for FAQs and client reminders.</p>
               <div className="mt-auto flex justify-center">
@@ -150,7 +150,7 @@ const Index = () => {
                 </Button>
               </div>
             </article>
-            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Mobile App</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Native iOS and Android app with offline capabilities.</p>
               <div className="mt-auto flex justify-center">
