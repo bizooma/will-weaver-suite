@@ -168,7 +168,7 @@ const Index = () => {
           <p className="text-lg text-muted-foreground">Select the package that best fits your firm's needs</p>
         </div>
         
-        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
           {/* Basic Package */}
           <div className="glass-card rounded-2xl p-8 relative">
             <div className="text-center mb-6">
@@ -213,18 +213,12 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Pro Package */}
-          <div className="glass-card rounded-2xl p-8 relative border-primary">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-              <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                Most Popular
-              </span>
-            </div>
-            
+          {/* Standard Package */}
+          <div className="glass-card rounded-2xl p-8 relative">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-serifBrand mb-2">Pro</h3>
-              <p className="text-muted-foreground mb-4">Complete legal technology suite</p>
-              <div className="text-4xl font-bold mb-1">$4,500</div>
+              <h3 className="text-2xl font-serifBrand mb-2">Standard</h3>
+              <p className="text-muted-foreground mb-4">Enhanced tools with document creation</p>
+              <div className="text-4xl font-bold mb-1">$2,500</div>
               <div className="text-sm text-muted-foreground">per month</div>
             </div>
             
@@ -247,6 +241,38 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">AI-powered legal document generation</div>
                 </div>
               </li>
+            </ul>
+            
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link to="/contact">Get Started</Link>
+            </Button>
+          </div>
+
+          {/* Pro Package */}
+          <div className="glass-card rounded-2xl p-8 relative border-primary">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                Most Popular
+              </span>
+            </div>
+            
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-serifBrand mb-2">Pro</h3>
+              <p className="text-muted-foreground mb-4">Complete legal technology suite</p>
+              <div className="text-4xl font-bold mb-1">$4,500</div>
+              <div className="text-sm text-muted-foreground">per month</div>
+            </div>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                </div>
+                <div>
+                  <div className="font-medium">Everything in Standard</div>
+                  <div className="text-sm text-muted-foreground">All Standard features included</div>
+                </div>
+              </li>
               <li className="flex items-start gap-3">
                 <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -264,7 +290,7 @@ const Index = () => {
                   <div className="font-medium">Mobile App</div>
                   <div className="text-sm text-muted-foreground">Native iOS and Android applications</div>
                 </div>
-              </li>
+               </li>
             </ul>
             
             <Button asChild variant="hero" size="lg" className="w-full">
