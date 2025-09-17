@@ -40,29 +40,33 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all users with their profiles and subscriptions
-    const { data: usersData, error } = await supabase
+    // Fetch all users with their profiles
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select(`
-        *,
-        user_subscriptions (
-          id,
-          plan_type,
-          white_label_enabled,
-          features,
-          created_at,
-          purchase_date,
-          cancelled_at
-        )
-      `);
+      .select('*');
 
-    if (error) {
-      console.error('Error fetching users:', error);
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
       return new Response(JSON.stringify({ error: 'Failed to fetch users' }), { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
+
+    // Fetch all subscriptions
+    const { data: subscriptions, error: subscriptionsError } = await supabase
+      .from('user_subscriptions')
+      .select('*');
+
+    if (subscriptionsError) {
+      console.error('Error fetching subscriptions:', subscriptionsError);
+    }
+
+    // Merge the data
+    const usersData = profiles?.map(profile => ({
+      ...profile,
+      user_subscriptions: subscriptions?.filter(sub => sub.user_id === profile.user_id) || []
+    })) || [];
 
     return new Response(JSON.stringify({ users: usersData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
