@@ -169,7 +169,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Mobile App</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Native iOS and Android app with offline capabilities.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Our native iOS and Android mobile app provides secure, on-the-go access to your case files, documents, and client information. With offline capabilities and a user-friendly interface, you can manage your practice from anywhere, at any time. Make this pre built app your firm's own, we'll customize it with your brand kit and firm details, then submit it to the app stores.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/mobile-app">Learn More</Link>
