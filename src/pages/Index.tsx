@@ -187,12 +187,14 @@ const Index = () => {
         </div>
         <div>
           <h2 className="text-3xl mb-3">Built for Performance</h2>
-          <p className="text-muted-foreground mb-4">Fast, accessible, and SEO‑ready by design. Our stack delivers crisp UX and smooth interactions on any device.</p>
-          <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-            <li>Semantic HTML and structured data</li>
-            <li>Mobile‑first, responsive layouts</li>
-            <li>Easy embeds for chat/video widgets</li>
+          <p className="text-muted-foreground mb-6">At Amicus Edge, every tool is engineered with one goal in mind: helping your law firm perform at its best. From lightning-fast websites and voice-ready search optimization to lead-converting chatbots and mobile apps, our platform is built to drive measurable results.</p>
+          <ul className="list-disc pl-5 space-y-3 text-sm text-muted-foreground mb-6">
+            <li><strong>Speed & Reliability</strong> – Seamless integrations and modern cloud architecture keep everything running smoothly.</li>
+            <li><strong>Conversion Focused</strong> – Every feature is designed to capture leads, book consultations, and grow your caseload.</li>
+            <li><strong>Secure & Compliant</strong> – Protect your firm and your clients with technology that meets strict privacy and security standards.</li>
+            <li><strong>Scalable for Growth</strong> – Whether you're a boutique practice or a multi-location firm, Amicus Edge adapts as you expand.</li>
           </ul>
+          <p className="text-muted-foreground text-sm">Your clients expect efficiency and professionalism—your marketing platform should deliver the same. With Amicus Edge, you'll have the power, performance, and precision to outpace the competition.</p>
         </div>
       </section>
 
