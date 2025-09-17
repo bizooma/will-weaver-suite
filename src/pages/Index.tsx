@@ -118,6 +118,15 @@ const Index = () => {
               </div>
             </article>
             <article className="glass-card rounded-xl p-5 flex flex-col h-full">
+              <h3 className="text-xl font-serifBrand mb-2">Voice Search Simulator</h3>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Test and optimize your law firm's voice search presence across multiple platforms.</p>
+              <div className="mt-auto flex justify-center">
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/voice-search-simulator">Learn More</Link>
+                </Button>
+              </div>
+            </article>
+            <article className="glass-card rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">Will & Trust Creator</h3>
               <p className="text-sm text-muted-foreground mb-4 flex-grow">Step‑by‑step guided drafting with firm‑ready outputs. White‑label capable.</p>
               <div className="mt-auto flex justify-center">
