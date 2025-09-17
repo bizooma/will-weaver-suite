@@ -89,7 +89,7 @@ const Index = () => {
 
       <section className="container py-16">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl mb-6">About Our Platform</h2>
+          <h2 className="text-3xl mb-6">The Future of Legal Practice is Here</h2>
           <div className="prose prose-lg mx-auto text-muted-foreground">
             <p className="mb-4">
               [Your about content will go here - please replace this placeholder text with your copy]
