@@ -39,13 +39,14 @@ export const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialog
   const [formData, setFormData] = useState({
     email: '',
     displayName: '',
-    planType: ''
+    planType: '',
+    password: ''
   });
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email || !formData.displayName || !formData.planType) {
+    if (!formData.email || !formData.displayName || !formData.planType || !formData.password) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -78,7 +79,7 @@ export const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialog
       
       onUserAdded();
       onOpenChange(false);
-      setFormData({ email: '', displayName: '', planType: '' });
+      setFormData({ email: '', displayName: '', planType: '', password: '' });
     } catch (error) {
       console.error('Error creating user:', error);
       toast({
@@ -121,6 +122,18 @@ export const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialog
               value={formData.displayName}
               onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
               placeholder="John Doe"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Enter user password"
               required
             />
           </div>

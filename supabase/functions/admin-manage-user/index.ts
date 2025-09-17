@@ -78,10 +78,10 @@ serve(async (req) => {
         });
       }
 
-      // Create the actual auth user with the temporary password
+      // Create the actual auth user with the provided password
       const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         email: userData.email,
-        password: tempUserData.temp_password,
+        password: userData.password,
         email_confirm: true,
         user_metadata: {
           display_name: userData.displayName
