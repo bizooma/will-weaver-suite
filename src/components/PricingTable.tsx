@@ -30,7 +30,7 @@ const plans = [
     priceId: "price_basic_monthly" // You'll need to create this in Stripe
   },
   {
-    name: "Professional", 
+    name: "Pro PI", 
     price: "$3,500",
     description: "Ideal for growing law firms",
     features: [
@@ -51,7 +51,7 @@ const plans = [
     price: "$7,500", 
     description: "For large law firms and enterprises",
     features: [
-      "Everything in Professional",
+      "Everything in Pro PI",
       "Custom Integrations",
       "Advanced User Management",
       "Custom Branding",
