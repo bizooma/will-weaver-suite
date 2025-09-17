@@ -171,7 +171,7 @@ const Index = () => {
         <div className="container relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl mb-4">Choose Your Plan</h2>
-          <p className="text-lg text-muted-foreground">Select the package that best fits your firm's needs</p>
+          <p className="text-lg text-black">Select the package that best fits your firm's needs</p>
         </div>
         
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
