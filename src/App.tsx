@@ -36,6 +36,7 @@ import VoiceAgentBar from "./components/VoiceAgentBar";
 import DraftSave from "./pages/DraftSave";
 import DraftView from "./pages/DraftView";
 import QRCodes from "./pages/QRCodes";
+import VideoChatbots from "./pages/VideoChatbots";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,7 @@ const AppContent = () => {
         } />
         <Route path="/drafts/:slug" element={<DraftView />} />
         <Route path="/qr-codes" element={<QRCodes />} />
+        <Route path="/video-chatbots" element={<VideoChatbots />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
