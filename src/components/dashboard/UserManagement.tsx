@@ -136,7 +136,12 @@ export const UserManagement = () => {
   const filteredUsers = users.filter(user => 
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).sort((a, b) => {
+    // Always put joe@bizooma.com first
+    if (a.email === 'joe@bizooma.com') return -1;
+    if (b.email === 'joe@bizooma.com') return 1;
+    return 0;
+  });
 
   if (loading) {
     return (
@@ -234,33 +239,38 @@ export const UserManagement = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {accountStatus === 'paused' ? (
-                            <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'activate')}>
-                              <Play className="mr-2 h-4 w-4" />
-                              Activate
+                      {user.email === 'joe@bizooma.com' ? (
+                        // No actions for platform owner
+                        <span className="text-muted-foreground text-sm">Platform Owner</span>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {accountStatus === 'paused' ? (
+                              <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'activate')}>
+                                <Play className="mr-2 h-4 w-4" />
+                                Activate
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'pause')}>
+                                <Pause className="mr-2 h-4 w-4" />
+                                Pause
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem 
+                              onClick={() => openDeleteDialog(user)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
                             </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleUserAction(user.user_id, 'pause')}>
-                              <Pause className="mr-2 h-4 w-4" />
-                              Pause
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem 
-                            onClick={() => openDeleteDialog(user)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
