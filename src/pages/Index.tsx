@@ -402,7 +402,22 @@ const Index = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl mb-6">Custom Website Development</h2>
           <div className="prose prose-lg text-muted-foreground">
-            {/* Copy to be added */}
+            <p className="mb-4">
+              Your website is more than an online brochure—it's the foundation of your firm's digital strategy. At Amicus Edge, we build custom law firm websites that are fast, secure, and designed to convert visitors into clients.
+            </p>
+            <p className="mb-4">
+              Our team blends modern design with legal-industry expertise to deliver sites that:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 mb-6 text-left max-w-2xl mx-auto">
+              <li>Showcase your brand with a clean, professional look.</li>
+              <li>Drive results with optimized intake forms, chatbots, and lead funnels.</li>
+              <li>Perform everywhere with responsive layouts for desktop, tablet, and mobile.</li>
+              <li>Rank higher through SEO, AEO, and Voice Search optimization.</li>
+              <li>Integrate seamlessly with the full Amicus Edge toolset.</li>
+            </ul>
+            <p>
+              Whether you're rebranding, expanding, or building from the ground up, we'll create a website that doesn't just look good—it works hard for your firm 24/7.
+            </p>
           </div>
         </div>
       </section>
