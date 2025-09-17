@@ -579,6 +579,201 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_search_analysis: {
+        Row: {
+          competitive_score: number
+          competitor_data: Json
+          compliance_issues: Json
+          created_at: string
+          firm_business_name: string | null
+          firm_domain: string | null
+          frequency_score: number
+          id: string
+          optimization_suggestions: Json
+          overall_score: number
+          presence_score: number
+          test_id: string
+          updated_at: string
+        }
+        Insert: {
+          competitive_score?: number
+          competitor_data?: Json
+          compliance_issues?: Json
+          created_at?: string
+          firm_business_name?: string | null
+          firm_domain?: string | null
+          frequency_score?: number
+          id?: string
+          optimization_suggestions?: Json
+          overall_score?: number
+          presence_score?: number
+          test_id: string
+          updated_at?: string
+        }
+        Update: {
+          competitive_score?: number
+          competitor_data?: Json
+          compliance_issues?: Json
+          created_at?: string
+          firm_business_name?: string | null
+          firm_domain?: string | null
+          frequency_score?: number
+          id?: string
+          optimization_suggestions?: Json
+          overall_score?: number
+          presence_score?: number
+          test_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      voice_search_queries: {
+        Row: {
+          assistant: string
+          created_at: string
+          id: string
+          question: string
+          status: string
+          test_id: string
+        }
+        Insert: {
+          assistant: string
+          created_at?: string
+          id?: string
+          question: string
+          status?: string
+          test_id: string
+        }
+        Update: {
+          assistant?: string
+          created_at?: string
+          id?: string
+          question?: string
+          status?: string
+          test_id?: string
+        }
+        Relationships: []
+      }
+      voice_search_reports: {
+        Row: {
+          created_at: string
+          file_path: string | null
+          id: string
+          report_data: Json
+          report_type: string
+          test_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          report_data?: Json
+          report_type?: string
+          test_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          report_data?: Json
+          report_type?: string
+          test_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_search_results: {
+        Row: {
+          ai_overview_text: string | null
+          assistant: string
+          created_at: string
+          id: string
+          local_pack_results: Json
+          query_id: string
+          raw_results: Json
+          snippets: Json
+          source_urls: string[]
+          voice_transcript: string | null
+        }
+        Insert: {
+          ai_overview_text?: string | null
+          assistant: string
+          created_at?: string
+          id?: string
+          local_pack_results?: Json
+          query_id: string
+          raw_results?: Json
+          snippets?: Json
+          source_urls?: string[]
+          voice_transcript?: string | null
+        }
+        Update: {
+          ai_overview_text?: string | null
+          assistant?: string
+          created_at?: string
+          id?: string
+          local_pack_results?: Json
+          query_id?: string
+          raw_results?: Json
+          snippets?: Json
+          source_urls?: string[]
+          voice_transcript?: string | null
+        }
+        Relationships: []
+      }
+      voice_search_tests: {
+        Row: {
+          created_at: string
+          custom_practice_area: string | null
+          id: string
+          market_city: string
+          market_state: string
+          market_zip: string | null
+          name: string
+          practice_areas: string[]
+          selected_assistants: string[]
+          settings: Json
+          status: string
+          test_questions: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_practice_area?: string | null
+          id?: string
+          market_city: string
+          market_state: string
+          market_zip?: string | null
+          name: string
+          practice_areas?: string[]
+          selected_assistants?: string[]
+          settings?: Json
+          status?: string
+          test_questions?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_practice_area?: string | null
+          id?: string
+          market_city?: string
+          market_state?: string
+          market_zip?: string | null
+          name?: string
+          practice_areas?: string[]
+          selected_assistants?: string[]
+          settings?: Json
+          status?: string
+          test_questions?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_sessions: {
         Row: {
           confidence_scores: Json

@@ -37,6 +37,8 @@ import DraftSave from "./pages/DraftSave";
 import DraftView from "./pages/DraftView";
 import QRCodes from "./pages/QRCodes";
 import VideoChatbots from "./pages/VideoChatbots";
+import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
+import QRCodes from "./pages/QRCodes";
 
 const queryClient = new QueryClient();
 
