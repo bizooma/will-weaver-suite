@@ -8,8 +8,8 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Core palette: navy (primary), cream (background), slate (secondary), burgundy (accent) */
-    --background: 45 50% 97%; /* cream */
+    /* Core palette: navy (primary), warm blue (background), slate (secondary), burgundy (accent) */
+    --background: 215 45% 94%; /* warm blue */
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -60,7 +60,7 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222 45% 6%;
+    --background: 215 45% 12%;
     --foreground: 210 40% 98%;
 
     --card: 222 45% 6%;
