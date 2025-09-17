@@ -27,6 +27,7 @@ interface ChatbotData {
   contactPhone: string;
   contactEmail: string;
   calendlyUrl: string;
+  position: string;
 }
 
 interface ChatbotWidgetProps {
@@ -97,7 +98,8 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
           showSuggestedResponses: config.showSuggestedResponses || false,
           contactPhone: config.contactPhone || "",
           contactEmail: config.contactEmail || "",
-          calendlyUrl: data.calendly_url || ""
+          calendlyUrl: data.calendly_url || "",
+          position: config.position || "lower-left"
         };
 
         setChatbotData(chatbot);
@@ -235,7 +237,19 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     }
     return url;
   };
-  const wrapperClass = embedded ? "relative w-full" : "fixed bottom-20 left-4 z-50";
+  const getPositionClass = (position: string) => {
+    switch (position) {
+      case 'lower-center':
+        return 'fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50';
+      case 'lower-right':
+        return 'fixed bottom-20 right-4 z-50';
+      case 'lower-left':
+      default:
+        return 'fixed bottom-20 left-4 z-50';
+    }
+  };
+
+  const wrapperClass = embedded ? "relative w-full" : getPositionClass(chatbotData?.position || "lower-left");
   const cardSizeClass = embedded ? "w-full h-[500px]" : "mb-2 w-80 h-[600px]";
 
   if (loading) {

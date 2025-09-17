@@ -31,6 +31,7 @@ export function ChatbotBuilder() {
     contactPhone: "",
     contactEmail: "",
     calendlyUrl: "",
+    position: "lower-left",
     suggestedResponses: [
       "Tell me about your services",
       "How can you help me?", 
@@ -85,6 +86,7 @@ export function ChatbotBuilder() {
           contactPhone: config.contactPhone || "",
           contactEmail: config.contactEmail || "",
           calendlyUrl: data.calendly_url || "",
+          position: config.position || "lower-left",
           suggestedResponses: config.suggestedResponses || [
             "Tell me about your services",
             "How can you help me?", 
@@ -165,7 +167,8 @@ export function ChatbotBuilder() {
         showSuggestedResponses: chatbotData.showSuggestedResponses,
         suggestedResponses: chatbotData.suggestedResponses,
         contactPhone: chatbotData.contactPhone,
-        contactEmail: chatbotData.contactEmail
+        contactEmail: chatbotData.contactEmail,
+        position: chatbotData.position
       };
 
       const embedData = {
@@ -385,6 +388,26 @@ export function ChatbotBuilder() {
                         onChange={(e) => setChatbotData(prev => ({ ...prev, primaryColor: e.target.value }))}
                         placeholder="#3b82f6"
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Widget Position</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: 'lower-left', label: 'Lower Left' },
+                        { value: 'lower-center', label: 'Lower Center' },
+                        { value: 'lower-right', label: 'Lower Right' }
+                      ].map((position) => (
+                        <div
+                          key={position.value}
+                          className={`p-3 border rounded-lg cursor-pointer text-center text-sm ${
+                            chatbotData.position === position.value ? 'border-primary bg-primary/5' : 'border-border'
+                          }`}
+                          onClick={() => setChatbotData(prev => ({ ...prev, position: position.value }))}
+                        >
+                          {position.label}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
