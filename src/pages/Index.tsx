@@ -419,12 +419,8 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="relative py-16">
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-30"
-          style={{ backgroundImage: `url(${financialTechBackground})` }}
-        ></div>
-        <div className="container relative z-10">
+      <section className="py-16">
+        <div className="container">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl mb-4">Stay Ahead with Our Legal Marketing Calendar</h2>
