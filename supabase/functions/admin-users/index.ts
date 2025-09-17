@@ -43,7 +43,7 @@ serve(async (req) => {
     // Fetch all users with their profiles
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('*, account_status');
+      .select('*, account_status, last_login');
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);

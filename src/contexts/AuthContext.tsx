@@ -34,6 +34,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
 
+  const updateLastLogin = async (userId: string) => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ last_login: new Date().toISOString() })
+        .eq('user_id', userId);
+    } catch (error) {
+      logger.error('Failed to update last login', error);
+    }
+  };
+
   React.useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -41,6 +52,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Update last login when user signs in
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            updateLastLogin(session.user.id);
+          }, 0);
+        }
       }
     );
 

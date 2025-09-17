@@ -40,6 +40,7 @@ interface UserData {
   display_name: string;
   created_at: string;
   account_status?: string;
+  last_login?: string;
   user_subscriptions: {
     id: string;
     plan_type: string;
@@ -179,6 +180,7 @@ export const UserManagement = () => {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Last Login</TableHead>
                 <TableHead>Package</TableHead>
                 <TableHead>Purchase Date</TableHead>
                 <TableHead>Account Status</TableHead>
@@ -196,6 +198,15 @@ export const UserManagement = () => {
                       {user.display_name || 'N/A'}
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      {user.last_login ? (
+                        <span className="text-sm">
+                          {formatDistanceToNow(new Date(user.last_login), { addSuffix: true })}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Never</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {subscription ? (
                         <Badge variant="secondary">
