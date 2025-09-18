@@ -50,6 +50,21 @@ export function WillManager() {
   const [deletingDraft, setDeletingDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const normalizeCustomDomain = (domain: string) => {
+    if (!domain) return '';
+    let normalized = domain.trim();
+    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+      normalized = `https://${normalized}`;
+    }
+    return normalized.replace(/\/$/, ''); // Remove trailing slash
+  };
+
+  const baseUrl = useMemo(() => {
+    return settings.custom_domain 
+      ? normalizeCustomDomain(settings.custom_domain)
+      : window.location.origin;
+  }, [settings.custom_domain]);
+
   const previewUrl = useMemo(() => {
     const params = new URLSearchParams();
     if (settings.company_name) params.set('brand', settings.company_name);
@@ -62,8 +77,8 @@ export function WillManager() {
     }
     if (settings.logo_url) params.set('logo', settings.logo_url);
     
-    return `${window.location.origin}/will-creator${params.toString() ? '?' + params.toString() : ''}`;
-  }, [settings]);
+    return `${baseUrl}/will-creator${params.toString() ? '?' + params.toString() : ''}`;
+  }, [baseUrl, settings]);
 
   const embedUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -78,8 +93,8 @@ export function WillManager() {
     }
     if (settings.logo_url) params.set('logo', settings.logo_url);
     
-    return `${window.location.origin}/will-creator?${params.toString()}`;
-  }, [settings]);
+    return `${baseUrl}/will-creator?${params.toString()}`;
+  }, [baseUrl, settings]);
 
   const iframeCode = `<iframe
   src="${embedUrl}"
@@ -330,6 +345,14 @@ export function WillManager() {
                   onChange={(e) => updateSettings({ custom_domain: e.target.value })}
                   placeholder="your-firm.com"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Required for embedding. Set up your custom domain in Project Settings → Domains first.
+                </p>
+                {!settings.custom_domain && (
+                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+                    ⚠️ Without a custom domain, the embed will show the login page instead of your Will Creator.
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -360,9 +383,16 @@ export function WillManager() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Use this embed code to integrate the will creator into your website:
-              </p>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Use this embed code to integrate the will creator into your website:
+                </p>
+                {!settings.custom_domain && (
+                  <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+                    ⚠️ Set up your custom domain above for the embed to work properly.
+                  </div>
+                )}
+              </div>
               <Textarea
                 readOnly
                 value={iframeCode}
