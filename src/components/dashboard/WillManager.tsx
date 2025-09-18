@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   FileText, 
   Plus, 
@@ -12,10 +13,14 @@ import {
   Edit,
   Calendar,
   Loader2,
-  Trash2
+  Trash2,
+  Code,
+  Copy,
+  ExternalLink
 } from "lucide-react";
 import { getUserDrafts, deleteDraft, WillDraft } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -32,9 +37,43 @@ import {
 
 export function WillManager() {
   const navigate = useNavigate();
+  const { settings, loading: settingsLoading } = useUserSettings();
   const [drafts, setDrafts] = useState<WillDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingDraft, setDeletingDraft] = useState<string | null>(null);
+
+  const previewUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    if (settings.company_name) params.set('brand', settings.company_name);
+    if (settings.brand_color) {
+      params.set('primary', settings.brand_color);
+      // Generate accent color (lighter version of primary)
+      const hex = settings.brand_color;
+      const accent = hex + '80'; // Add transparency or use a lighter shade
+      params.set('accent', accent);
+    }
+    if (settings.logo_url) params.set('logo', settings.logo_url);
+    
+    return `${window.location.origin}/will-creator${params.toString() ? '?' + params.toString() : ''}`;
+  }, [settings]);
+
+  const iframeCode = `<iframe
+  src="${previewUrl}&embed=1"
+  width="100%"
+  height="900"
+  style="border:0;"
+  loading="lazy"
+  title="Will Creator"
+></iframe>`;
+
+  const handleCopyEmbedCode = () => {
+    navigator.clipboard.writeText(iframeCode);
+    toast.success('Embed code copied to clipboard');
+  };
+
+  const handlePreview = () => {
+    window.open(`${previewUrl}&embed=1`, '_blank');
+  };
 
   useEffect(() => {
     loadDrafts();
@@ -147,6 +186,69 @@ export function WillManager() {
           </Link>
         </Button>
       </div>
+
+      {/* Embed Code Section */}
+      {!settingsLoading && settings.white_label_enabled && (
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Code className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-lg">Embed Will Creator</CardTitle>
+                <CardDescription>
+                  Copy this code to embed the Will Creator on any website
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              value={iframeCode}
+              readOnly
+              rows={8}
+              className="font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyEmbedCode}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Embed Code
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreview}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Preview
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!settingsLoading && !settings.white_label_enabled && (
+        <Card className="border-dashed border-2">
+          <CardContent className="flex flex-col items-center justify-center py-8 space-y-4">
+            <Code className="h-8 w-8 text-muted-foreground" />
+            <div className="text-center space-y-2">
+              <h3 className="font-medium">Enable White Label</h3>
+              <p className="text-sm text-muted-foreground">
+                Enable white label settings to get embed code for your website
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/dashboard/settings">
+                <Settings className="h-4 w-4 mr-2" />
+                Go to Settings
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4">
         {drafts.map((draft) => (
