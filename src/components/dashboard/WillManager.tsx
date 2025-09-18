@@ -65,8 +65,24 @@ export function WillManager() {
     return `${window.location.origin}/will-creator${params.toString() ? '?' + params.toString() : ''}`;
   }, [settings]);
 
+  const embedUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set('embed', '1');
+    if (settings.company_name) params.set('brand', settings.company_name);
+    if (settings.brand_color) {
+      params.set('primary', settings.brand_color);
+      // Generate accent color (lighter version of primary)
+      const hex = settings.brand_color;
+      const accent = hex + '80'; // Add transparency or use a lighter shade
+      params.set('accent', accent);
+    }
+    if (settings.logo_url) params.set('logo', settings.logo_url);
+    
+    return `${window.location.origin}/will-creator?${params.toString()}`;
+  }, [settings]);
+
   const iframeCode = `<iframe
-  src="${previewUrl}&embed=1"
+  src="${embedUrl}"
   width="100%"
   height="900"
   style="border:0;"
@@ -80,7 +96,7 @@ export function WillManager() {
   };
 
   const handlePreview = () => {
-    window.open(`${previewUrl}&embed=1`, '_blank');
+    window.open(embedUrl, '_blank');
   };
 
   const handleSave = async () => {

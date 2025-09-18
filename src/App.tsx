@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -42,7 +42,9 @@ import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const isEmbed = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1';
+  const location = useLocation();
+  const isEmbed = new URLSearchParams(location.search).get('embed') === '1' || 
+                   new URLSearchParams(location.search).has('embed');
   
   // Security monitoring
   useSecurityMonitoring();
@@ -55,7 +57,7 @@ const AppContent = () => {
   useAccessibilityMonitoring();
 
   return (
-    <BrowserRouter>
+    <>
       {!isEmbed && <SiteHeader />}
       <Routes>
         <Route path="/" element={<Index />} />
@@ -108,7 +110,7 @@ const AppContent = () => {
       {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
       
       {!isEmbed && <CookieConsentBanner />}
-    </BrowserRouter>
+    </>
   );
 };
 
@@ -119,7 +121,9 @@ const App = () => {
         <HelmetProvider>
           <AuthProvider>
             <TooltipProvider>
-              <AppContent />
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
               <Toaster />
               <Sonner />
             </TooltipProvider>
