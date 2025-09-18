@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { PatternSelector } from "@/components/ui/pattern-selector";
-import QRCodeLib from "qrcode";
+import QRCodeStyling from "qr-code-styling";
 import { generateSlug } from "@/utils/slug";
 
 interface QRCodeData {
@@ -89,14 +89,42 @@ export function QRCodeManager() {
 
   const generateQRCodeImage = async (qrCode: QRCodeData): Promise<string> => {
     const redirectUrl = `https://fmcgsxdtyvssvwtxufll.supabase.co/functions/v1/qr-redirect/${qrCode.slug}`;
-    return await QRCodeLib.toDataURL(redirectUrl, {
-      color: {
-        dark: qrCode.qr_config.foregroundColor || '#000000',
-        light: qrCode.qr_config.backgroundColor || '#ffffff',
-      },
-      width: qrCode.qr_config.size || 256,
-      margin: qrCode.qr_config.margin || 4,
-      errorCorrectionLevel: qrCode.qr_config.errorCorrectionLevel || 'M',
+    
+    return new Promise((resolve) => {
+      const qrCodeStyling = new QRCodeStyling({
+        width: qrCode.qr_config.size || 256,
+        height: qrCode.qr_config.size || 256,
+        data: redirectUrl,
+        margin: qrCode.qr_config.margin || 4,
+        qrOptions: {
+          errorCorrectionLevel: qrCode.qr_config.errorCorrectionLevel || "M"
+        },
+        dotsOptions: {
+          color: qrCode.qr_config.foregroundColor || "#000000",
+          type: qrCode.qr_config.dataPattern as any || "square"
+        },
+        backgroundOptions: {
+          color: qrCode.qr_config.backgroundColor || "#ffffff"
+        },
+        cornersSquareOptions: {
+          color: qrCode.qr_config.eyeColor || qrCode.qr_config.foregroundColor || "#000000",
+          type: qrCode.qr_config.eyePattern as any || "square"
+        },
+        cornersDotOptions: {
+          color: qrCode.qr_config.eyeInnerColor || qrCode.qr_config.foregroundColor || "#000000",
+          type: qrCode.qr_config.eyePattern as any || "square"
+        }
+      });
+
+      const canvas = document.createElement('canvas');
+      qrCodeStyling.append(canvas);
+      qrCodeStyling.getRawData('png').then((blob) => {
+        if (blob && blob instanceof Blob) {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        }
+      });
     });
   };
 
@@ -109,16 +137,39 @@ export function QRCodeManager() {
 
     setPreviewLoading(true);
     try {
-      const dataUrl = await QRCodeLib.toDataURL(formData.target_url, {
-        color: {
-          dark: formData.foregroundColor,
-          light: formData.backgroundColor,
-        },
+      const qrCodeStyling = new QRCodeStyling({
         width: formData.size,
+        height: formData.size,
+        data: formData.target_url,
         margin: formData.margin,
-        errorCorrectionLevel: formData.errorCorrectionLevel as any,
+        qrOptions: {
+          errorCorrectionLevel: formData.errorCorrectionLevel as any
+        },
+        dotsOptions: {
+          color: formData.foregroundColor,
+          type: formData.dataPattern as any || "square"
+        },
+        backgroundOptions: {
+          color: formData.backgroundColor
+        },
+        cornersSquareOptions: {
+          color: formData.eyeColor,
+          type: formData.eyePattern as any || "square"
+        },
+        cornersDotOptions: {
+          color: formData.eyeInnerColor,
+          type: formData.eyePattern as any || "square"
+        }
       });
-      setLivePreview(dataUrl);
+
+      const canvas = document.createElement('canvas');
+      qrCodeStyling.append(canvas);
+      const blob = await qrCodeStyling.getRawData('png');
+      if (blob && blob instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => setLivePreview(reader.result as string);
+        reader.readAsDataURL(blob);
+      }
     } catch (error) {
       console.error('Error generating live preview:', error);
       setLivePreview("");
@@ -134,7 +185,7 @@ export function QRCodeManager() {
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [formData.target_url, formData.foregroundColor, formData.backgroundColor, formData.size, formData.margin, formData.errorCorrectionLevel]);
+  }, [formData.target_url, formData.foregroundColor, formData.backgroundColor, formData.eyeColor, formData.eyeInnerColor, formData.size, formData.margin, formData.errorCorrectionLevel, formData.eyePattern, formData.dataPattern]);
 
   const downloadQRCode = async (qrCode: QRCodeData, format: string = 'png') => {
     try {
