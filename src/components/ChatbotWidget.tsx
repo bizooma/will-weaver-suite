@@ -586,7 +586,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
                   <img 
                     src="/logo.png" 
                     alt="Logo" 
-                    className="h-4 w-auto"
+                    className="h-8 w-auto"
                   />
                 </a>
               </div>
