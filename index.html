@@ -32,13 +32,26 @@
       gtag('config', 'G-DMVJFTRQ75');
     </script>
     
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-    
-    <!-- Amicus Edge Chatbot Widget -->
-    <script 
-      src="https://amicusedge.com/widget.js" 
-      data-amicus-chatbot-id="84d4c795-cebb-44e5-8543-8fd59f0f73d9"
-      async>
+    <!-- Conditionally load chatbot widgets only when not in embed mode -->
+    <script>
+      // Check if we're in embed mode
+      const isEmbedMode = window.location.search.includes('embed=1');
+      
+      if (!isEmbedMode) {
+        // Load ElevenLabs ConvAI Widget
+        const elevenLabsScript = document.createElement('script');
+        elevenLabsScript.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+        elevenLabsScript.async = true;
+        elevenLabsScript.type = 'text/javascript';
+        document.head.appendChild(elevenLabsScript);
+        
+        // Load Amicus Edge Chatbot Widget
+        const amicusScript = document.createElement('script');
+        amicusScript.src = 'https://amicusedge.com/widget.js';
+        amicusScript.setAttribute('data-amicus-chatbot-id', '84d4c795-cebb-44e5-8543-8fd59f0f73d9');
+        amicusScript.async = true;
+        document.head.appendChild(amicusScript);
+      }
     </script>
   </head>
 
