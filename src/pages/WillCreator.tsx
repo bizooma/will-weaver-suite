@@ -27,13 +27,14 @@ import { useEffect as useD_IDEffect } from "react";
  type ResidueSplit = { beneficiary: string; percentage: string };
  type Person = { name: string; dob?: string; address?: string; relationship?: string };
 
- type WizardData = {
-   // 1 Personal
-   fullName: string;
-   dob: string;
-   address: string;
-   state: string;
-   maritalStatus: "single" | "married" | "divorced" | "widowed" | "";
+  type WizardData = {
+    // 1 Personal
+    fullName: string;
+    dob: string;
+    address: string;
+    zipCode: string;
+    state: string;
+    maritalStatus: "single" | "married" | "divorced" | "widowed" | "";
    // 2 Spouse (optional)
    spouse?: Person;
    // 3 Beneficiaries
@@ -68,12 +69,13 @@ import { useEffect as useD_IDEffect } from "react";
  const emptyPerson = (): Person => ({ name: "", dob: "", address: "", relationship: "" });
 
  // Default data
- const defaultData: WizardData = {
-   fullName: "",
-   dob: "",
-   address: "",
-   state: "",
-   maritalStatus: "",
+  const defaultData: WizardData = {
+    fullName: "",
+    dob: "",
+    address: "",
+    zipCode: "",
+    state: "",
+    maritalStatus: "",
    spouse: undefined,
    beneficiaries: [{ name: "", dob: "", relationship: "" }],
    executor: { ...emptyPerson(), relationship: "" },
@@ -830,12 +832,16 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                    <Label htmlFor="dob">Date of Birth</Label>
                    <Input id="dob" type="date" value={data.dob} onChange={(e)=> setData({...data, dob: e.target.value})} />
                  </div>
-                 <div className="md:col-span-2">
-                   <Label htmlFor="address">Address</Label>
-                   <Input id="address" value={data.address} onChange={(e)=> setData({...data, address: e.target.value})} placeholder="123 Main St, City, ST 12345" />
-                 </div>
-                 <div>
-                   <Label htmlFor="state">State *</Label>
+                  <div>
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" value={data.address} onChange={(e)=> setData({...data, address: e.target.value})} placeholder="123 Main St, City" />
+                  </div>
+                  <div>
+                    <Label htmlFor="zipCode">Zip Code</Label>
+                    <Input id="zipCode" value={data.zipCode} onChange={(e)=> setData({...data, zipCode: e.target.value})} placeholder="12345" />
+                  </div>
+                  <div>
+                    <Label htmlFor="state">State *</Label>
                    <Select value={data.state} onValueChange={(v)=> setData({...data, state: v})}>
                      <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
                      <SelectContent>
