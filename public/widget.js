@@ -19,6 +19,7 @@
       this.sessionId = this.generateSessionId();
       this.messages = [];
       this.config = null;
+      this.videoThumbnail = null;
       
       this.init();
     }
@@ -51,7 +52,54 @@
       }
       
       const result = await response.json();
-      this.config = result.data;
+      console.log('Widget config loaded:', result);
+      this.config = result; // Fixed: API returns config directly, not wrapped in data
+      
+      // Load video thumbnail if video URL exists
+      if (this.config?.videoUrl) {
+        this.loadVideoThumbnail();
+      }
+    }
+    
+    async loadVideoThumbnail() {
+      try {
+        const videoUrl = this.config.videoUrl;
+        let thumbnailUrl = null;
+        
+        // YouTube thumbnail
+        if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
+          let videoId;
+          if (videoUrl.includes('youtube.com/watch')) {
+            videoId = videoUrl.split('v=')[1]?.split('&')[0];
+          } else {
+            videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+          }
+          if (videoId) {
+            thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+          }
+        }
+        // Vimeo thumbnail - would need API call, skip for now
+        
+        this.videoThumbnail = thumbnailUrl;
+      } catch (error) {
+        console.error('Error loading video thumbnail:', error);
+      }
+    }
+    
+    getEmbedUrl(url) {
+      if (url.includes('youtube.com/watch')) {
+        const videoId = url.split('v=')[1]?.split('&')[0];
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      if (url.includes('youtu.be/')) {
+        const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+      if (url.includes('vimeo.com/')) {
+        const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+        return `https://player.vimeo.com/video/${videoId}`;
+      }
+      return url;
     }
     
     async logWidgetLoad() {
@@ -85,6 +133,102 @@
       document.body.appendChild(this.container);
     }
     
+    getChatButtonHTML() {
+      // Show video thumbnail if available
+      if (this.videoThumbnail) {
+        return `
+          <div class="amicus-video-thumbnail">
+            <img src="${this.videoThumbnail}" alt="${this.config?.name || 'Chat'} preview" />
+            <div class="amicus-thumbnail-overlay">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M8 5V19L19 12L8 5Z" fill="white"/>
+              </svg>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Default chat icon
+      return `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+        </svg>
+      `;
+    }
+    
+    getHeaderHTML() {
+      const chatbotName = this.config?.name || 'Chat Assistant';
+      const contactPhone = this.config?.contactPhone;
+      const contactEmail = this.config?.contactEmail;
+      const calendlyUrl = this.config?.calendlyUrl;
+      
+      let headerContent = '';
+      
+      // If there are contact options, show buttons
+      if (contactPhone || contactEmail || calendlyUrl) {
+        headerContent = '<div class="amicus-contact-buttons">';
+        
+        if (contactPhone) {
+          headerContent += `
+            <a href="tel:${contactPhone}" class="amicus-contact-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M22 16.92V20.92C22 21.9 21.11 22.8 20.12 22.8C9.07 22.8 0.12 13.85 0.12 2.8C0.12 1.81 1.01 0.92 2 0.92H6C7 0.92 7.88 1.81 7.88 2.8V6.8C7.88 7.79 7 8.68 6 8.68H4.5C4.5 13.25 8.25 17 12.82 17V15.5C12.82 14.5 13.71 13.62 14.7 13.62H18.7C19.69 13.62 20.58 14.5 20.58 15.5V19.5C20.58 20.49 21.47 21.38 22.46 21.38Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Call
+            </a>
+          `;
+        }
+        
+        if (contactEmail) {
+          headerContent += `
+            <a href="mailto:${contactEmail}" class="amicus-contact-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Email
+            </a>
+          `;
+        }
+        
+        headerContent += '</div>';
+        
+        if (calendlyUrl) {
+          headerContent += `
+            <a href="${calendlyUrl}" target="_blank" class="amicus-calendly-btn">
+              Schedule a Free Consultation
+            </a>
+          `;
+        }
+      } else {
+        // Show chatbot name if no contact options
+        headerContent = `
+          <div class="amicus-widget-title">
+            <h4>${chatbotName}</h4>
+            <span class="amicus-widget-status">Online</span>
+          </div>
+        `;
+      }
+      
+      return headerContent;
+    }
+    
+    getVideoHTML() {
+      if (!this.config?.videoUrl) return '';
+      
+      const embedUrl = this.getEmbedUrl(this.config.videoUrl);
+      return `
+        <div class="amicus-video-container">
+          <iframe
+            src="${embedUrl}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+      `;
+    }
+    
     getPositionStyles() {
       const position = this.config?.position || 'lower-right';
       switch (position) {
@@ -105,23 +249,20 @@
       
       return `
         <div class="amicus-widget-button" id="amicus-widget-button">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-          </svg>
+          ${this.getChatButtonHTML()}
         </div>
         
         <div class="amicus-widget-chat" id="amicus-widget-chat" style="display: none;">
           <div class="amicus-widget-header">
-            <div class="amicus-widget-title">
-              <h4>${chatbotName}</h4>
-              <span class="amicus-widget-status">Online</span>
-            </div>
+            ${this.getHeaderHTML()}
             <button class="amicus-widget-close" id="amicus-widget-close">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
           </div>
+          
+          ${this.config?.videoUrl ? this.getVideoHTML() : ''}
           
           <div class="amicus-widget-messages" id="amicus-widget-messages">
             <div class="amicus-message amicus-message-bot">
@@ -141,7 +282,7 @@
           </div>
           
           <div class="amicus-widget-footer">
-            <span>Powered by Amicus Edge</span>
+            <span>Powered by <a href="https://legallyinnovative.com" target="_blank" style="color: inherit; text-decoration: none;">Legally Innovative</a></span>
           </div>
         </div>
       `;
@@ -189,11 +330,42 @@
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           transition: all 0.3s ease;
+          overflow: hidden;
         }
         
         .amicus-widget-button:hover {
           transform: scale(1.05);
           box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .amicus-video-thumbnail {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .amicus-video-thumbnail img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+        
+        .amicus-thumbnail-overlay {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0, 0, 0, 0.6);
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         .amicus-widget-chat {
@@ -211,12 +383,60 @@
         }
         
         .amicus-widget-header {
-          background: ${this.config?.primaryColor || '#3b82f6'};
+          background: #dc2626;
           color: white;
           padding: 16px;
           display: flex;
           justify-content: space-between;
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .amicus-contact-buttons {
+          display: flex;
+          gap: 8px;
+          width: 100%;
+        }
+        
+        .amicus-contact-btn {
+          background: white;
+          color: #dc2626;
+          border: 1px solid white;
+          padding: 6px 12px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-size: 12px;
+          display: flex;
           align-items: center;
+          gap: 4px;
+          transition: all 0.2s;
+          font-weight: 500;
+        }
+        
+        .amicus-contact-btn:hover {
+          background: #fef2f2;
+          color: #dc2626;
+        }
+        
+        .amicus-calendly-btn {
+          background: white;
+          color: #dc2626;
+          border: 1px solid white;
+          padding: 8px 16px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-size: 12px;
+          display: block;
+          text-align: center;
+          width: 100%;
+          transition: all 0.2s;
+          font-weight: 500;
+        }
+        
+        .amicus-calendly-btn:hover {
+          background: #fef2f2;
+          color: #dc2626;
         }
         
         .amicus-widget-title h4 {
@@ -237,10 +457,24 @@
           cursor: pointer;
           padding: 4px;
           border-radius: 4px;
+          position: absolute;
+          top: 16px;
+          right: 16px;
         }
         
         .amicus-widget-close:hover {
           background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .amicus-video-container {
+          padding: 16px;
+          background: #f9fafb;
+        }
+        
+        .amicus-video-container iframe {
+          width: 100%;
+          height: 200px;
+          border-radius: 8px;
         }
         
         .amicus-widget-messages {
@@ -343,6 +577,8 @@
           font-size: 11px;
           color: #6b7280;
           border-top: 1px solid #f3f4f6;
+          background: #dc2626;
+          color: white;
         }
         
         @media (max-width: 480px) {
