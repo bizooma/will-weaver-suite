@@ -158,6 +158,11 @@
               allow="autoplay; encrypted-media" 
               allowfullscreen
             ></iframe>
+            <button class="amicus-preview-play-cta" aria-label="Watch video" title="Watch video">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5v14l11-7-11-7z" />
+              </svg>
+            </button>
           </div>
         `;
       }
@@ -265,7 +270,7 @@
       const welcomeMessage = this.config?.welcomeMessage || 'Hello! How can I help you today?';
       
       return `
-        <div class="amicus-widget-button" id="amicus-widget-button">
+        <div class="amicus-widget-button" id="amicus-widget-button" role="button" tabindex="0" aria-label="Open chat">
           ${this.getChatButtonHTML()}
         </div>
         
@@ -370,9 +375,8 @@
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          pointer-events: auto;
+          pointer-events: none;
           transform: scale(1.5);
-          cursor: pointer;
         }
         
         .amicus-video-preview::after {
@@ -390,18 +394,24 @@
           opacity: 1;
         }
         
-        .amicus-thumbnail-overlay {
+        .amicus-preview-play-cta {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.6);
-          border-radius: 50%;
-          width: 24px;
-          height: 24px;
+          bottom: 8px;
+          right: 8px;
+          background: rgba(255, 255, 255, 0.9);
+          color: #111827;
+          border: none;
+          border-radius: 9999px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          cursor: pointer;
+        }
+        .amicus-preview-play-cta:hover {
+          background: #fff;
         }
         
         .amicus-widget-chat {
@@ -638,10 +648,18 @@
       const send = document.getElementById('amicus-widget-send');
       
       button.addEventListener('click', (e) => {
-        // Check if clicked on video
-        if (e.target.closest('.amicus-video-preview')) {
+        const playCta = e.target.closest('.amicus-preview-play-cta');
+        if (playCta) {
+          e.stopPropagation();
           this.expandVideo();
-        } else {
+          return;
+        }
+        this.toggleChat();
+      });
+      // Keyboard accessibility
+      button.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
           this.toggleChat();
         }
       });
