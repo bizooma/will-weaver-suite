@@ -66,6 +66,12 @@ serve(async (req) => {
         const synonyms: Record<string, string[]> = {
           services: ['service', 'offerings', 'solutions', 'capabilities', 'what you do', 'practice areas', 'products'],
           pricing: ['price', 'cost', 'fee', 'fees', 'rates', 'plans'],
+          price: ['pricing', 'cost', 'fee', 'fees', 'rates', 'plans'],
+          cost: ['pricing', 'price', 'fee', 'fees', 'rates', 'plans'],
+          fees: ['pricing', 'price', 'cost', 'fee', 'rates', 'plans'],
+          fee: ['pricing', 'price', 'cost', 'fees', 'rates', 'plans'],
+          rates: ['pricing', 'price', 'cost', 'fee', 'fees', 'plans'],
+          plans: ['pricing', 'price', 'cost', 'fee', 'fees', 'rate'],
           contact: ['phone', 'email', 'reach', 'call', 'schedule', 'consultation'],
           about: ['company', 'firm', 'team', 'mission', 'who you are', 'overview'],
         };
@@ -78,6 +84,9 @@ serve(async (req) => {
 
         const tokenList = Array.from(expandedTokens);
 
+        const pricingTerms = new Set(['pricing','price','cost','fee','fees','rates','plans']);
+        const queryIsPricing = baseTokens.some(t => pricingTerms.has(t));
+
         const scoredChunks = contentChunks.map((chunk) => {
           const content = chunk.content_chunk.toLowerCase();
           let score = 0;
@@ -85,7 +94,21 @@ serve(async (req) => {
             if (!t) continue;
             // Count occurrences for stronger signals
             const occurrences = content.split(t).length - 1;
-            if (occurrences > 0) score += Math.min(occurrences, 3);
+            if (occurrences > 0) {
+              score += Math.min(occurrences, 3);
+              // Extra weight for pricing-related terms
+              if (pricingTerms.has(t)) {
+                score += Math.min(occurrences, 3);
+              }
+            }
+          }
+          // If the user asked about pricing, boost chunks mentioning pricing keywords
+          if (queryIsPricing) {
+            let pricingHits = 0;
+            pricingTerms.forEach(pt => { pricingHits += (content.split(pt).length - 1); });
+            if (pricingHits > 0) {
+              score += Math.min(pricingHits, 4);
+            }
           }
           // Prefer longer, informative chunks slightly
           score += Math.min(Math.floor(chunk.content_chunk.length / 500), 2);

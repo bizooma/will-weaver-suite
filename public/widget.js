@@ -53,7 +53,7 @@
       
       const result = await response.json();
       console.log('Widget config loaded:', result);
-      this.config = result; // Fixed: API returns config directly, not wrapped in data
+      this.config = result?.data || result;
       
       // Load video thumbnail if video URL exists
       if (this.config?.videoUrl) {
@@ -81,6 +81,10 @@
         // Vimeo thumbnail - would need API call, skip for now
         
         this.videoThumbnail = thumbnailUrl;
+        const btn = document.getElementById('amicus-widget-button');
+        if (btn) {
+          btn.innerHTML = this.getChatButtonHTML();
+        }
       } catch (error) {
         console.error('Error loading video thumbnail:', error);
       }
@@ -230,13 +234,16 @@
     }
     
     getPositionStyles() {
-      const position = this.config?.position || 'lower-right';
+      const position = (this.config?.position || 'bottom-right').toLowerCase();
       switch (position) {
         case 'lower-left':
+        case 'bottom-left':
           return 'bottom: 20px; left: 20px;';
         case 'lower-center':
+        case 'bottom-center':
           return 'bottom: 20px; left: 50%; transform: translateX(-50%);';
         case 'lower-right':
+        case 'bottom-right':
         default:
           return 'bottom: 20px; right: 20px;';
       }
