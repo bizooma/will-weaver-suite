@@ -104,7 +104,6 @@ const AppContent = () => {
       </Routes>
       {!isEmbed && <SiteFooter />}
       {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
-      {!isEmbed && <ChatbotWidget />}
       
       {!isEmbed && <CookieConsentBanner />}
     </BrowserRouter>
