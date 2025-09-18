@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 import { EventCard } from "./EventCard";
+import { HeritageMonthDisplay } from "./HeritageMonthDisplay";
 import { cn } from "@/lib/utils";
 
 interface MarketingEvent {
@@ -185,6 +186,10 @@ export function MarketingCalendar() {
           </CardContent>
         </Card>
       </div>
+
+      {selectedDate && (
+        <HeritageMonthDisplay selectedDate={selectedDate} />
+      )}
 
       <AddEventDialog
         open={showAddDialog}
