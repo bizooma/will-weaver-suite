@@ -168,6 +168,10 @@ import { useEffect as useD_IDEffect } from "react";
       try { return new URLSearchParams(window.location.search).get('demo') === '1'; } catch { return false; }
     }, []);
 
+    const isEmbed = useMemo(() => {
+      try { return new URLSearchParams(window.location.search).get('embed') === '1'; } catch { return false; }
+    }, []);
+
     const validationIssues = useMemo(() => {
       const issues: string[] = [];
       if (!data.fullName) issues.push('Missing full legal name');
@@ -1555,12 +1559,14 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
            </div>
          </div>
 
-         {/* White-label embed note */}
-         <section className="pt-8">
-           <h2 className="text-2xl mb-2">White‑label Embed</h2>
-           <p className="text-muted-foreground mb-4 max-w-3xl">Use query parameters to brand this tool: brand, primary, accent, logo (URL). Example iframe code:</p>
-           <pre className="bg-secondary/60 p-4 rounded-md text-sm overflow-auto">{`<iframe src="${window.location.origin}/will-creator?brand=Legally%20Innovative&primary=%230a3a64&accent=%23e0b04b" width="100%" height="900" style="border:0;" loading="lazy"></iframe>`}</pre>
-         </section>
+          {/* White-label embed note */}
+          {!isEmbed && (
+            <section className="pt-8">
+              <h2 className="text-2xl mb-2">White‑label Embed</h2>
+              <p className="text-muted-foreground mb-4 max-w-3xl">Use query parameters to brand this tool: brand, primary, accent, logo (URL). Example iframe code:</p>
+              <pre className="bg-secondary/60 p-4 rounded-md text-sm overflow-auto">{`<iframe src="${window.location.origin}/will-creator?brand=Legally%20Innovative&primary=%230a3a64&accent=%23e0b04b" width="100%" height="900" style="border:0;" loading="lazy"></iframe>`}</pre>
+            </section>
+          )}
         </section>
 
         {/* Suggestion Review Dialog */}

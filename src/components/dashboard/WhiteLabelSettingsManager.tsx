@@ -18,7 +18,13 @@ export function WhiteLabelSettingsManager() {
     // Generate preview URL with current settings
     const params = new URLSearchParams();
     if (settings.company_name) params.set('brand', settings.company_name);
-    if (settings.brand_color) params.set('primary', settings.brand_color);
+    if (settings.brand_color) {
+      params.set('primary', settings.brand_color);
+      // Generate accent color (lighter version of primary)
+      const hex = settings.brand_color;
+      const accent = hex + '80'; // Add transparency or use a lighter shade
+      params.set('accent', accent);
+    }
     if (settings.logo_url) params.set('logo', settings.logo_url);
     params.set('demo', '1');
     
@@ -183,18 +189,19 @@ export function WhiteLabelSettingsManager() {
                 value={`<iframe
   src="${previewUrl}&embed=1"
   width="100%"
-  height="800"
-  frameborder="0"
+  height="900"
+  style="border:0;"
+  loading="lazy"
   title="Will Creator"
 ></iframe>`}
-                rows={7}
+                rows={8}
                 className="font-mono text-sm"
               />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  navigator.clipboard.writeText(`<iframe src="${previewUrl}&embed=1" width="100%" height="800" frameborder="0" title="Will Creator"></iframe>`);
+                  navigator.clipboard.writeText(`<iframe src="${previewUrl}&embed=1" width="100%" height="900" style="border:0;" loading="lazy" title="Will Creator"></iframe>`);
                   toast.success('Embed code copied to clipboard');
                 }}
               >
