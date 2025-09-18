@@ -143,11 +143,6 @@
         return `
           <div class="amicus-video-thumbnail">
             <img src="${this.videoThumbnail}" alt="${this.config?.name || 'Chat'} preview" />
-            <div class="amicus-thumbnail-overlay">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M8 5V19L19 12L8 5Z" fill="white"/>
-              </svg>
-            </div>
           </div>
         `;
       }
