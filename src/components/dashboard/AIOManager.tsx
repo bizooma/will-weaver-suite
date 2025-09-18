@@ -508,9 +508,22 @@ export function AIOManager() {
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+              </TabsContent>
+              
+              <TabsContent value="recommendations" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Recommendations Coming Soon */}
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-4">📈 Enhanced Recommendations</h3>
+                    <p className="text-muted-foreground">
+                      Advanced action plans with priority rankings, quick wins, and long-term strategies 
+                      will be available once the enhanced analysis interface is fully updated.
+                    </p>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
       )}
     </div>
   );
