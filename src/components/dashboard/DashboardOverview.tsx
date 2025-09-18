@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,43 @@ import {
   QrCode
 } from "lucide-react";
 import { ProductionReadinessPanel } from "./ProductionReadinessPanel";
+import { supabase } from "@/integrations/supabase/client";
 
 export function DashboardOverview() {
-  const stats = [
-    { label: "Active Chatbots", value: "3", change: "+2", icon: MessageSquare },
-    { label: "Will Drafts", value: "12", change: "+4", icon: FileText },
-    { label: "Monthly Views", value: "1.2k", change: "+15%", icon: Users },
-    { label: "Avg Response Time", value: "0.8s", change: "-0.2s", icon: Clock },
-  ];
+  const [stats, setStats] = useState([
+    { label: "Active Chatbots", value: "-", change: "", icon: MessageSquare },
+    { label: "Will Drafts", value: "-", change: "", icon: FileText },
+    { label: "QR Codes", value: "-", change: "", icon: QrCode },
+    { label: "SEO Analyses", value: "-", change: "", icon: Search },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch real statistics
+        const [chatbotsRes, willsRes, qrRes, seoRes] = await Promise.all([
+          supabase.from('chatbots').select('id', { count: 'exact' }).eq('user_id', user.id).eq('is_active', true),
+          supabase.from('will_drafts').select('id', { count: 'exact' }).eq('user_id', user.id),
+          supabase.from('qr_codes').select('id', { count: 'exact' }).eq('user_id', user.id).eq('is_active', true),
+          supabase.from('seo_analyses').select('id', { count: 'exact' }).eq('user_id', user.id)
+        ]);
+
+        setStats([
+          { label: "Active Chatbots", value: String(chatbotsRes.count || 0), change: "", icon: MessageSquare },
+          { label: "Will Drafts", value: String(willsRes.count || 0), change: "", icon: FileText },
+          { label: "QR Codes", value: String(qrRes.count || 0), change: "", icon: QrCode },
+          { label: "SEO Analyses", value: String(seoRes.count || 0), change: "", icon: Search },
+        ]);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const quickActions = [
     {
@@ -97,9 +126,11 @@ export function DashboardOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">{stat.change}</span> from last month
-              </p>
+              {stat.change && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="text-green-600">{stat.change}</span> from last month
+                </p>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -144,15 +175,15 @@ export function DashboardOverview() {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
+        {/* Getting Started */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Recent Activity
+              Getting Started
             </CardTitle>
             <CardDescription>
-              Your latest actions across all products
+              Start building your legal tech solutions
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -162,26 +193,26 @@ export function DashboardOverview() {
                   <MessageSquare className="h-4 w-4 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Created new chatbot "Legal Assistant"</p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+                  <p className="text-sm font-medium">Create your first chatbot</p>
+                  <p className="text-xs text-muted-foreground">Build AI-powered customer support</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                 <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-green-600" />
+                  <QrCode className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Completed will draft "Johnson Family Trust"</p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
+                  <p className="text-sm font-medium">Generate QR codes</p>
+                  <p className="text-xs text-muted-foreground">Track engagement with analytics</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                 <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Mic className="h-4 w-4 text-purple-600" />
+                  <Search className="h-4 w-4 text-purple-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Tested Alexa skill integration</p>
-                  <p className="text-xs text-muted-foreground">3 days ago</p>
+                  <p className="text-sm font-medium">Analyze SEO performance</p>
+                  <p className="text-xs text-muted-foreground">Optimize for voice search and AI</p>
                 </div>
               </div>
             </div>

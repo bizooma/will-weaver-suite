@@ -20,50 +20,28 @@ serve(async (req) => {
 
     const { queryId, question, assistant, market } = await req.json();
 
-    let mockResults;
-    let voiceTranscript;
+    // TODO: Integrate with actual voice assistant APIs
+    // This is a placeholder response indicating API integration needed
+    const placeholderResults = {
+      simulation_note: `${assistant} simulation requires proper API integration`,
+      general_response: `Voice assistant analysis for "${question}" in ${market} requires ${assistant === 'siri' ? 'SiriKit' : 'Alexa Skills Kit'} integration. Please configure the appropriate API credentials.`,
+      business_results: [],
+      skill_results: []
+    };
 
-    if (assistant === 'siri') {
-      mockResults = {
-        business_results: [
-          {
-            name: "Adams & Partners Law",
-            phone: "(555) 345-6789",
-            address: "456 Court St, " + market,
-            rating: 4.8,
-            category: "Attorney"
-          }
-        ],
-        general_response: `I found several attorneys in ${market} who can help with your legal question. Would you like me to call Adams & Partners Law for you?`
-      };
-      
-      voiceTranscript = `I found several attorneys in ${market} who can help with your legal question. Adams & Partners Law has good reviews and is located on Court Street. Would you like me to call them for you?`;
-    } else {
-      // Alexa
-      mockResults = {
-        skill_results: [
-          {
-            skill_name: "Legal Help Finder",
-            response: `Based on your location in ${market}, I found local attorneys who specialize in your legal area. The top-rated option is Davis Legal Group with 4.9 stars.`
-          }
-        ],
-        general_response: `For legal questions in ${market}, I recommend contacting a qualified attorney. Would you like me to search for attorneys near you?`
-      };
-      
-      voiceTranscript = `For legal questions in ${market}, I recommend contacting a qualified attorney. Based on your location, Davis Legal Group is highly rated with 4.9 stars. Would you like me to search for more attorneys near you?`;
-    }
+    const voiceTranscript = `This is a simulated ${assistant} response. Actual integration requires ${assistant === 'siri' ? 'SiriKit' : 'Alexa Skills Kit'} configuration.`;
 
-    // Store results in database
+    // Store placeholder results in database
     await supabase
       .from('voice_search_results')
       .insert({
         query_id: queryId,
         assistant: assistant,
-        raw_results: mockResults,
-        snippets: assistant === 'siri' ? mockResults.business_results : mockResults.skill_results,
+        raw_results: placeholderResults,
+        snippets: [],
         source_urls: [],
-        ai_overview_text: mockResults.general_response,
-        local_pack_results: assistant === 'siri' ? mockResults.business_results : [],
+        ai_overview_text: placeholderResults.general_response,
+        local_pack_results: [],
         voice_transcript: voiceTranscript
       });
 
@@ -71,7 +49,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true,
-      results: mockResults 
+      results: placeholderResults,
+      message: `${assistant} simulation requires API integration`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
