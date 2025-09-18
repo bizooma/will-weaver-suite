@@ -19,7 +19,9 @@
       this.sessionId = this.generateSessionId();
       this.messages = [];
       this.config = null;
-      this.videoThumbnail = null;
+      this.videoEmbedUrl = null;
+      this.videoExpanded = false;
+      this.videoInteractionTracked = false;
       
       this.init();
     }
@@ -75,7 +77,7 @@
             videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
           }
           if (videoId) {
-            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1`;
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1&origin=${window.location.origin}&vq=hd720`;
           }
         }
         // Vimeo embed URL with autoplay parameters
@@ -368,8 +370,24 @@
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          pointer-events: none;
+          pointer-events: auto;
           transform: scale(1.5);
+          cursor: pointer;
+        }
+        
+        .amicus-video-preview::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+          border-radius: 50%;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          pointer-events: none;
+        }
+        
+        .amicus-video-preview:hover::after {
+          opacity: 1;
         }
         
         .amicus-thumbnail-overlay {
@@ -619,7 +637,14 @@
       const input = document.getElementById('amicus-widget-input');
       const send = document.getElementById('amicus-widget-send');
       
-      button.addEventListener('click', () => this.toggleChat());
+      button.addEventListener('click', (e) => {
+        // Check if clicked on video
+        if (e.target.closest('.amicus-video-preview')) {
+          this.expandVideo();
+        } else {
+          this.toggleChat();
+        }
+      });
       close.addEventListener('click', () => this.toggleChat());
       
       input.addEventListener('keypress', (e) => {
@@ -647,6 +672,166 @@
       
       if (this.isOpen) {
         document.getElementById('amicus-widget-input').focus();
+      }
+    }
+    
+    expandVideo() {
+      if (!this.config?.videoUrl) return;
+      
+      this.trackVideoInteraction('video_expanded');
+      
+      // Create modal overlay
+      const modal = document.createElement('div');
+      modal.id = 'amicus-video-modal';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      `;
+      
+      const videoContainer = document.createElement('div');
+      videoContainer.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 90vw;
+        max-height: 90vh;
+        width: 800px;
+        position: relative;
+      `;
+      
+      const closeButton = document.createElement('button');
+      closeButton.innerHTML = '×';
+      closeButton.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 1;
+      `;
+      
+      const iframe = document.createElement('iframe');
+      iframe.src = this.getFullVideoUrl();
+      iframe.style.cssText = `
+        width: 100%;
+        height: 450px;
+        border: none;
+        border-radius: 8px;
+      `;
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      
+      const ctaContainer = document.createElement('div');
+      ctaContainer.style.cssText = `
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      `;
+      
+      const channelButton = document.createElement('a');
+      channelButton.href = this.config.videoUrl;
+      channelButton.target = '_blank';
+      channelButton.innerHTML = '📺 Subscribe on YouTube';
+      channelButton.style.cssText = `
+        background: #ff0000;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s;
+      `;
+      channelButton.addEventListener('click', () => {
+        this.trackVideoInteraction('subscribe_clicked');
+      });
+      
+      const watchButton = document.createElement('a');
+      watchButton.href = this.config.videoUrl;
+      watchButton.target = '_blank';
+      watchButton.innerHTML = '🔗 Watch on YouTube';
+      watchButton.style.cssText = `
+        background: #606060;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s;
+      `;
+      watchButton.addEventListener('click', () => {
+        this.trackVideoInteraction('youtube_visited');
+      });
+      
+      ctaContainer.appendChild(channelButton);
+      ctaContainer.appendChild(watchButton);
+      
+      videoContainer.appendChild(closeButton);
+      videoContainer.appendChild(iframe);
+      videoContainer.appendChild(ctaContainer);
+      modal.appendChild(videoContainer);
+      
+      // Close modal handlers
+      const closeModal = () => {
+        document.body.removeChild(modal);
+      };
+      
+      closeButton.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      
+      document.body.appendChild(modal);
+    }
+    
+    getFullVideoUrl() {
+      const videoUrl = this.config.videoUrl;
+      if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
+        let videoId;
+        if (videoUrl.includes('youtube.com/watch')) {
+          videoId = videoUrl.split('v=')[1]?.split('&')[0];
+        } else {
+          videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+        }
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${window.location.origin}&vq=hd1080&rel=0&modestbranding=1`;
+        }
+      }
+      return this.getEmbedUrl(videoUrl);
+    }
+    
+    trackVideoInteraction(action) {
+      if (!this.videoInteractionTracked || action === 'video_expanded' || action === 'subscribe_clicked' || action === 'youtube_visited') {
+        this.videoInteractionTracked = true;
+        
+        // Track with Google Analytics if available
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'video_interaction', {
+            event_category: 'chatbot_widget',
+            event_label: this.config?.name || 'Unknown',
+            action: action
+          });
+        }
+        
+        // Track with Google Tag Manager if available
+        if (typeof dataLayer !== 'undefined') {
+          dataLayer.push({
+            event: 'video_interaction',
+            video_action: action,
+            chatbot_name: this.config?.name || 'Unknown'
+          });
+        }
       }
     }
     

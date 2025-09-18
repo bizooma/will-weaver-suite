@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageCircle, Send, X, Phone, Mail, Play } from "lucide-react";
+import { MessageCircle, Send, X, Phone, Mail, Play, Youtube, ExternalLink } from "lucide-react";
 import { getVideoThumbnail, type VideoThumbnail } from "@/utils/videoThumbnails";
 
 interface ChatMessage {
@@ -43,7 +44,10 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
   const [loading, setLoading] = useState(true);
   const [videoThumbnail, setVideoThumbnail] = useState<VideoThumbnail | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
+  const [videoExpanded, setVideoExpanded] = useState(false);
+  const [videoInteractionTracked, setVideoInteractionTracked] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     loadChatbot();
@@ -222,21 +226,92 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     sendMessage(response);
   };
 
-  const getEmbedUrl = (url: string) => {
+  const getEmbedUrl = (url: string, options: { autoplay?: boolean; muted?: boolean; loop?: boolean; quality?: string } = {}) => {
+    const { autoplay = false, muted = false, loop = false, quality = 'hd720' } = options;
+    
     if (url.includes('youtube.com/watch')) {
       const videoId = url.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      const params = new URLSearchParams({
+        enablejsapi: '1',
+        origin: window.location.origin,
+        rel: '0',
+        modestbranding: '1',
+        vq: quality,
+        ...(autoplay && { autoplay: '1' }),
+        ...(muted && { mute: '1' }),
+        ...(loop && { loop: '1', playlist: videoId })
+      });
+      return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
     }
     if (url.includes('youtu.be/')) {
       const videoId = url.split('youtu.be/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      const params = new URLSearchParams({
+        enablejsapi: '1',
+        origin: window.location.origin,
+        rel: '0',
+        modestbranding: '1',
+        vq: quality,
+        ...(autoplay && { autoplay: '1' }),
+        ...(muted && { mute: '1' }),
+        ...(loop && { loop: '1', playlist: videoId })
+      });
+      return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
     }
     if (url.includes('vimeo.com/')) {
       const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
-      return `https://player.vimeo.com/video/${videoId}`;
+      const params = new URLSearchParams({
+        ...(autoplay && { autoplay: '1' }),
+        ...(muted && { muted: '1' }),
+        ...(loop && { loop: '1' })
+      });
+      return `https://player.vimeo.com/video/${videoId}?${params.toString()}`;
     }
     return url;
   };
+
+  const getYouTubeChannelUrl = (videoUrl: string) => {
+    if (videoUrl.includes('youtube.com/watch')) {
+      const videoId = videoUrl.split('v=')[1]?.split('&')[0];
+      return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+    if (videoUrl.includes('youtu.be/')) {
+      const videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
+      return `https://www.youtube.com/watch?v=${videoId}`;
+    }
+    return videoUrl;
+  };
+
+  const trackVideoInteraction = (action: string) => {
+    if (!videoInteractionTracked) {
+      setVideoInteractionTracked(true);
+      // Track interaction for analytics
+      if (typeof (window as any).gtag !== 'undefined') {
+        (window as any).gtag('event', 'video_interaction', {
+          event_category: 'chatbot',
+          event_label: chatbotData?.name,
+          action: action
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!videoRef.current || !chatbotData?.videoUrl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            trackVideoInteraction('video_viewed');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, [chatbotData?.videoUrl, videoInteractionTracked]);
   const getPositionClass = (position: string) => {
     switch (position) {
       case 'lower-center':
@@ -368,18 +443,82 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
             )}
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0">
             {chatbotData.videoUrl && (
-              <div className="p-2 flex-shrink-0">
-                <AspectRatio ratio={16 / 9} className="rounded overflow-hidden">
+              <div className="p-2 flex-shrink-0" ref={videoRef}>
+                <AspectRatio ratio={16 / 9} className="rounded overflow-hidden relative group">
                   <iframe
-                    src={getEmbedUrl(chatbotData.videoUrl)}
+                    src={getEmbedUrl(chatbotData.videoUrl, { autoplay: true, muted: true, loop: true, quality: 'hd720' })}
                     className="w-full h-full"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Dialog open={videoExpanded} onOpenChange={setVideoExpanded}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="bg-white/90 hover:bg-white"
+                          onClick={() => trackVideoInteraction('video_expanded')}
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Watch Full Video
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl w-full p-0">
+                        <div className="aspect-video">
+                          <iframe
+                            src={getEmbedUrl(chatbotData.videoUrl, { autoplay: true, quality: 'hd1080' })}
+                            className="w-full h-full rounded-lg"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                        <div className="p-4 flex gap-2 justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              trackVideoInteraction('youtube_channel_visited');
+                              window.open(getYouTubeChannelUrl(chatbotData.videoUrl), '_blank');
+                            }}
+                          >
+                            <Youtube className="h-4 w-4 mr-2" />
+                            Visit YouTube Channel
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              trackVideoInteraction('video_shared');
+                              window.open(getYouTubeChannelUrl(chatbotData.videoUrl), '_blank');
+                            }}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Watch on YouTube
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </AspectRatio>
+                <div className="mt-2 flex gap-2 justify-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => {
+                      trackVideoInteraction('subscribe_clicked');
+                      window.open(getYouTubeChannelUrl(chatbotData.videoUrl), '_blank');
+                    }}
+                  >
+                    <Youtube className="h-3 w-3 mr-1" />
+                    Subscribe for More
+                  </Button>
+                </div>
               </div>
             )}
 
