@@ -234,11 +234,16 @@ export function WillManager() {
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-8 space-y-4">
             <Code className="h-8 w-8 text-muted-foreground" />
-            <div className="text-center space-y-2">
-              <h3 className="font-medium">Enable White Label</h3>
-              <p className="text-sm text-muted-foreground">
-                Enable white label settings to get embed code for your website
-              </p>
+            <div className="text-center space-y-4 max-w-2xl">
+              <h3 className="font-medium text-xl">Enable White Label</h3>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p>
+                  With our white-label solution, your firm's branding stays front and center. To your clients, it's your technology—modern, professional, and convenient.
+                </p>
+                <p>
+                  Bring your estate planning practice into the digital age. Offer your clients the first step in will creation—guided by you, powered by us. Click the button below to get started.
+                </p>
+              </div>
             </div>
             <Button variant="outline" asChild>
               <Link to="/dashboard/settings">
