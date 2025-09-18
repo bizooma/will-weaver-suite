@@ -24,6 +24,31 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Check if conversation has operator active
+    if (sessionId) {
+      const { data: conversation } = await supabase
+        .from('chatbot_conversations')
+        .select('operator_status, operator_user_id')
+        .eq('session_id', sessionId)
+        .eq('chatbot_id', chatbotId)
+        .single();
+
+      // If human operator is active, don't generate AI response
+      if (conversation?.operator_status === 'human_active') {
+        return new Response(
+          JSON.stringify({
+            response: "A human operator will assist you shortly.",
+            hasTrainingData: false,
+            operatorActive: true
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+    }
+
     // Get training content for this chatbot
     const { data: trainingSources, error: sourcesError } = await supabase
       .from('training_sources')
@@ -231,7 +256,8 @@ Answering rules:
 
     return new Response(JSON.stringify({ 
       response: aiResponse,
-      hasTrainingData: relevantContent.length > 0
+      hasTrainingData: relevantContent.length > 0,
+      operatorActive: false
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

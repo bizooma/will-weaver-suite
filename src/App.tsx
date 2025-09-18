@@ -39,6 +39,7 @@ import DraftView from "./pages/DraftView";
 import QRCodes from "./pages/QRCodes";
 import VideoChatbots from "./pages/VideoChatbots";
 import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
+import LiveOperators from "./pages/LiveOperators";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,11 @@ const AppContent = () => {
         <Route path="/qr-codes" element={<QRCodes />} />
         <Route path="/video-chatbots" element={<VideoChatbots />} />
         <Route path="/voice-search-simulator" element={<VoiceSearchSimulator />} />
+        <Route path="/live-operators" element={
+          <ProtectedRoute>
+            <LiveOperators />
+          </ProtectedRoute>
+        } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

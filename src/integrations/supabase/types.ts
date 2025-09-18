@@ -21,6 +21,9 @@ export type Database = {
           created_at: string
           id: string
           message_count: number
+          operator_status: string
+          operator_taken_at: string | null
+          operator_user_id: string | null
           session_id: string
         }
         Insert: {
@@ -29,6 +32,9 @@ export type Database = {
           created_at?: string
           id?: string
           message_count?: number
+          operator_status?: string
+          operator_taken_at?: string | null
+          operator_user_id?: string | null
           session_id: string
         }
         Update: {
@@ -37,6 +43,9 @@ export type Database = {
           created_at?: string
           id?: string
           message_count?: number
+          operator_status?: string
+          operator_taken_at?: string | null
+          operator_user_id?: string | null
           session_id?: string
         }
         Relationships: [
@@ -189,6 +198,79 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      operator_notes: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          note: string
+          operator_user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          note: string
+          operator_user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          operator_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_notes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_sessions: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          notes: string | null
+          operator_user_id: string
+          started_at: string
+          updated_at: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          operator_user_id: string
+          started_at?: string
+          updated_at?: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          operator_user_id?: string
+          started_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_sessions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

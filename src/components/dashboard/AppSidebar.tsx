@@ -14,7 +14,8 @@ import {
   Users,
   Bell,
   MicIcon,
-  Calendar
+  Calendar,
+  Monitor
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +39,7 @@ const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
   { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search },
   { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
+  { title: "Live Operators", url: "/dashboard/live-operators", icon: Monitor },
   { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon },
   { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
   { title: "Marketing Calendar", url: "/dashboard/marketing-calendar", icon: Calendar },

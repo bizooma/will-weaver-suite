@@ -15,6 +15,7 @@ import { UserManagement } from "./UserManagement";
 import { SystemMessages } from "./SystemMessages";
 import { MarketingCalendar } from "./MarketingCalendar";
 import { ProtectedContent } from "@/components/ProtectedContent";
+import LiveOperators from "@/pages/LiveOperators";
 
 export function DashboardContent() {
   return (
@@ -109,6 +110,15 @@ export function DashboardContent() {
         <Route path="/system-messages" element={
           <ProtectedContent requiredRole="admin">
             <SystemMessages />
+          </ProtectedContent>
+        } />
+        <Route path="/live-operators" element={
+          <ProtectedContent 
+            requiredRole="user"
+            fallbackTitle="Live Operators - Premium Feature"
+            fallbackDescription="Monitor and take over chatbot conversations in real-time. Upgrade to access this feature."
+          >
+            <LiveOperators />
           </ProtectedContent>
         } />
       </Routes>

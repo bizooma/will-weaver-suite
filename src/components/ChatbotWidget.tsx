@@ -46,6 +46,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [videoExpanded, setVideoExpanded] = useState(false);
   const [videoInteractionTracked, setVideoInteractionTracked] = useState(false);
+  const [operatorActive, setOperatorActive] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLDivElement | null>(null);
 
@@ -169,6 +170,11 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
       });
 
       if (error) throw error;
+
+      // Check if operator is active
+      if (data.operatorActive !== undefined) {
+        setOperatorActive(data.operatorActive);
+      }
 
       const botResponse: ChatMessage = {
         id: (Date.now() + 2).toString(),
@@ -409,7 +415,12 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
                     )}
                   </div>
                 ) : (
-                  <h4 className="font-medium text-white">{chatbotData.name}</h4>
+                  <h4 className="font-medium text-white">
+                    {operatorActive ? 'Human Operator' : chatbotData.name}
+                  </h4>
+                )}
+                {operatorActive && (
+                  <p className="text-xs text-white/80">Human operator is helping you</p>
                 )}
               </div>
               {!embedded && (
