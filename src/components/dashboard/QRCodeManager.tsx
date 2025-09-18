@@ -574,7 +574,7 @@ export function QRCodeManager() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{qrCode.name}</CardTitle>
-                  <Badge variant={qrCode.is_active ? "default" : "secondary"}>
+                  <Badge variant={qrCode.is_active ? "default" : "secondary"} className={qrCode.is_active ? "bg-green-600 hover:bg-green-700" : ""}>
                     {qrCode.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
