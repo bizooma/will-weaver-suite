@@ -67,9 +67,11 @@ const AppContent = () => {
           </ProtectedRoute>
         } />
         <Route path="/will-creator" element={
-          <ProtectedRoute>
-            <WillCreator />
-          </ProtectedRoute>
+          isEmbed ? <WillCreator /> : (
+            <ProtectedRoute>
+              <WillCreator />
+            </ProtectedRoute>
+          )
         } />
         <Route path="/alexa" element={<Alexa />} />
         <Route path="/aio-analyzer" element={<AIOAnalyzer />} />
