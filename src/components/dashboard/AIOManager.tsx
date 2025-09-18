@@ -62,7 +62,7 @@ export function AIOManager() {
         saved: true,
         authenticated: true,
         url: analysis.url,
-        analysis: analysis.analysis_data.analysis,
+        analysis: analysis.analysis_data,
         timestamp: analysis.created_at,
       };
       setResult(analysisResult);
