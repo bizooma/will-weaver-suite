@@ -64,9 +64,9 @@
     async loadVideoThumbnail() {
       try {
         const videoUrl = this.config.videoUrl;
-        let thumbnailUrl = null;
+        let embedUrl = null;
         
-        // YouTube thumbnail
+        // YouTube embed URL with autoplay parameters
         if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be/')) {
           let videoId;
           if (videoUrl.includes('youtube.com/watch')) {
@@ -75,18 +75,24 @@
             videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
           }
           if (videoId) {
-            thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1`;
           }
         }
-        // Vimeo thumbnail - would need API call, skip for now
+        // Vimeo embed URL with autoplay parameters
+        else if (videoUrl.includes('vimeo.com/')) {
+          const videoId = videoUrl.split('vimeo.com/')[1]?.split('?')[0];
+          if (videoId) {
+            embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&background=1&controls=0&portrait=0&title=0&byline=0`;
+          }
+        }
         
-        this.videoThumbnail = thumbnailUrl;
+        this.videoEmbedUrl = embedUrl;
         const btn = document.getElementById('amicus-widget-button');
         if (btn) {
           btn.innerHTML = this.getChatButtonHTML();
         }
       } catch (error) {
-        console.error('Error loading video thumbnail:', error);
+        console.error('Error loading video embed:', error);
       }
     }
     
@@ -138,11 +144,18 @@
     }
     
     getChatButtonHTML() {
-      // Show video thumbnail if available
-      if (this.videoThumbnail) {
+      // Show auto-playing video if available
+      if (this.videoEmbedUrl) {
         return `
-          <div class="amicus-video-thumbnail">
-            <img src="${this.videoThumbnail}" alt="${this.config?.name || 'Chat'} preview" />
+          <div class="amicus-video-preview">
+            <iframe 
+              src="${this.videoEmbedUrl}" 
+              width="120" 
+              height="120" 
+              frameborder="0" 
+              allow="autoplay; encrypted-media" 
+              allowfullscreen
+            ></iframe>
           </div>
         `;
       }
@@ -340,20 +353,23 @@
           box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
         }
         
-        .amicus-video-thumbnail {
+        .amicus-video-preview {
           width: 100%;
           height: 100%;
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
+          border-radius: 50%;
+          overflow: hidden;
         }
         
-        .amicus-video-thumbnail img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+        .amicus-video-preview iframe {
+          width: 120px;
+          height: 120px;
           border-radius: 50%;
+          pointer-events: none;
+          transform: scale(1.5);
         }
         
         .amicus-thumbnail-overlay {
