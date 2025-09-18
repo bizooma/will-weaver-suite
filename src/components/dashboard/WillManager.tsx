@@ -22,8 +22,7 @@ import {
   ExternalLink,
   Palette,
   Building2,
-  Image,
-  Globe
+  Image
 } from "lucide-react";
 import { getUserDrafts, deleteDraft, WillDraft } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
@@ -50,20 +49,7 @@ export function WillManager() {
   const [deletingDraft, setDeletingDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const normalizeCustomDomain = (domain: string) => {
-    if (!domain) return '';
-    let normalized = domain.trim();
-    if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
-      normalized = `https://${normalized}`;
-    }
-    return normalized.replace(/\/$/, ''); // Remove trailing slash
-  };
-
-  const baseUrl = useMemo(() => {
-    return settings.custom_domain 
-      ? normalizeCustomDomain(settings.custom_domain)
-      : window.location.origin;
-  }, [settings.custom_domain]);
+  const baseUrl = window.location.origin;
 
   const previewUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -78,7 +64,7 @@ export function WillManager() {
     if (settings.logo_url) params.set('logo', settings.logo_url);
     
     return `${baseUrl}/will-creator${params.toString() ? '?' + params.toString() : ''}`;
-  }, [baseUrl, settings]);
+  }, [settings]);
 
   const embedUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -94,7 +80,7 @@ export function WillManager() {
     if (settings.logo_url) params.set('logo', settings.logo_url);
     
     return `${baseUrl}/will-creator?${params.toString()}`;
-  }, [baseUrl, settings]);
+  }, [settings]);
 
   const iframeCode = `<iframe
   src="${embedUrl}"
@@ -334,26 +320,6 @@ export function WillManager() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="custom-domain" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  Custom Domain
-                </Label>
-                <Input
-                  id="custom-domain"
-                  value={settings.custom_domain || ''}
-                  onChange={(e) => updateSettings({ custom_domain: e.target.value })}
-                  placeholder="your-firm.com"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Required for embedding. Set up your custom domain in Project Settings → Domains first.
-                </p>
-                {!settings.custom_domain && (
-                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
-                    ⚠️ Without a custom domain, the embed will show the login page instead of your Will Creator.
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
@@ -383,16 +349,9 @@ export function WillManager() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Use this embed code to integrate the will creator into your website:
-                </p>
-                {!settings.custom_domain && (
-                  <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded border">
-                    ⚠️ Set up your custom domain above for the embed to work properly.
-                  </div>
-                )}
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Copy this embed code and paste it into any website to integrate the will creator:
+              </p>
               <Textarea
                 readOnly
                 value={iframeCode}
