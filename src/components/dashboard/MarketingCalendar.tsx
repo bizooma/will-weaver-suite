@@ -30,6 +30,7 @@ interface MarketingEvent {
 export function MarketingCalendar() {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [events, setEvents] = useState<MarketingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -119,6 +120,7 @@ export function MarketingCalendar() {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
+              onMonthChange={setViewMonth}
               className={cn("w-full pointer-events-auto")}
               modifiers={{
                 hasEvent: eventDates,
@@ -187,9 +189,7 @@ export function MarketingCalendar() {
         </Card>
       </div>
 
-      {selectedDate && (
-        <HeritageMonthDisplay selectedDate={selectedDate} />
-      )}
+      <HeritageMonthDisplay selectedDate={selectedDate || viewMonth} />
 
       <AddEventDialog
         open={showAddDialog}
