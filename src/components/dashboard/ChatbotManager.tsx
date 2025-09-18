@@ -139,10 +139,10 @@ export function ChatbotManager() {
   };
 
   const copyEmbedCode = (chatbot: Chatbot) => {
-    // Generate production-ready embed code
+    // Generate production-ready embed code with the correct Supabase domain
     const embedCode = `<!-- Amicus Edge Chatbot Widget -->
 <script 
-  src="${window.location.origin}/widget.js" 
+  src="https://fmcgsxdtyvssvwtxufll.supabase.co/widget.js" 
   data-amicus-chatbot-id="${chatbot.id}"
   async>
 </script>`;
