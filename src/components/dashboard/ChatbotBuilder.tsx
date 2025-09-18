@@ -146,7 +146,15 @@ export function ChatbotBuilder() {
     return url;
   };
 
-  const embedScript = `<script src="https://your-chatbot-domain.com/widget.js" data-chatbot-id="your-chatbot-id" data-name="${chatbotData.name}" data-color="${chatbotData.primaryColor}" data-video-url="${chatbotData.videoUrl}" data-suggested-responses="${chatbotData.showSuggestedResponses}" data-responses='${JSON.stringify(chatbotData.suggestedResponses)}'></script>`;
+  // Generate production-ready embed script with amicusedge.com
+  const embedScript = chatbotId 
+    ? `<!-- Amicus Edge Chatbot Widget -->
+<script 
+  src="https://amicusedge.com/widget.js" 
+  data-amicus-chatbot-id="${chatbotId}"
+  async>
+</script>`
+    : `<!-- Save your chatbot first to get the embed code -->`;
 
   const copyEmbedScript = () => {
     navigator.clipboard.writeText(embedScript);

@@ -85,6 +85,19 @@
       document.body.appendChild(this.container);
     }
     
+    getPositionStyles() {
+      const position = this.config?.position || 'lower-right';
+      switch (position) {
+        case 'lower-left':
+          return 'bottom: 20px; left: 20px;';
+        case 'lower-center':
+          return 'bottom: 20px; left: 50%; transform: translateX(-50%);';
+        case 'lower-right':
+        default:
+          return 'bottom: 20px; right: 20px;';
+      }
+    }
+    
     getWidgetHTML() {
       const primaryColor = this.config?.primaryColor || '#3b82f6';
       const chatbotName = this.config?.name || 'Chat Assistant';
@@ -160,8 +173,7 @@
       style.textContent = `
         #amicus-chat-widget {
           position: fixed;
-          bottom: 20px;
-          right: 20px;
+          ${this.getPositionStyles()}
           z-index: 9999;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -404,10 +416,34 @@
         suggestedResponses.style.display = 'none';
       }
       
-      // Simulate bot response (in real implementation, this would call your AI service)
-      setTimeout(() => {
-        this.addMessage("Thanks for your message! A human agent will respond shortly.", 'bot');
-      }, 1000);
+      // Get AI response from chatbot-response function
+      this.getAIResponse(message);
+    }
+    
+    async getAIResponse(message) {
+      try {
+        const response = await fetch(`${WIDGET_API_BASE}/chatbot-response`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            chatbotId: this.chatbotId,
+            sessionId: this.sessionId
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to get AI response');
+        }
+        
+        const result = await response.json();
+        this.addMessage(result.response || "I'm sorry, I couldn't process that request right now.", 'bot');
+      } catch (error) {
+        console.error('Error getting AI response:', error);
+        this.addMessage("I'm sorry, I'm having trouble connecting right now. Please try again in a moment.", 'bot');
+      }
     }
     
     addMessage(text, sender) {
