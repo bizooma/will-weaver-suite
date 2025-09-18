@@ -232,8 +232,6 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     if (url.includes('youtube.com/watch')) {
       const videoId = url.split('v=')[1]?.split('&')[0];
       const params = new URLSearchParams({
-        enablejsapi: '1',
-        origin: window.location.origin,
         rel: '0',
         modestbranding: '1',
         vq: quality,
@@ -246,8 +244,6 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
     if (url.includes('youtu.be/')) {
       const videoId = url.split('youtu.be/')[1]?.split('?')[0];
       const params = new URLSearchParams({
-        enablejsapi: '1',
-        origin: window.location.origin,
         rel: '0',
         modestbranding: '1',
         vq: quality,

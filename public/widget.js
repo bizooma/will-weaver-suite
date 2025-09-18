@@ -77,7 +77,7 @@
             videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
           }
           if (videoId) {
-            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&enablejsapi=1&origin=${window.location.origin}&vq=hd720`;
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&disablekb=1&vq=hd720`;
           }
         }
         // Vimeo embed URL with autoplay parameters
@@ -805,7 +805,7 @@
           videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
         }
         if (videoId) {
-          return `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1&origin=${window.location.origin}&vq=hd1080&rel=0&modestbranding=1`;
+          return `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd1080&rel=0&modestbranding=1`;
         }
       }
       return this.getEmbedUrl(videoUrl);
