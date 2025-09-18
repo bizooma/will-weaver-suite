@@ -623,13 +623,12 @@
         }
         
         .amicus-widget-footer {
-          padding: 8px 16px;
+          padding: 12px 16px;
           text-align: center;
           font-size: 11px;
           color: #6b7280;
-          border-top: 1px solid #f3f4f6;
-          background: #dc2626;
-          color: white;
+          border-top: 1px solid #e5e7eb;
+          background: white;
         }
         
         @media (max-width: 480px) {
