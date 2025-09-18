@@ -322,8 +322,8 @@
         }
         
         .amicus-widget-button {
-          width: 60px;
-          height: 60px;
+          width: 120px;
+          height: 120px;
           background: ${this.config?.primaryColor || '#3b82f6'};
           border-radius: 50%;
           display: flex;
@@ -380,7 +380,7 @@
           flex-direction: column;
           overflow: hidden;
           position: absolute;
-          bottom: 70px;
+          bottom: 130px;
           right: 0;
         }
         
