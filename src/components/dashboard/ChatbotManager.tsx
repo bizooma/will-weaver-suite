@@ -265,7 +265,7 @@ export function ChatbotManager() {
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant={chatbot.is_active ? 'default' : 'secondary'}
-                        className="text-xs"
+                        className={`text-xs ${chatbot.is_active ? 'bg-green-600 hover:bg-green-700' : ''}`}
                       >
                         {chatbot.is_active ? 'active' : 'inactive'}
                       </Badge>
