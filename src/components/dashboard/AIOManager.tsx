@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, CheckCircle, AlertCircle, Info, ExternalLink } from "lucide-react";
+import { AnalysisHistory } from "./AnalysisHistory";
+import { SeoAnalysis } from "@/hooks/useSeoAnalyses";
 
 interface AnalysisResult {
   analysisId?: string;
@@ -51,6 +53,22 @@ export function AIOManager() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleSelectAnalysis = (analysis: SeoAnalysis) => {
+    if (analysis.analysis_data && analysis.status === 'completed') {
+      // Convert stored analysis to display format
+      const analysisResult: AnalysisResult = {
+        analysisId: analysis.id,
+        saved: true,
+        authenticated: true,
+        url: analysis.url,
+        analysis: analysis.analysis_data.analysis,
+        timestamp: analysis.created_at,
+      };
+      setResult(analysisResult);
+      setUrl(analysis.url);
+    }
+  };
 
   const validateUrl = (urlString: string): boolean => {
     try {
@@ -153,6 +171,9 @@ export function AIOManager() {
           Comprehensive analysis for SEO, Voice SEO, and AI Overview optimization
         </p>
       </div>
+
+      {/* Analysis History */}
+      <AnalysisHistory onSelectAnalysis={handleSelectAnalysis} />
 
       {/* URL Input */}
       <Card>
