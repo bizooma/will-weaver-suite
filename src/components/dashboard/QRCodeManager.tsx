@@ -3,12 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { QrCode, Plus, Eye, Edit, Trash2, Copy, BarChart3, Download } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QrCode, Plus, Eye, Edit, Trash2, Copy, BarChart3, Download, Palette, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { PatternSelector } from "@/components/ui/pattern-selector";
 import QRCodeLib from "qrcode";
 import { generateSlug } from "@/utils/slug";
 
@@ -50,8 +53,18 @@ export function QRCodeManager() {
     target_url: "",
     foregroundColor: "#000000",
     backgroundColor: "#ffffff",
+    eyeColor: "#000000",
+    eyeInnerColor: "#ffffff",
     size: 256,
+    eyePattern: "square",
+    dataPattern: "square",
+    errorCorrectionLevel: "M",
+    margin: 4,
   });
+
+  // Real-time preview state
+  const [livePreview, setLivePreview] = useState<string>("");
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   useEffect(() => {
     fetchQRCodes();
@@ -82,8 +95,46 @@ export function QRCodeManager() {
         light: qrCode.qr_config.backgroundColor || '#ffffff',
       },
       width: qrCode.qr_config.size || 256,
+      margin: qrCode.qr_config.margin || 4,
+      errorCorrectionLevel: qrCode.qr_config.errorCorrectionLevel || 'M',
     });
   };
+
+  // Generate live preview
+  const generateLivePreview = async () => {
+    if (!formData.target_url) {
+      setLivePreview("");
+      return;
+    }
+
+    setPreviewLoading(true);
+    try {
+      const dataUrl = await QRCodeLib.toDataURL(formData.target_url, {
+        color: {
+          dark: formData.foregroundColor,
+          light: formData.backgroundColor,
+        },
+        width: formData.size,
+        margin: formData.margin,
+        errorCorrectionLevel: formData.errorCorrectionLevel as any,
+      });
+      setLivePreview(dataUrl);
+    } catch (error) {
+      console.error('Error generating live preview:', error);
+      setLivePreview("");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  // Update live preview when form data changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      generateLivePreview();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [formData.target_url, formData.foregroundColor, formData.backgroundColor, formData.size, formData.margin, formData.errorCorrectionLevel]);
 
   const downloadQRCode = async (qrCode: QRCodeData, format: string = 'png') => {
     try {
@@ -133,8 +184,13 @@ export function QRCodeManager() {
           qr_config: {
             foregroundColor: formData.foregroundColor,
             backgroundColor: formData.backgroundColor,
+            eyeColor: formData.eyeColor,
+            eyeInnerColor: formData.eyeInnerColor,
             size: formData.size,
-            errorCorrectionLevel: 'M'
+            eyePattern: formData.eyePattern,
+            dataPattern: formData.dataPattern,
+            errorCorrectionLevel: formData.errorCorrectionLevel,
+            margin: formData.margin,
           }
         }
       });
@@ -148,7 +204,13 @@ export function QRCodeManager() {
         target_url: "",
         foregroundColor: "#000000",
         backgroundColor: "#ffffff",
+        eyeColor: "#000000",
+        eyeInnerColor: "#ffffff",
         size: 256,
+        eyePattern: "square",
+        dataPattern: "square",
+        errorCorrectionLevel: "M",
+        margin: 4,
       });
       
       // Show preview with the newly created QR code
@@ -255,66 +317,186 @@ export function QRCodeManager() {
               Create QR Code
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New QR Code</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                Create New QR Code
+              </DialogTitle>
               <DialogDescription>
-                Generate a new QR code with custom styling and tracking
+                Generate a customized QR code with advanced styling options and analytics tracking
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="My QR Code"
-                />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Form Section */}
+              <div className="space-y-6">
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="basic">Basic</TabsTrigger>
+                    <TabsTrigger value="colors">
+                      <Palette className="h-4 w-4 mr-2" />
+                      Colors
+                    </TabsTrigger>
+                    <TabsTrigger value="advanced">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Advanced
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="basic" className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        placeholder="My QR Code"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="target_url">Target URL *</Label>
+                      <Input
+                        id="target_url"
+                        value={formData.target_url}
+                        onChange={(e) => setFormData({...formData, target_url: e.target.value})}
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="size">Size (pixels)</Label>
+                      <Input
+                        id="size"
+                        type="number"
+                        value={formData.size}
+                        onChange={(e) => setFormData({...formData, size: parseInt(e.target.value)})}
+                        min="128"
+                        max="1024"
+                      />
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="colors" className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <ColorPicker
+                        label="Foreground Color"
+                        value={formData.foregroundColor}
+                        onChange={(color) => setFormData({...formData, foregroundColor: color})}
+                      />
+                      <ColorPicker
+                        label="Background Color"
+                        value={formData.backgroundColor}
+                        onChange={(color) => setFormData({...formData, backgroundColor: color})}
+                      />
+                      <Separator />
+                      <ColorPicker
+                        label="Eye Color"
+                        value={formData.eyeColor}
+                        onChange={(color) => setFormData({...formData, eyeColor: color})}
+                      />
+                      <ColorPicker
+                        label="Eye Inner Color"
+                        value={formData.eyeInnerColor}
+                        onChange={(color) => setFormData({...formData, eyeInnerColor: color})}
+                      />
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="advanced" className="space-y-4">
+                    <PatternSelector
+                      label="Eye Pattern"
+                      value={formData.eyePattern}
+                      onChange={(pattern) => setFormData({...formData, eyePattern: pattern})}
+                      options={[
+                        { id: "square", name: "Square", preview: <div className="w-4 h-4 bg-foreground"></div> },
+                        { id: "rounded", name: "Rounded", preview: <div className="w-4 h-4 bg-foreground rounded"></div> },
+                        { id: "circle", name: "Circle", preview: <div className="w-4 h-4 bg-foreground rounded-full"></div> }
+                      ]}
+                    />
+                    
+                    <PatternSelector
+                      label="Data Pattern"
+                      value={formData.dataPattern}
+                      onChange={(pattern) => setFormData({...formData, dataPattern: pattern})}
+                      options={[
+                        { id: "square", name: "Square", preview: <div className="w-3 h-3 bg-foreground"></div> },
+                        { id: "rounded", name: "Rounded", preview: <div className="w-3 h-3 bg-foreground rounded-sm"></div> },
+                        { id: "circle", name: "Circle", preview: <div className="w-3 h-3 bg-foreground rounded-full"></div> }
+                      ]}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="margin">Margin</Label>
+                        <Input
+                          id="margin"
+                          type="number"
+                          value={formData.margin}
+                          onChange={(e) => setFormData({...formData, margin: parseInt(e.target.value)})}
+                          min="0"
+                          max="20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="errorCorrection">Error Correction</Label>
+                        <select
+                          id="errorCorrection"
+                          value={formData.errorCorrectionLevel}
+                          onChange={(e) => setFormData({...formData, errorCorrectionLevel: e.target.value})}
+                          className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                        >
+                          <option value="L">Low (7%)</option>
+                          <option value="M">Medium (15%)</option>
+                          <option value="Q">Quartile (25%)</option>
+                          <option value="H">High (30%)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
+                <Button onClick={createQRCode} className="w-full" size="lg">
+                  Create QR Code
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="target_url">Target URL *</Label>
-                <Input
-                  id="target_url"
-                  value={formData.target_url}
-                  onChange={(e) => setFormData({...formData, target_url: e.target.value})}
-                  placeholder="https://example.com"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="foreground">Foreground Color</Label>
-                  <Input
-                    id="foreground"
-                    type="color"
-                    value={formData.foregroundColor}
-                    onChange={(e) => setFormData({...formData, foregroundColor: e.target.value})}
-                  />
+              
+              {/* Preview Section */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-full">
+                  <Label className="text-sm font-medium mb-3 block">Live Preview</Label>
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 flex items-center justify-center bg-muted/30 min-h-[300px]">
+                    {previewLoading ? (
+                      <div className="animate-pulse text-muted-foreground">Generating preview...</div>
+                    ) : livePreview ? (
+                      <img 
+                        src={livePreview} 
+                        alt="QR Code Preview" 
+                        className="max-w-[200px] max-h-[200px] object-contain"
+                      />
+                    ) : (
+                      <div className="text-center text-muted-foreground">
+                        <QrCode className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Enter a URL to see preview</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="background">Background Color</Label>
-                  <Input
-                    id="background"
-                    type="color"
-                    value={formData.backgroundColor}
-                    onChange={(e) => setFormData({...formData, backgroundColor: e.target.value})}
-                  />
-                </div>
+                
+                {formData.target_url && (
+                  <div className="w-full p-4 bg-muted/50 rounded-lg space-y-2">
+                    <div className="text-sm">
+                      <span className="font-medium">Target URL:</span>
+                      <p className="text-muted-foreground break-all mt-1">{formData.target_url}</p>
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">Size:</span> {formData.size}px
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">Error Correction:</span> {formData.errorCorrectionLevel}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
-                <Label htmlFor="size">Size (pixels)</Label>
-                <Input
-                  id="size"
-                  type="number"
-                  value={formData.size}
-                  onChange={(e) => setFormData({...formData, size: parseInt(e.target.value)})}
-                  min="128"
-                  max="512"
-                />
-              </div>
-              <Button onClick={createQRCode} className="w-full">
-                Create QR Code
-              </Button>
             </div>
           </DialogContent>
         </Dialog>
