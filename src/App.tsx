@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -42,9 +42,10 @@ import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const location = useLocation();
-  const isEmbed = new URLSearchParams(location.search).get('embed') === '1' || 
-                   new URLSearchParams(location.search).has('embed');
+  const search = typeof window !== 'undefined' ? window.location.search : '';
+  const usp = new URLSearchParams(search);
+  const embedParam = usp.get('embed');
+  const isEmbed = embedParam === '1' || embedParam === 'true' || usp.has('embed');
   
   // Security monitoring
   useSecurityMonitoring();
