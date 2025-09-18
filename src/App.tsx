@@ -30,6 +30,7 @@ import ProductionDashboard from "./pages/ProductionDashboard";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
+import ScrollToTop from "./components/ScrollToTop";
 import ChatbotWidget from "./components/ChatbotWidget";
 import VoiceAgentBar from "./components/VoiceAgentBar";
 
@@ -123,6 +124,7 @@ const App = () => {
           <AuthProvider>
             <TooltipProvider>
               <BrowserRouter>
+                <ScrollToTop />
                 <AppContent />
               </BrowserRouter>
               <Toaster />

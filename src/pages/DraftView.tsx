@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -94,9 +94,9 @@ const DraftView = () => {
             <Button onClick={onExportDocx} disabled={!draft || loading}>
               Export DOCX
             </Button>
-            <a href={`/will-creator?slug=${slug}`}>
+            <Link to={`/will-creator?slug=${slug}`}>
               <Button variant="secondary" disabled={!slug}>Open in Editor</Button>
-            </a>
+            </Link>
           </div>
 
           <div className="rounded border p-4 overflow-auto max-h-[60vh]">

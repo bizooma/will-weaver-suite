@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { ENV_CONFIG } from "@/lib/config";
+import { Link } from "react-router-dom";
 
 const SiteFooter = () => {
   const { user } = useAuth();
@@ -54,18 +55,18 @@ const SiteFooter = () => {
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">Products</h4>
               <nav className="flex flex-col space-y-2">
-                <a href="/will-creator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/will-creator" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Will & Trust Creator
-                </a>
-                <a href="/alexa" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/alexa" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Alexa Skill Demo
-                </a>
-                <a href="/mobile-app" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/mobile-app" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Mobile App
-                </a>
-                <a href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Blog
-                </a>
+                </Link>
               </nav>
             </div>
             
@@ -73,20 +74,20 @@ const SiteFooter = () => {
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">Company</h4>
               <nav className="flex flex-col space-y-2">
-                <a href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   About Us
-                </a>
-                <a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Contact
-                </a>
+                </Link>
                 {user && (
                   <>
-                    <a href="/production-dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Link to="/production-dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                       Dashboard
-                    </a>
-                    <a href="/data-privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    </Link>
+                    <Link to="/data-privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                       Privacy Settings
-                    </a>
+                    </Link>
                   </>
                 )}
               </nav>
@@ -96,15 +97,15 @@ const SiteFooter = () => {
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">Legal</h4>
               <nav className="flex flex-col space-y-2">
-                <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy
-                </a>
-                <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
-                </a>
-                <a href="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                </Link>
+                <Link to="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Cookie Policy
-                </a>
+                </Link>
               </nav>
               
               <div className="pt-2">

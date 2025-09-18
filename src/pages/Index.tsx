@@ -82,7 +82,7 @@ const Index = () => {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {user ? (
-                <a href="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></a>
+                <Link to="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></Link>
               ) : (
                 <a href="#pricing"><Button variant="hero" size="lg">Get Started</Button></a>
               )}

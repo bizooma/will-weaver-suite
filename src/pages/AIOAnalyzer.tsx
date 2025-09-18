@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { Search, TrendingUp, Brain, CheckCircle } from "lucide-react";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/aio-analyzer" : "/aio-analyzer";
@@ -159,12 +160,12 @@ const AIOAnalyzer = () => {
             Ready to optimize for the future of search?
           </p>
           <div className="flex gap-4 justify-center">
-            <a href="/dashboard/aio" className="inline-flex items-center justify-center h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            <Link to="/dashboard/aio" className="inline-flex items-center justify-center h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Analyze Your Website
-            </a>
-            <a href="/contact" className="inline-flex items-center justify-center h-11 px-6 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors">
+            </Link>
+            <Link to="/contact" className="inline-flex items-center justify-center h-11 px-6 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors">
               Contact Us
-            </a>
+            </Link>
           </div>
         </section>
 

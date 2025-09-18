@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 const canonical = typeof window !== 'undefined' ? window.location.origin + "/alexa" : "/alexa";
 
@@ -114,12 +115,12 @@ const Alexa = () => {
             Put your firm at the forefront of client convenience.
           </p>
           <div className="flex gap-4 justify-center">
-            <a href="/contact" className="inline-flex items-center justify-center h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            <Link to="/contact" className="inline-flex items-center justify-center h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Contact Us Today
-            </a>
-            <a href="/dashboard" className="inline-flex items-center justify-center h-11 px-6 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors">
+            </Link>
+            <Link to="/dashboard" className="inline-flex items-center justify-center h-11 px-6 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors">
               View Demo
-            </a>
+            </Link>
           </div>
         </section>
       </article>
