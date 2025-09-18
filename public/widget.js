@@ -304,7 +304,12 @@
           </div>
           
           <div class="amicus-widget-footer">
-            <span>Powered by <a href="https://legallyinnovative.com" target="_blank" style="color: inherit; text-decoration: none;">Legally Innovative</a></span>
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+              Powered by 
+              <a href="https://legallyinnovative.com" target="_blank" style="color: inherit; text-decoration: none; display: flex; align-items: center;">
+                <img src="/logo.png" alt="Logo" style="height: 14px; width: auto;" />
+              </a>
+            </span>
           </div>
         </div>
       `;

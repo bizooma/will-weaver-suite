@@ -584,9 +584,9 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
                   className="hover:opacity-80 transition-opacity"
                 >
                   <img 
-                    src="/lovable-uploads/22c96565-b032-41c7-85c0-d846886cac6c.png" 
-                    alt="Legally Innovative Logo" 
-                    className="h-16 w-auto"
+                    src="/logo.png" 
+                    alt="Logo" 
+                    className="h-4 w-auto"
                   />
                 </a>
               </div>
