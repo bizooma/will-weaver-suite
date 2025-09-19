@@ -76,7 +76,7 @@ const Index = () => {
         </div>
         <div className="container pt-8 md:pt-12 pb-8 md:pb-12 grid gap-10 md:grid-cols-2 items-center">
           <div>
-            <h1 className="text-4xl md:text-6xl mb-4">Modern Legal Tools, Traditional Trust</h1>
+            <h1 className="text-4xl md:text-6xl mb-4">Modernize Your Law Firm with AI-Powered Legal Solutions</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
               Modernize Your Law Firm with AI-Powered Legal Solutions
             </p>
