@@ -78,7 +78,7 @@ const Index = () => {
           <div>
             <h1 className="text-4xl md:text-6xl mb-4">Modernize Your Law Firm with AI-Powered Legal Solutions</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Modernize Your Law Firm with AI-Powered Legal Solutions
+              Video Chatbots, QR Code Generator, AIO/SEO Analyzer, Voice Search Simulator | One Marketing Platform
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {user ? (
