@@ -40,6 +40,7 @@ import QRCodes from "./pages/QRCodes";
 import VideoChatbots from "./pages/VideoChatbots";
 import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
 import LiveOperators from "./pages/LiveOperators";
+import NonprofitFormation from "./pages/NonprofitFormation";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,11 @@ const AppContent = () => {
         <Route path="/live-operators" element={
           <ProtectedRoute>
             <LiveOperators />
+          </ProtectedRoute>
+        } />
+        <Route path="/nonprofit-formation" element={
+          <ProtectedRoute>
+            <NonprofitFormation />
           </ProtectedRoute>
         } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Helmet } from 'react-helmet-async';
@@ -145,7 +145,7 @@ const NonprofitFormation = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<NonprofitFormData>(defaultFormData);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const { createDraft, updateDraft, loading } = useNonprofitDrafts();
+  const { createDraft, loading } = useNonprofitDrafts();
 
   const form = useForm({
     resolver: zodResolver(steps.find(step => step.id === currentStep)?.schema || organizationInfoSchema),

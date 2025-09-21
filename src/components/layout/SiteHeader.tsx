@@ -36,6 +36,9 @@ const SiteHeader = () => {
           <NavLink to="/will-creator" className={navLinkCls}>
             Will & Trust
           </NavLink>
+          <NavLink to="/nonprofit-formation" className={navLinkCls}>
+            Nonprofit Formation
+          </NavLink>
           <NavLink to="/alexa" className={navLinkCls}>
             Alexa Skill
           </NavLink>
