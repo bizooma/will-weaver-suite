@@ -44,6 +44,10 @@ const items = [
   { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon },
   { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
   { title: "Marketing Calendar", url: "/dashboard/marketing-calendar", icon: Calendar },
+];
+
+const growthToolsItems = [
+  { title: "Foundation", url: "/nonprofit-formation", icon: Building2 },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
   { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },
@@ -113,17 +117,19 @@ export function AppSidebar() {
           <SidebarGroupLabel>Growth Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink 
-                    to="/nonprofit-formation" 
-                    className={getNavCls("/nonprofit-formation")}
-                  >
-                    <Building2 className="h-4 w-4" />
-                    {open && <span>Foundation</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {growthToolsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavCls(item.url)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
