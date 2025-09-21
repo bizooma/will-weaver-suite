@@ -15,7 +15,8 @@ import {
   Bell,
   MicIcon,
   Calendar,
-  Monitor
+  Monitor,
+  Building2
 } from "lucide-react";
 import {
   Sidebar,
@@ -104,6 +105,25 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Growth Tools</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/nonprofit-formation" 
+                    className={getNavCls("/nonprofit-formation")}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    {open && <span>Foundation</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
