@@ -112,11 +112,6 @@ const AppContent = () => {
             <LiveOperators />
           </ProtectedRoute>
         } />
-        <Route path="/nonprofit-formation" element={
-          <ProtectedRoute>
-            <NonprofitFormation />
-          </ProtectedRoute>
-        } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

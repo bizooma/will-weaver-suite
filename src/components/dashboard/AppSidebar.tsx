@@ -47,7 +47,7 @@ const items = [
 ];
 
 const growthToolsItems = [
-  { title: "Foundation", url: "/nonprofit-formation", icon: Building2 },
+  { title: "Foundation", url: "/dashboard/nonprofit-formation", icon: Building2 },
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
   { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },

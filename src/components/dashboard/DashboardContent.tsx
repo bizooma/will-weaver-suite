@@ -16,6 +16,7 @@ import { SystemMessages } from "./SystemMessages";
 import { MarketingCalendar } from "./MarketingCalendar";
 import { ProtectedContent } from "@/components/ProtectedContent";
 import LiveOperators from "@/pages/LiveOperators";
+import NonprofitFormation from "@/pages/NonprofitFormation";
 
 export function DashboardContent() {
   return (
@@ -119,6 +120,15 @@ export function DashboardContent() {
             fallbackDescription="Monitor and take over chatbot conversations in real-time. Upgrade to access this feature."
           >
             <LiveOperators />
+          </ProtectedContent>
+        } />
+        <Route path="/nonprofit-formation" element={
+          <ProtectedContent 
+            requiredRole="free"
+            fallbackTitle="Nonprofit Formation - Feature"
+            fallbackDescription="Create and manage nonprofit organizations with legal assistance and guidance."
+          >
+            <NonprofitFormation />
           </ProtectedContent>
         } />
       </Routes>
