@@ -89,7 +89,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Marketing Products</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
