@@ -46,8 +46,6 @@ const items = [
   { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
   { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
   { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -134,6 +132,28 @@ export function AppSidebar() {
                     >
                       <Bell className="h-4 w-4" />
                       {open && <span>System Messages</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to="/dashboard/analytics" 
+                      className={getNavCls("/dashboard/analytics")}
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                      {open && <span>Analytics</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to="/dashboard/settings" 
+                      className={getNavCls("/dashboard/settings")}
+                    >
+                      <Settings className="h-4 w-4" />
+                      {open && <span>Settings</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
