@@ -14,6 +14,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 import WillCreator from "./pages/WillCreator";
+import WillTrustMarketing from "./pages/WillTrustMarketing";
+import NonprofitFormationMarketing from "./pages/NonprofitFormationMarketing";
 import Alexa from "./pages/Alexa";
 import AIOAnalyzer from "./pages/AIOAnalyzer";
 import MobileApp from "./pages/MobileApp";
@@ -79,6 +81,8 @@ const AppContent = () => {
             </ProtectedRoute>
           )
         } />
+        <Route path="/will-trust" element={<WillTrustMarketing />} />
+        <Route path="/nonprofit-formation-info" element={<NonprofitFormationMarketing />} />
         <Route path="/alexa" element={<Alexa />} />
         <Route path="/aio-analyzer" element={<AIOAnalyzer />} />
         <Route path="/mobile-app" element={<MobileApp />} />

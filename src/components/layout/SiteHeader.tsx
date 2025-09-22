@@ -33,10 +33,10 @@ const SiteHeader = () => {
           <NavLink to="/about" className={navLinkCls}>
             About
           </NavLink>
-          <NavLink to="/will-creator" className={navLinkCls}>
+          <NavLink to="/will-trust" className={navLinkCls}>
             Will & Trust
           </NavLink>
-          <NavLink to="/nonprofit-formation" className={navLinkCls}>
+          <NavLink to="/nonprofit-formation-info" className={navLinkCls}>
             Nonprofit Formation
           </NavLink>
           <NavLink to="/alexa" className={navLinkCls}>
