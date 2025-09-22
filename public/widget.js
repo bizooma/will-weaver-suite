@@ -441,7 +441,7 @@
         
         .amicus-widget-chat {
           width: 380px;
-          height: min(600px, 70vh);
+          height: min(700px, 80vh);
           background: white;
           border-radius: 12px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
