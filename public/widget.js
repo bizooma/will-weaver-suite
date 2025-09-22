@@ -380,14 +380,15 @@
         }
         
         .amicus-video-preview iframe {
-          width: 160px;
-          height: 90px;
+          position: absolute;
+          width: 180%;
+          height: 180%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -58%);
           border-radius: 8px;
           pointer-events: none;
-          object-fit: cover;
-          object-position: center 20%;
           border: none;
-          transform: none;
         }
         
         .amicus-video-preview::before {
