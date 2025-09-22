@@ -473,36 +473,93 @@ export function ChatbotBuilder() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border rounded-lg p-4 bg-muted/30 min-h-[500px] flex flex-col">
-                    {/* Video Section */}
+                  <div className="bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg p-6 min-h-[500px] relative overflow-hidden">
+                    {/* Background pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,theme(colors.primary)_1px,transparent_1px)] bg-[length:24px_24px]" />
+                    </div>
+
+                    {/* Enhanced Video Preview with Professional Avatar Design */}
                     {chatbotData.videoUrl && (
-                      <div className="mb-4">
-                        <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
-                          <iframe
-                            src={getEmbedUrl(chatbotData.videoUrl)}
-                            className="w-full h-full"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </AspectRatio>
+                      <div className="mb-6 relative">
+                        <div className="text-center mb-4">
+                          <h3 className="text-sm font-medium text-muted-foreground mb-2">Widget Appearance</h3>
+                          
+                          {/* Professional Avatar Preview */}
+                          <div className="inline-flex flex-col items-center space-y-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg">
+                            {/* Main avatar with smart cropping simulation */}
+                            <div 
+                              className="w-16 h-16 rounded-full overflow-hidden shadow-elegant border-2 bg-gradient-to-br from-white/20 to-transparent relative group"
+                              style={{ 
+                                borderColor: chatbotData.primaryColor,
+                                boxShadow: `0 8px 32px ${chatbotData.primaryColor}20`
+                              }}
+                            >
+                              {/* Video thumbnail preview */}
+                              <AspectRatio ratio={1} className="rounded-full overflow-hidden">
+                                <iframe
+                                  src={getEmbedUrl(chatbotData.videoUrl)}
+                                  className="w-full h-full scale-150 object-cover"
+                                  style={{ transform: 'scale(1.5) translateY(-10%)' }}
+                                  frameBorder="0"
+                                  allow="autoplay; encrypted-media"
+                                />
+                              </AspectRatio>
+                              
+                              {/* Status indicator */}
+                              <div 
+                                className="absolute -top-1 -right-1 w-5 h-5 rounded-full border-2 border-white shadow-md flex items-center justify-center animate-pulse"
+                                style={{ backgroundColor: chatbotData.primaryColor }}
+                              >
+                                <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                              </div>
+                            </div>
+                            
+                            {/* Professional tooltip preview */}
+                            <div className="bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-gray-700 border border-gray-200/50">
+                              <span className="text-primary font-semibold">●</span> Online • Chat with us
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Full video preview */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                          <p className="text-xs text-muted-foreground mb-2 text-center">Full Video (shown in chat)</p>
+                          <AspectRatio ratio={16 / 9} className="rounded overflow-hidden">
+                            <iframe
+                              src={getEmbedUrl(chatbotData.videoUrl)}
+                              className="w-full h-full"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </AspectRatio>
+                        </div>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-3 mb-4 pb-3 border-b">
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                        style={{ backgroundColor: chatbotData.primaryColor }}
-                      >
-                        AI
+                    {/* Enhanced Chat Interface Preview */}
+                    <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg p-4 space-y-4 max-h-80 overflow-hidden">
+                      <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                        <div 
+                          className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-medium shadow-md"
+                          style={{ backgroundColor: chatbotData.primaryColor }}
+                        >
+                          AI
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-foreground">{chatbotData.name || "Your Chatbot"}</h4>
+                          <div className="flex items-center gap-1.5">
+                            <div 
+                              className="w-2 h-2 rounded-full animate-pulse"
+                              style={{ backgroundColor: chatbotData.primaryColor }}
+                            />
+                            <p className="text-xs text-muted-foreground">Online • Typically responds instantly</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">{chatbotData.name || "Your Chatbot"}</h4>
-                        <p className="text-xs text-muted-foreground">Online</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 space-y-3 max-h-64 overflow-y-auto">
+                      
+                      <div className="flex-1 space-y-3 max-h-64 overflow-y-auto">
                       {messages.map((message) => (
                         <div key={message.id} className={`flex gap-2 ${message.isBot ? '' : 'justify-end'}`}>
                           {message.isBot && (
@@ -566,9 +623,10 @@ export function ChatbotBuilder() {
                           <span className="text-white">→</span>
                         </Button>
                       </form>
-                    </div>
-                  </div>
-                </CardContent>
+                     </div>
+                   </div>
+                 </div>
+                 </CardContent>
               </Card>
 
               <Card>

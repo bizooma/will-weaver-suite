@@ -341,40 +341,85 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
 
   const renderChatButton = () => {
     if (embedded) return null;
-    // Show video thumbnail if available, otherwise fall back to icon
+    
+    // Enhanced video thumbnail with professional styling
     if (videoThumbnail && !thumbnailLoading) {
       return (
         <div className="relative group">
+          {/* Main avatar container with intelligent cropping */}
           <div 
-            className="w-20 h-20 rounded-full overflow-hidden shadow-lg cursor-pointer transition-transform hover:scale-105 border-4"
-            style={{ borderColor: chatbotData?.primaryColor || "#3b82f6" }}
+            className="w-20 h-20 rounded-full overflow-hidden shadow-elegant cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-glow border-2 bg-gradient-to-br from-white/20 to-transparent backdrop-blur-sm"
+            style={{ 
+              borderColor: chatbotData?.primaryColor || "#3b82f6",
+              boxShadow: `0 8px 32px ${chatbotData?.primaryColor || "#3b82f6"}20`
+            }}
             onClick={() => setOpen(!open)}
           >
-            <img 
-              src={videoThumbnail.url} 
-              alt={`${chatbotData?.name} preview`}
-              className="w-full h-full object-cover"
-            />
+            {/* Smart cropping wrapper - centers on face area */}
+            <div className="relative w-full h-full">
+              <img 
+                src={videoThumbnail.url} 
+                alt={`${chatbotData?.name} support representative`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                style={{
+                  objectPosition: 'center 20%' // Focus on upper area where faces usually are
+                }}
+              />
+              {/* Subtle overlay gradient for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+            </div>
           </div>
-          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded-full shadow-sm text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
-            Chat
+
+          {/* Status indicator */}
+          <div 
+            className="absolute -top-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center animate-pulse"
+            style={{ backgroundColor: chatbotData?.primaryColor || "#3b82f6" }}
+          >
+            <div className="w-2 h-2 bg-white rounded-full" />
           </div>
+
+          {/* Enhanced tooltip with professional styling */}
+          <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-all duration-200 border border-gray-200/50 whitespace-nowrap">
+            <span className="text-primary font-semibold">●</span> Online • Chat with us
+          </div>
+
+          {/* Breathing animation ring */}
+          <div 
+            className="absolute inset-0 rounded-full border-2 opacity-50 animate-ping"
+            style={{ borderColor: chatbotData?.primaryColor || "#3b82f6" }}
+          />
         </div>
       );
     }
 
-    // Fallback to original button
+    // Fallback to enhanced button design
     return (
-      <Button 
-        variant="hero" 
-        size="lg" 
-        onClick={() => setOpen(!open)}
-        className="shadow-lg"
-        style={chatbotData?.primaryColor ? { backgroundColor: chatbotData.primaryColor } : {}}
-      >
-        {open ? <X className="h-5 w-5 mr-2" /> : <MessageCircle className="h-5 w-5 mr-2" />}
-        {open ? "Close" : "Chat"}
-      </Button>
+      <div className="relative group">
+        <Button 
+          variant="hero" 
+          size="lg" 
+          onClick={() => setOpen(!open)}
+          className="shadow-elegant transition-all duration-300 hover:shadow-glow hover:scale-105 relative overflow-hidden"
+          style={chatbotData?.primaryColor ? { 
+            backgroundColor: chatbotData.primaryColor,
+            boxShadow: `0 8px 32px ${chatbotData.primaryColor}20`
+          } : {}}
+        >
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+          
+          {open ? <X className="h-5 w-5 mr-2 relative z-10" /> : <MessageCircle className="h-5 w-5 mr-2 relative z-10" />}
+          <span className="relative z-10">{open ? "Close" : "Chat"}</span>
+        </Button>
+
+        {/* Status indicator for button version */}
+        {!open && (
+          <div 
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-md animate-pulse"
+            style={{ backgroundColor: chatbotData?.primaryColor || "#3b82f6" }}
+          />
+        )}
+      </div>
     );
   };
 

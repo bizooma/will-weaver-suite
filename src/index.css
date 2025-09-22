@@ -52,6 +52,10 @@ All colors MUST be HSL.
     /* Motion & effects */
     --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     
+    /* Professional shadows */
+    --shadow-elegant: 0 10px 30px -10px hsla(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsla(var(--primary) / 0.4);
+    
     /* Glass effects */
     --glass-start: 0 0% 100%;
     --glass-end: 0 0% 100%;
@@ -164,5 +168,16 @@ All colors MUST be HSL.
     border-color: hsl(var(--border) / 0.3);
     box-shadow: 0 12px 40px hsl(var(--foreground) / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.5);
     transform: translateY(-2px);
+  }
+}
+
+/* Custom utility classes for chatbot */
+@layer utilities {
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
 }
