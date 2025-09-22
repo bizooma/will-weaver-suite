@@ -441,7 +441,7 @@
         
         .amicus-widget-chat {
           width: 380px;
-          height: 800px;
+          height: min(600px, 70vh);
           background: white;
           border-radius: 12px;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -651,10 +651,17 @@
           background: white;
         }
         
+        /* Medium screens (tablets) */
+        @media (max-width: 768px) and (min-width: 481px) {
+          .amicus-widget-chat {
+            height: min(550px, 75vh);
+          }
+        }
+        
         @media (max-width: 480px) {
           .amicus-widget-chat {
             width: calc(100vw - 40px);
-            height: calc(100vh - 100px);
+            height: min(500px, calc(100vh - 120px));
             right: 20px;
             bottom: 80px;
           }
