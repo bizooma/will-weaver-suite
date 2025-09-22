@@ -355,14 +355,16 @@
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          transition: all 0.3s ease;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           overflow: hidden;
+          position: relative;
+          border: 3px solid rgba(255, 255, 255, 0.8);
         }
         
         .amicus-widget-button:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
         .amicus-video-preview {
@@ -374,21 +376,39 @@
           justify-content: center;
           border-radius: 50%;
           overflow: hidden;
+          background: linear-gradient(135deg, #f8fafc, #e2e8f0);
         }
         
         .amicus-video-preview iframe {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
+          width: 160px;
+          height: 90px;
+          border-radius: 8px;
           pointer-events: none;
-          transform: scale(1.5);
+          object-fit: cover;
+          object-position: center 20%;
+          border: none;
+          transform: none;
+        }
+        
+        .amicus-video-preview::before {
+          content: '';
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 12px;
+          height: 12px;
+          background: #10b981;
+          border: 2px solid white;
+          border-radius: 50%;
+          z-index: 2;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .amicus-video-preview::after {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+          background: linear-gradient(135deg, rgba(0,0,0,0), rgba(0,0,0,0.1));
           border-radius: 50%;
           opacity: 0;
           transition: opacity 0.3s ease;
