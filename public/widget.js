@@ -152,8 +152,8 @@
           <div class="amicus-video-preview">
             <iframe 
               src="${this.videoEmbedUrl}" 
-              width="120" 
-              height="120" 
+              width="64" 
+              height="64" 
               frameborder="0" 
               allow="autoplay; encrypted-media" 
               allowfullscreen
@@ -272,6 +272,10 @@
       return `
         <div class="amicus-widget-button" id="amicus-widget-button" role="button" tabindex="0" aria-label="Open chat">
           ${this.getChatButtonHTML()}
+          <div class="amicus-widget-tooltip">
+            <div class="amicus-tooltip-status"></div>
+            Online • Chat with us
+          </div>
         </div>
         
         <div class="amicus-widget-chat" id="amicus-widget-chat" style="display: none;">
@@ -347,8 +351,8 @@
         }
         
         .amicus-widget-button {
-          width: 120px;
-          height: 120px;
+          width: 64px;
+          height: 64px;
           background: ${this.config?.primaryColor || '#3b82f6'};
           border-radius: 50%;
           display: flex;
@@ -359,7 +363,7 @@
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           overflow: hidden;
           position: relative;
-          border: 3px solid rgba(255, 255, 255, 0.8);
+          border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
         .amicus-widget-button:hover {
@@ -394,15 +398,74 @@
         .amicus-video-preview::before {
           content: '';
           position: absolute;
-          top: 8px;
-          right: 8px;
-          width: 12px;
-          height: 12px;
+          top: 4px;
+          right: 4px;
+          width: 8px;
+          height: 8px;
           background: #10b981;
           border: 2px solid white;
           border-radius: 50%;
           z-index: 2;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+        
+        .amicus-widget-tooltip {
+          position: absolute;
+          bottom: -45px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: white;
+          color: #374151;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 500;
+          white-space: nowrap;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          z-index: 10;
+        }
+        
+        .amicus-widget-button:hover .amicus-widget-tooltip {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(-50%) translateY(-4px);
+        }
+        
+        .amicus-widget-tooltip::before {
+          content: '';
+          position: absolute;
+          top: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-bottom: 4px solid white;
+        }
+        
+        .amicus-tooltip-status {
+          width: 6px;
+          height: 6px;
+          background: #10b981;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
         }
         
         .amicus-video-preview::after {
@@ -450,7 +513,7 @@
           flex-direction: column;
           overflow: hidden;
           position: absolute;
-          bottom: 130px;
+          bottom: 75px;
           right: 0;
         }
         
