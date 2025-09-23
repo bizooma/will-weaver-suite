@@ -49,6 +49,41 @@ const SiteFooter = () => {
               <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
                 <strong>Demo Only:</strong> Not for actual legal use.
               </div>
+              
+              {/* App Download Buttons */}
+              <div className="space-y-3 pt-2">
+                <h5 className="font-semibold text-xs">Download Our App</h5>
+                <div className="flex flex-col space-y-2">
+                  <a 
+                    href="#" 
+                    className="inline-block transition-opacity hover:opacity-80"
+                    aria-label="Download on the App Store"
+                  >
+                    <img 
+                      src="/src/assets/app-store.png" 
+                      alt="Download on the App Store" 
+                      className="h-10 w-auto"
+                      width={135}
+                      height={40}
+                      loading="lazy"
+                    />
+                  </a>
+                  <a 
+                    href="#" 
+                    className="inline-block transition-opacity hover:opacity-80"
+                    aria-label="Get it on Google Play"
+                  >
+                    <img 
+                      src="/src/assets/play-store.png" 
+                      alt="Get it on Google Play" 
+                      className="h-10 w-auto"
+                      width={135}
+                      height={40}
+                      loading="lazy"
+                    />
+                  </a>
+                </div>
+              </div>
             </div>
             
             {/* Products */}
