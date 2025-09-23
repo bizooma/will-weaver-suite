@@ -16,7 +16,8 @@ import {
   MicIcon,
   Calendar,
   Monitor,
-  Building2
+  Building2,
+  GraduationCap
 } from "lucide-react";
 import {
   Sidebar,
@@ -130,6 +131,25 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Training</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/dashboard/training" 
+                    className={getNavCls("/dashboard/training")}
+                  >
+                    <GraduationCap className="h-4 w-4" />
+                    {open && <span>Training Videos</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

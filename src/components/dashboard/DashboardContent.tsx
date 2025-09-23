@@ -14,6 +14,8 @@ import { VoiceSearchManager } from "./VoiceSearchManager";
 import { UserManagement } from "./UserManagement";
 import { SystemMessages } from "./SystemMessages";
 import { MarketingCalendar } from "./MarketingCalendar";
+import { TrainingManager } from "./TrainingManager";
+import { TrainingAdminManager } from "./TrainingAdminManager";
 import { ProtectedContent } from "@/components/ProtectedContent";
 import LiveOperators from "@/pages/LiveOperators";
 import NonprofitFormation from "@/pages/NonprofitFormation";
@@ -58,6 +60,20 @@ export function DashboardContent() {
           </ProtectedContent>
         } />
         <Route path="/marketing-calendar" element={<MarketingCalendar />} />
+        <Route path="/training/admin/*" element={
+          <ProtectedContent requiredRole="admin">
+            <TrainingAdminManager />
+          </ProtectedContent>
+        } />
+        <Route path="/training/*" element={
+          <ProtectedContent 
+            requiredRole="free"
+            fallbackTitle="Training Videos - Available to All Users"
+            fallbackDescription="Access comprehensive training videos on digital marketing strategies for law firms."
+          >
+            <TrainingManager />
+          </ProtectedContent>
+        } />
         <Route path="/voice-search" element={
           <ProtectedContent 
             fallbackTitle="Voice Search Optimizer - Premium Feature"
