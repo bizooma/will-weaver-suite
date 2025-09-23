@@ -152,17 +152,12 @@
           <div class="amicus-video-preview">
             <iframe 
               src="${this.videoEmbedUrl}" 
-              width="64" 
-              height="64" 
+              width="120" 
+              height="120" 
               frameborder="0" 
               allow="autoplay; encrypted-media" 
               allowfullscreen
             ></iframe>
-            <button class="amicus-preview-play-cta" aria-label="Watch video" title="Watch video">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 5v14l11-7-11-7z" />
-              </svg>
-            </button>
           </div>
         `;
       }
@@ -351,8 +346,8 @@
         }
         
         .amicus-widget-button {
-          width: 64px;
-          height: 64px;
+          width: 120px;
+          height: 120px;
           background: ${this.config?.primaryColor || '#3b82f6'};
           border-radius: 50%;
           display: flex;
@@ -363,7 +358,7 @@
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           overflow: hidden;
           position: relative;
-          border: 2px solid rgba(255, 255, 255, 0.8);
+          border: 3px solid rgba(255, 255, 255, 0.8);
         }
         
         .amicus-widget-button:hover {
@@ -398,10 +393,10 @@
         .amicus-video-preview::before {
           content: '';
           position: absolute;
-          top: 4px;
-          right: 4px;
-          width: 8px;
-          height: 8px;
+          top: 8px;
+          right: 8px;
+          width: 12px;
+          height: 12px;
           background: #10b981;
           border: 2px solid white;
           border-radius: 50%;
@@ -483,26 +478,6 @@
           opacity: 1;
         }
         
-        .amicus-preview-play-cta {
-          position: absolute;
-          bottom: 8px;
-          right: 8px;
-          background: rgba(255, 255, 255, 0.9);
-          color: #111827;
-          border: none;
-          border-radius: 9999px;
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          cursor: pointer;
-        }
-        .amicus-preview-play-cta:hover {
-          background: #fff;
-        }
-        
         .amicus-widget-chat {
           width: 380px;
           height: min(700px, 80vh);
@@ -513,7 +488,7 @@
           flex-direction: column;
           overflow: hidden;
           position: absolute;
-          bottom: 75px;
+          bottom: 130px;
           right: 0;
         }
         
@@ -743,12 +718,6 @@
       const send = document.getElementById('amicus-widget-send');
       
       button.addEventListener('click', (e) => {
-        const playCta = e.target.closest('.amicus-preview-play-cta');
-        if (playCta) {
-          e.stopPropagation();
-          this.expandVideo();
-          return;
-        }
         this.toggleChat();
       });
       // Keyboard accessibility
