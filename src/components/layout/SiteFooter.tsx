@@ -52,7 +52,7 @@ const SiteFooter = () => {
               
               {/* App Download Buttons */}
               <div className="space-y-3 pt-2">
-                <h5 className="font-semibold text-xs">Download Our App</h5>
+                <h5 className="font-semibold text-xs">Download Our App and manage your account from your phone or tablet.</h5>
                 <div className="flex flex-col space-y-2">
                   <a 
                     href="#" 
