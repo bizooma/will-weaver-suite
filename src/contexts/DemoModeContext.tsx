@@ -46,8 +46,16 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
 
 export function useDemoMode() {
   const context = useContext(DemoModeContext);
+  
+  // Return safe defaults when called outside provider (e.g., in global components)
   if (context === undefined) {
-    throw new Error('useDemoMode must be used within a DemoModeProvider');
+    return {
+      isDemoMode: false,
+      enableDemoMode: () => {},
+      disableDemoMode: () => {},
+      showDemoToast: () => {},
+    };
   }
+  
   return context;
 }
