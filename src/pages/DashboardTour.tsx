@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
+import { TourWelcomeOverlay } from "@/components/TourWelcomeOverlay";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
 
@@ -16,11 +17,23 @@ import { Sparkles, ArrowRight } from "lucide-react";
 
 function DashboardTourContent() {
   const { enableDemoMode } = useDemoMode();
+  const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
     // Enable demo mode when component mounts
     enableDemoMode();
+    
+    // Check if user has seen welcome before
+    const hasSeenWelcome = sessionStorage.getItem('tour-welcome-seen');
+    if (hasSeenWelcome) {
+      setShowWelcome(false);
+    }
   }, [enableDemoMode]);
+
+  const handleCloseWelcome = () => {
+    sessionStorage.setItem('tour-welcome-seen', 'true');
+    setShowWelcome(false);
+  };
 
   return (
     <>
@@ -58,6 +71,8 @@ function DashboardTourContent() {
           </Button>
         </div>
       </div>
+
+      <TourWelcomeOverlay open={showWelcome} onClose={handleCloseWelcome} />
 
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">

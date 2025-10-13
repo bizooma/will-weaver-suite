@@ -86,11 +86,16 @@ const Index = () => {
                 <Link to="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></Link>
               ) : (
                 <>
-                  <Link to="/dashboard-tour"><Button variant="hero" size="lg">Take Interactive Tour</Button></Link>
+                  <Link to="/dashboard-tour"><Button variant="hero" size="lg">Try It Free - No Signup Required</Button></Link>
                   <a href="#pricing"><Button variant="outline" size="lg">View Pricing</Button></a>
                 </>
               )}
             </div>
+            {!user && (
+              <p className="mt-4 text-sm text-muted-foreground">
+                ✨ <strong>See how leading law firms use Amicus Edge</strong> – explore our full platform in under 5 minutes with live demo data
+              </p>
+            )}
           </div>
           <div>
             <div className="relative aspect-[16/10] rounded-xl border bg-card shadow overflow-hidden animate-fade-in hover-scale">
@@ -126,10 +131,19 @@ const Index = () => {
           style={{ backgroundImage: `url(${financialTechBackground})` }}
         ></div>
         <div className="container relative z-10">
-          <h2 className="text-3xl mb-8">Featured Tools</h2>
-          <p className="text-lg text-foreground mb-8 max-w-4xl">
-            Streamline your practice, automate document drafting, and enhance client services with our all-in-one legal technology platform. From AI-powered will and trust generation to advanced SEO and voice search optimization, AmicusEdge provides the tools you need to stay ahead in a digital world.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-3xl mb-2">Featured Tools</h2>
+              <p className="text-lg text-foreground max-w-3xl">
+                Streamline your practice, automate document drafting, and enhance client services with our all-in-one legal technology platform.
+              </p>
+            </div>
+            {!user && (
+              <Button asChild variant="hero" size="lg" className="md:shrink-0">
+                <Link to="/dashboard-tour">Take a Tour</Link>
+              </Button>
+            )}
+          </div>
           <div className="rounded-2xl backdrop-blur-sm bg-gradient-to-br from-background/80 to-background/60 border p-4">
           <div className="flex flex-col gap-4 max-w-4xl mx-auto">
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
