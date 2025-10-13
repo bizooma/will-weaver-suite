@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateSlug } from '@/utils/slug';
 import { NonprofitFormData } from '@/types/nonprofit';
@@ -7,6 +7,7 @@ import { NonprofitFormData } from '@/types/nonprofit';
 // Use existing will_drafts table for now until we have better type support
 export const useNonprofitDrafts = () => {
   const { user } = useAuth();
+  const supabase = useDemoSupabase();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

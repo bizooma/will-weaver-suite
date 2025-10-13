@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
 
 /**
  * Demo Mode Context
@@ -22,8 +23,11 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
   const disableDemoMode = () => setIsDemoMode(false);
   
   const showDemoToast = (message: string) => {
-    // Toast notification for demo interactions
-    console.log('[Demo Mode]:', message);
+    toast({
+      title: "Demo Mode",
+      description: message,
+      duration: 2000,
+    });
   };
 
   return (
