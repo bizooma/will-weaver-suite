@@ -85,7 +85,10 @@ const Index = () => {
               {user ? (
                 <Link to="/will-creator"><Button variant="hero" size="lg">Create My Will</Button></Link>
               ) : (
-                <a href="#pricing"><Button variant="hero" size="lg">Get Started</Button></a>
+                <>
+                  <Link to="/dashboard-tour"><Button variant="hero" size="lg">Take Interactive Tour</Button></Link>
+                  <a href="#pricing"><Button variant="outline" size="lg">View Pricing</Button></a>
+                </>
               )}
             </div>
           </div>
