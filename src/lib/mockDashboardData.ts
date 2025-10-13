@@ -237,6 +237,66 @@ export const DEMO_USER_ROLE = {
   created_at: '2025-01-01T00:00:00Z',
 };
 
+export const DEMO_TRAINING_SOURCES = [
+  {
+    id: 'training-1',
+    chatbot_id: 'chatbot-1',
+    user_id: DEMO_USER.id,
+    source_type: 'url',
+    source_url: 'https://smithlawfirm.com/personal-injury',
+    title: 'Personal Injury Practice Area',
+    status: 'completed',
+    created_at: '2025-01-15T11:00:00Z',
+  },
+  {
+    id: 'training-2',
+    chatbot_id: 'chatbot-2',
+    user_id: DEMO_USER.id,
+    source_type: 'document',
+    file_path: 'demo/estate-planning-guide.pdf',
+    file_name: 'Estate Planning Guide.pdf',
+    title: 'Estate Planning Guide',
+    status: 'completed',
+    created_at: '2025-01-10T15:00:00Z',
+  },
+];
+
+export const DEMO_API_KEYS = [
+  {
+    id: 'key-1',
+    user_id: DEMO_USER.id,
+    api_key: 'sk_demo_xxxxxxxxxxxxxxxxx',
+    key_name: 'Production API Key',
+    is_active: true,
+    created_at: '2025-01-05T10:00:00Z',
+  },
+];
+
+export const DEMO_USER_SETTINGS = {
+  id: 'settings-1',
+  user_id: DEMO_USER.id,
+  hide_branding: false,
+  api_access_enabled: true,
+  created_at: '2025-01-01T00:00:00Z',
+  updated_at: '2025-01-01T00:00:00Z',
+};
+
+export const DEMO_NONPROFIT_DRAFTS = [
+  {
+    id: 'nonprofit-1',
+    user_id: DEMO_USER.id,
+    slug: 'demo-nonprofit',
+    step: 2,
+    created_at: '2025-01-17T10:00:00Z',
+    data: {
+      organizationInfo: {
+        name: 'Community Legal Aid Foundation',
+        ein: '12-3456789',
+      },
+    },
+  },
+];
+
 /**
  * Get mock data for a specific table
  */
@@ -252,6 +312,10 @@ export function getMockData(table: string): any[] {
     seo_analyses: DEMO_SEO_ANALYSES,
     marketing_events: DEMO_MARKETING_EVENTS,
     user_roles: [DEMO_USER_ROLE],
+    training_sources: DEMO_TRAINING_SOURCES,
+    user_api_keys: DEMO_API_KEYS,
+    user_settings: [DEMO_USER_SETTINGS],
+    nonprofit_drafts: DEMO_NONPROFIT_DRAFTS,
   };
 
   return mockDataMap[table] || [];

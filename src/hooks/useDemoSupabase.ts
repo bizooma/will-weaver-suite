@@ -35,10 +35,16 @@ export function useDemoSupabase() {
                   data: mockData,
                   error: null,
                 }),
+                then: (resolve: any) => resolve({ data: mockData, error: null }),
                 data: mockData,
                 error: null,
               }),
               order: (column: string, options?: any) => ({
+                limit: (count: number) => ({
+                  data: mockData.slice(0, count),
+                  error: null,
+                }),
+                then: (resolve: any) => resolve({ data: mockData, error: null }),
                 data: mockData,
                 error: null,
               }),
