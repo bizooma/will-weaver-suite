@@ -193,23 +193,153 @@ export const DEMO_VOICE_SEARCH_ANALYSIS = [
 
 export const DEMO_SEO_ANALYSES = [
   {
-    id: 'seo-1',
+    id: '550e8400-e29b-41d4-a716-446655440020',
     user_id: DEMO_USER.id,
-    url: 'https://smithlawfirm.com',
-    status: 'completed',
+    url: 'https://smithlawgroup.com',
     seo_score: 85,
-    voice_seo_score: 72,
-    ai_overview_score: 68,
-    created_at: '2025-01-14T09:00:00Z',
-    updated_at: '2025-01-14T09:15:00Z',
+    voice_seo_score: 78,
+    ai_overview_score: 82,
+    status: 'completed',
+    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     analysis_data: {
-      findings: [
-        { type: 'success', message: 'Mobile-friendly design detected' },
-        { type: 'warning', message: 'Page speed could be improved' },
-        { type: 'info', message: 'Schema markup present' },
-      ],
-    },
+      seo: {
+        strengths: ['Well-optimized title tags', 'Comprehensive meta descriptions', 'Strong internal linking', 'Mobile-responsive design'],
+        weaknesses: ['Some images missing alt text', 'Page load speed could be improved'],
+        score_breakdown: {
+          technical: 88,
+          content: 85,
+          meta: 90,
+          performance: 75
+        }
+      },
+      voice_seo: {
+        strengths: ['FAQ section present', 'Natural conversational tone', 'Local SEO elements configured'],
+        weaknesses: ['Limited long-tail keywords', 'Could expand question-answer format content'],
+        score_breakdown: {
+          conversational_content: 80,
+          local_optimization: 85,
+          question_format: 70,
+          natural_language: 78
+        }
+      },
+      ai_overview: {
+        strengths: ['Structured data implemented', 'Clear content hierarchy', 'Entity-rich content'],
+        weaknesses: ['Featured snippet opportunities missed', 'Could improve answer formatting'],
+        score_breakdown: {
+          structured_data: 90,
+          featured_snippets: 70,
+          entity_recognition: 85,
+          content_structure: 84
+        }
+      },
+      recommendations: [
+        { priority: 'high', area: 'SEO', message: 'Add alt text to all images for better accessibility and SEO' },
+        { priority: 'high', area: 'Voice SEO', message: 'Create more long-tail keyword content targeting voice queries' },
+        { priority: 'medium', area: 'AI Overview', message: 'Optimize content for featured snippet capture' },
+        { priority: 'medium', area: 'SEO', message: 'Improve page load speed through image optimization' },
+        { priority: 'low', area: 'Voice SEO', message: 'Expand FAQ section with more practice area questions' }
+      ]
+    }
   },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440021',
+    user_id: DEMO_USER.id,
+    url: 'https://johnsonfamilylaw.com',
+    seo_score: 72,
+    voice_seo_score: 65,
+    ai_overview_score: 68,
+    status: 'completed',
+    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    analysis_data: {
+      seo: {
+        strengths: ['Good heading structure', 'Clean URL structure'],
+        weaknesses: ['Thin content on several pages', 'Missing canonical tags', 'Poor internal linking'],
+        score_breakdown: {
+          technical: 70,
+          content: 68,
+          meta: 75,
+          performance: 74
+        }
+      },
+      voice_seo: {
+        strengths: ['Some conversational content present'],
+        weaknesses: ['No FAQ section', 'Limited local SEO optimization', 'Few long-tail keywords'],
+        score_breakdown: {
+          conversational_content: 60,
+          local_optimization: 55,
+          question_format: 50,
+          natural_language: 68
+        }
+      },
+      ai_overview: {
+        strengths: ['Basic structured data present'],
+        weaknesses: ['Limited schema markup', 'Poor content formatting for AI', 'Missing entity markup'],
+        score_breakdown: {
+          structured_data: 65,
+          featured_snippets: 58,
+          entity_recognition: 70,
+          content_structure: 72
+        }
+      },
+      recommendations: [
+        { priority: 'high', area: 'SEO', message: 'Add canonical tags to all pages to prevent duplicate content issues' },
+        { priority: 'high', area: 'Voice SEO', message: 'Create comprehensive FAQ section with voice-friendly Q&A format' },
+        { priority: 'high', area: 'AI Overview', message: 'Implement comprehensive schema markup (Organization, LocalBusiness, Attorney)' },
+        { priority: 'medium', area: 'SEO', message: 'Expand thin content pages with detailed, valuable information' },
+        { priority: 'medium', area: 'Voice SEO', message: 'Optimize for local voice search queries' }
+      ]
+    }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440022',
+    user_id: DEMO_USER.id,
+    url: 'https://millerinjuryattorneys.com',
+    seo_score: 91,
+    voice_seo_score: 88,
+    ai_overview_score: 90,
+    status: 'completed',
+    created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    analysis_data: {
+      seo: {
+        strengths: ['Excellent technical SEO', 'Comprehensive content', 'Perfect meta optimization', 'Fast page speed'],
+        weaknesses: ['Minor opportunities for additional internal linking'],
+        score_breakdown: {
+          technical: 95,
+          content: 92,
+          meta: 94,
+          performance: 90
+        }
+      },
+      voice_seo: {
+        strengths: ['Extensive FAQ content', 'Natural conversational language', 'Strong local SEO', 'Abundant long-tail keywords'],
+        weaknesses: ['Could add more voice-specific content'],
+        score_breakdown: {
+          conversational_content: 90,
+          local_optimization: 92,
+          question_format: 88,
+          natural_language: 86
+        }
+      },
+      ai_overview: {
+        strengths: ['Complete structured data markup', 'Excellent featured snippet optimization', 'Strong entity signals'],
+        weaknesses: ['Minor improvements possible in answer formatting'],
+        score_breakdown: {
+          structured_data: 95,
+          featured_snippets: 88,
+          entity_recognition: 92,
+          content_structure: 90
+        }
+      },
+      recommendations: [
+        { priority: 'low', area: 'SEO', message: 'Add more contextual internal links between related practice areas' },
+        { priority: 'low', area: 'Voice SEO', message: 'Consider creating voice-first content like podcasts or audio FAQs' },
+        { priority: 'low', area: 'AI Overview', message: 'Refine answer formatting for even better AI comprehension' }
+      ]
+    }
+  }
 ];
 
 export const DEMO_MARKETING_EVENTS = [

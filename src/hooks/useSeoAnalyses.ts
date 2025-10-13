@@ -23,18 +23,22 @@ export function useSeoAnalyses() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchAnalyses = async () => {
-    if (!user) {
-      setAnalyses([]);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
+      
+      // Get current user - works in both demo and real mode
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        setAnalyses([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('seo_analyses')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
