@@ -36,10 +36,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ChatbotBuilder } from "./ChatbotBuilder";
 import { ChatbotTrainingWrapper } from "./ChatbotTrainingWrapper";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import ChatbotWidget from "@/components/ChatbotWidget";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Chatbot {
@@ -60,17 +61,24 @@ export function ChatbotManager() {
   const [previewChatbot, setPreviewChatbot] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isDemoMode } = useDemoMode();
+  const db = useDemoSupabase();
+  const basePath = isDemoMode ? '/dashboard-tour' : '/dashboard';
 
   useEffect(() => {
-    if (user) {
+    if (isDemoMode || user) {
       fetchChatbots();
     }
-  }, [user]);
+  }, [isDemoMode, user]);
 
   const fetchChatbots = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // In demo mode, get the mock demo user from the demo-aware client
+      const { data: authData } = await db.auth.getUser();
+      const currentUserId = user?.id || authData?.user?.id;
+
+      const { data, error } = await db
         .from('chatbots')
         .select(`
           id,
@@ -82,7 +90,7 @@ export function ChatbotManager() {
           configuration,
           embed_code
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', currentUserId)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -90,7 +98,7 @@ export function ChatbotManager() {
       // Get conversation counts for each chatbot
       const chatbotsWithCounts = await Promise.all(
         (data || []).map(async (chatbot) => {
-          const { count } = await supabase
+          const { count } = await db
             .from('chatbot_conversations')
             .select('id', { count: 'exact' })
             .eq('chatbot_id', chatbot.id);
@@ -116,7 +124,7 @@ export function ChatbotManager() {
 
   const handleDeleteChatbot = async (chatbotId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('chatbots')
         .delete()
         .eq('id', chatbotId)
@@ -182,7 +190,7 @@ export function ChatbotManager() {
               </p>
             </div>
             <Button asChild>
-              <Link to="/dashboard/chatbots/new">
+              <Link to={`${basePath}/chatbots/new`}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Chatbot
               </Link>
@@ -208,19 +216,19 @@ export function ChatbotManager() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/chatbots/edit/${chatbot.id}`}>
+                            <Link to={`${basePath}/chatbots/edit/${chatbot.id}`}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/chatbots/training/${chatbot.id}`}>
+                            <Link to={`${basePath}/chatbots/training/${chatbot.id}`}>
                               <BookOpen className="h-4 w-4 mr-2" />
                               Train
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/dashboard/chatbots/conversations/${chatbot.id}`}>
+                            <Link to={`${basePath}/chatbots/conversations/${chatbot.id}`}>
                               <MessageCircle className="h-4 w-4 mr-2" />
                               View Conversations
                             </Link>
@@ -285,13 +293,13 @@ export function ChatbotManager() {
                         Test
                       </Button>
                       <Button size="sm" variant="outline" asChild>
-                        <Link to={`/dashboard/chatbots/edit/${chatbot.id}`}>
+                        <Link to={`${basePath}/chatbots/edit/${chatbot.id}`}>
                           <Settings className="h-4 w-4 mr-2" />
                           Configure
                         </Link>
                       </Button>
                       <Button size="sm" variant="outline" asChild>
-                        <Link to={`/dashboard/chatbots/training/${chatbot.id}`}>
+                        <Link to={`${basePath}/chatbots/training/${chatbot.id}`}>
                           <BookOpen className="h-4 w-4 mr-2" />
                           Train
                         </Link>
@@ -317,7 +325,7 @@ export function ChatbotManager() {
                     </p>
                   </div>
                   <Button asChild>
-                    <Link to="/dashboard/chatbots/new">Get Started</Link>
+                    <Link to={`${basePath}/chatbots/new`}>Get Started</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -329,12 +337,12 @@ export function ChatbotManager() {
                   <p className="text-muted-foreground mb-4">
                     Create your first AI-powered video chatbot to get started
                   </p>
-                  <Button asChild>
-                    <Link to="/dashboard/chatbots/new">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Chatbot
-                    </Link>
-                  </Button>
+                    <Button asChild>
+                      <Link to={`${basePath}/chatbots/new`}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Chatbot
+                      </Link>
+                    </Button>
                 </div>
               )}
             </div>
