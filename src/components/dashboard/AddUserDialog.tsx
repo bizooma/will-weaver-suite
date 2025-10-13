@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoEdgeFunctions } from '@/hooks/useDemoEdgeFunctions';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
 import { useToast } from '@/hooks/use-toast';
 
 interface AddUserDialogProps {
@@ -35,6 +36,8 @@ const planOptions = [
 ];
 
 export const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) => {
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -58,7 +61,7 @@ export const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialog
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+      const { data, error } = await invoke('admin-manage-user', {
         body: {
           action: 'createUser',
           userData: formData

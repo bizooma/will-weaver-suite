@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Mic, PhoneOff, Loader2 } from "lucide-react";
 import { useConversation } from "@elevenlabs/react";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 
 interface VoiceAgentBarProps {
   agentId: string;
@@ -12,6 +13,7 @@ interface VoiceAgentBarProps {
 
 const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgentBarProps) => {
   const { toast } = useToast();
+  const { invoke } = useDemoEdgeFunctions();
   const [connecting, setConnecting] = useState(false);
 
   const conversation = useConversation({
@@ -30,8 +32,7 @@ const VoiceAgentBar = ({ agentId, voiceId = "9BWtsMINqrJLrRacOk9x" }: VoiceAgent
       setConnecting(true);
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data, error } = await supabase.functions.invoke("eleven-signed-url", { body: { agentId } });
+      const { data, error } = await invoke("eleven-signed-url", { body: { agentId } });
       if (error || !data?.signed_url) {
         throw new Error(error?.message || "Failed to get signed URL from server");
       }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
+import { useDemoEdgeFunctions } from '@/hooks/useDemoEdgeFunctions';
 
 interface Notification {
   id: string;
@@ -12,6 +13,8 @@ interface Notification {
 
 export const useNotifications = () => {
   const { user } = useAuth();
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export const useNotifications = () => {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('system-notifications', {
+      const { data, error } = await invoke('system-notifications', {
         headers: {
           authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         }
@@ -52,7 +55,7 @@ export const useNotifications = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('system-notifications', {
+      const { error } = await invoke('system-notifications', {
         method: 'PATCH',
         headers: {
           authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,

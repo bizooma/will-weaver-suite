@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Upload, Link as LinkIcon, Trash2, FileText, Globe } from "lucide-react";
 
 interface TrainingSource {
@@ -28,6 +30,9 @@ interface ChatbotTrainingProps {
 
 export function ChatbotTraining({ chatbotId }: ChatbotTrainingProps) {
   const { toast } = useToast();
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
+  const { isDemoMode } = useDemoMode();
   const [trainingSources, setTrainingSources] = useState<TrainingSource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [url, setUrl] = useState("");
@@ -83,7 +88,7 @@ export function ChatbotTraining({ chatbotId }: ChatbotTrainingProps) {
       if (error) throw error;
 
       // Call edge function to process URL
-      const { error: processError } = await supabase.functions.invoke('process-training-url', {
+      const { error: processError } = await invoke('process-training-url', {
         body: { trainingSourceId: data.id, url }
       });
 
@@ -152,7 +157,7 @@ export function ChatbotTraining({ chatbotId }: ChatbotTrainingProps) {
         if (error) throw error;
 
         // Call edge function to process document
-        const { error: processError } = await supabase.functions.invoke('process-training-document', {
+        const { error: processError } = await invoke('process-training-document', {
           body: { trainingSourceId: data.id, filePath: uploadData.path }
         });
 
@@ -277,14 +282,21 @@ export function ChatbotTraining({ chatbotId }: ChatbotTrainingProps) {
                     multiple
                     accept=".pdf,.txt,.doc,.docx"
                     onChange={(e) => setSelectedFiles(e.target.files)}
+                    disabled={isDemoMode}
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Supported formats: PDF, TXT, DOC, DOCX (Max 10MB each)
-                  </p>
+                  {isDemoMode ? (
+                    <p className="text-sm text-amber-600 font-medium">
+                      Demo mode - file uploads disabled
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Supported formats: PDF, TXT, DOC, DOCX (Max 10MB each)
+                    </p>
+                  )}
                 </div>
                 <Button 
                   onClick={handleFileUpload} 
-                  disabled={!selectedFiles || isLoading} 
+                  disabled={!selectedFiles || isLoading || isDemoMode} 
                   className="w-full"
                 >
                   <Upload className="h-4 w-4 mr-2" />

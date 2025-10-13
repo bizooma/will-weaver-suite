@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QrCode, Plus, Eye, Edit, Trash2, Copy, BarChart3, Download, Palette, Settings } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -36,6 +37,8 @@ interface QRScanData {
 }
 
 export function QRCodeManager() {
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [qrCodes, setQRCodes] = useState<QRCodeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -227,7 +230,7 @@ export function QRCodeManager() {
     try {
       const slug = generateSlug();
       
-      const { data, error } = await supabase.functions.invoke('qr-generate', {
+      const { data, error } = await invoke('qr-generate', {
         body: {
           name: formData.name,
           target_url: formData.target_url,

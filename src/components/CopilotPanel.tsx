@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { toast } from "sonner";
 import { Mic, Square, MessageSquare, Volume2 } from "lucide-react";
 import VoiceAutoFillPanel from "@/components/VoiceAutoFillPanel";
@@ -30,8 +30,9 @@ interface CopilotPanelProps {
 }
 
 const CopilotPanel = ({ open, onOpenChange, data, draft, tone, onToneChange, onPropose, onVoiceAutoFill, seedPrompt, currentStep }: CopilotPanelProps) => {
+  const { invoke } = useDemoEdgeFunctions();
   const [messages, setMessages] = useState<{ role: 'user'|'assistant'; content: string }[]>([
-    { role: 'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }
+    { role: 'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say "draft a guardian clause" and I\'ll help.' }
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -139,13 +140,13 @@ const send = async (overrideText?: string) => {
       draft: redact ? redactText(draft) : draft,
       tone,
     };
-    const { data: res, error } = await supabase.functions.invoke('ai-copilot', { body: payload });
+    const { data: res, error } = await invoke('ai-copilot', { body: payload });
     if (error) throw error;
     const reply = (res as any)?.reply || 'Sorry, I could not generate a response.';
     setMessages([...next, { role: 'assistant', content: reply }]);
     if (speak && reply) {
       try {
-        const { data: audioRes, error: ttsErr } = await supabase.functions.invoke('text-to-voice', { body: { text: reply } });
+        const { data: audioRes, error: ttsErr } = await invoke('text-to-voice', { body: { text: reply } });
         if (ttsErr) throw ttsErr;
         const b64 = (audioRes as any)?.audioContent;
         if (b64) {
@@ -187,7 +188,7 @@ const startRecording = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const base64 = await blobToBase64(blob);
         setIsRecording(false);
-        const { data: sttRes, error: sttErr } = await supabase.functions.invoke('voice-to-text', { body: { audio: base64 } });
+        const { data: sttRes, error: sttErr } = await invoke('voice-to-text', { body: { audio: base64 } });
         if (sttErr) throw sttErr;
         const text = (sttRes as any)?.text?.trim?.();
         if (text) {
@@ -317,7 +318,7 @@ const lastAssistant = [...messages].reverse().find(m=>m.role==='assistant');
                 const la = lastAssistant; if (!la) return; navigator.clipboard.writeText(la.content).then(()=> toast.success('Copied')).catch(()=> toast.error('Copy failed'));
               }} disabled={!lastAssistant}>Copy last</Button>
               <Button size="sm" variant="ghost" onClick={()=>{
-                setMessages([{ role:'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say “draft a guardian clause” and I\'ll help.' }]);
+                setMessages([{ role:'assistant', content: 'Hi! I\'m your co‑pilot. Ask me anything or say "draft a guardian clause" and I\'ll help.' }]);
                 toast.success('Chat cleared');
               }}>Clear</Button>
             </div>

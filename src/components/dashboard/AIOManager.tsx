@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, CheckCircle, AlertCircle, Info, ExternalLink } from "lucide-react";
 import { AnalysisHistory } from "./AnalysisHistory";
@@ -48,6 +48,7 @@ interface AnalysisResult {
 export function AIOManager() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { invoke } = useDemoEdgeFunctions();
   const [url, setUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -109,7 +110,7 @@ export function AIOManager() {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 500);
 
-      const { data, error } = await supabase.functions.invoke('analyze-seo', {
+      const { data, error } = await invoke('analyze-seo', {
         body: {
           url: url.trim()
         }

@@ -5,7 +5,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { MessageCircle, Send, X, Phone, Mail, Play, Youtube, ExternalLink } from "lucide-react";
 import { getVideoThumbnail, type VideoThumbnail } from "@/utils/videoThumbnails";
 
@@ -37,6 +38,8 @@ interface ChatbotWidgetProps {
 }
 
 const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", embedded = false }: ChatbotWidgetProps) => {
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [open, setOpen] = useState(embedded);
   const [chatbotData, setChatbotData] = useState<ChatbotData | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -161,7 +164,7 @@ const ChatbotWidget = ({ chatbotId = "513bdd2e-9865-432c-810d-707c8360b54e", emb
       }
 
       // Call the chatbot response function
-      const { data, error } = await supabase.functions.invoke('chatbot-response', {
+      const { data, error } = await invoke('chatbot-response', {
         body: {
           message: text,
           chatbotId: chatbotId,
