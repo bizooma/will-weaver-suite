@@ -4,6 +4,12 @@ import { generateSlug } from "@/utils/slug";
 import { createDraftSchema } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 
+/**
+ * Will Drafts Utility Functions
+ * These functions handle CRUD operations for will drafts
+ * Note: These are standalone functions, not hooks, so they cannot use demo mode
+ */
+
 export type WillDraft = {
   id: string;
   slug: string;

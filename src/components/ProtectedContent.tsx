@@ -1,8 +1,11 @@
 import React from "react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { PricingTable } from "./PricingTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface ProtectedContentProps {
   children: React.ReactNode;
@@ -18,6 +21,12 @@ export function ProtectedContent({
   fallbackDescription 
 }: ProtectedContentProps) {
   const { hasAccess, loading, isFreeUser } = useUserRole();
+  const { isDemoMode } = useDemoMode();
+
+  // In demo mode, show all content unlocked
+  if (isDemoMode) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
@@ -32,7 +41,7 @@ export function ProtectedContent({
     return <>{children}</>;
   }
 
-  // If user is free and trying to access paid content, show pricing
+  // If user is free and trying to access paid content, show upgrade CTA in demo mode
   if (isFreeUser && requiredRole !== 'free') {
     return (
       <div className="space-y-6">
@@ -40,7 +49,7 @@ export function ProtectedContent({
           <CardHeader className="text-center">
             <div className="flex justify-center mb-2">
               <div className="p-3 rounded-full bg-primary/10">
-                <Lock className="h-8 w-8 text-primary" />
+                <Sparkles className="h-8 w-8 text-primary" />
               </div>
             </div>
             <CardTitle className="text-2xl flex items-center justify-center gap-2">
@@ -48,9 +57,17 @@ export function ProtectedContent({
               {fallbackTitle || "Premium Feature"}
             </CardTitle>
             <CardDescription className="text-base">
-              {fallbackDescription || "This feature is available to paid subscribers. Upgrade your account to access all our powerful legal tech tools."}
+              {fallbackDescription || "Upgrade your account to unlock all powerful legal marketing features and save your work."}
             </CardDescription>
           </CardHeader>
+          <CardContent className="text-center">
+            <Button asChild size="lg" className="gap-2">
+              <Link to="/auth">
+                Sign Up to Unlock & Save
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
         </Card>
         
         <PricingTable />

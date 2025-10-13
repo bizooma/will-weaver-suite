@@ -17,7 +17,8 @@ import {
   Calendar,
   Monitor,
   Building2,
-  GraduationCap
+  GraduationCap,
+  Sparkles
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,7 +36,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
@@ -59,6 +62,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
   const { isAdmin } = useAdminRole();
+  const { isDemoMode } = useDemoMode();
   const currentPath = location.pathname;
 
   const isActive = (path: string, end?: boolean) => {
@@ -82,8 +86,16 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-border/5">
         <div className="flex items-center gap-2 px-3 py-2">
           {open && (
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Dashboard</h2>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground">Dashboard</h2>
+                {isDemoMode && (
+                  <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+                    <Sparkles className="h-3 w-3" />
+                    Demo
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">Amicus Edge</p>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { toast } from "sonner";
 
 export interface ExtractedData {
@@ -68,6 +68,7 @@ export interface VoiceProcessingResult {
 }
 
 export function useVoiceAutoFill() {
+  const supabase = useDemoSupabase();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);

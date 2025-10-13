@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+
+/**
+ * User Settings Hook
+ * Manages white label and branding settings for users
+ * Supports demo mode for tour functionality
+ */
 
 export type UserSettings = {
   id?: string;
@@ -27,6 +34,7 @@ const defaultSettings: UserSettings = {
 };
 
 export function useUserSettings() {
+  const supabaseClient = useDemoSupabase();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +48,7 @@ export function useUserSettings() {
       setLoading(true);
       setError(null);
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       
       if (!user) {
         setSettings(defaultSettings);
@@ -48,7 +56,7 @@ export function useUserSettings() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('user_settings')
         .select('*')
         .eq('user_id', user.id)
@@ -64,7 +72,7 @@ export function useUserSettings() {
       } else {
         // Create default settings for new user
         const newSettings = { ...defaultSettings, user_id: user.id };
-        const { data: createdSettings, error: createError } = await supabase
+        const { data: createdSettings, error: createError } = await supabaseClient
           .from('user_settings')
           .insert(newSettings)
           .select()
@@ -88,13 +96,13 @@ export function useUserSettings() {
 
   const updateSettings = async (updates: Partial<UserSettings>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       
       if (!user) {
         throw new Error('You must be logged in to update settings');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('user_settings')
         .upsert({
           user_id: user.id,
@@ -129,6 +137,7 @@ export function useUserSettings() {
   };
 }
 
+// Standalone function for white label settings (not demo-aware)
 export async function getUserSettingsForWhiteLabel(userId?: string) {
   try {
     if (!userId) {

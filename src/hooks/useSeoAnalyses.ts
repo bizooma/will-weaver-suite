@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -17,6 +17,7 @@ export interface SeoAnalysis {
 export function useSeoAnalyses() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const supabase = useDemoSupabase();
   const [analyses, setAnalyses] = useState<SeoAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

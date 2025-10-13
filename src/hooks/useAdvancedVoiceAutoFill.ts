@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { toast } from "sonner";
 import { ExtractedData, VoiceProcessingResult } from "./useVoiceAutoFill";
 
@@ -33,6 +33,7 @@ export interface SmartFollowUp {
 }
 
 export function useAdvancedVoiceAutoFill() {
+  const supabase = useDemoSupabase();
   const [currentSession, setCurrentSession] = useState<VoiceSession | null>(null);
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const [followUpQuestions, setFollowUpQuestions] = useState<SmartFollowUp[]>([]);
