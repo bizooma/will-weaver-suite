@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -64,6 +64,9 @@ export function AppSidebar() {
   const { isAdmin } = useAdminRole();
   const { isDemoMode } = useDemoMode();
   const currentPath = location.pathname;
+  
+  // Determine base path based on demo mode
+  const basePath = isDemoMode ? '/dashboard-tour' : '/dashboard';
 
   const isActive = (path: string, end?: boolean) => {
     if (end) {
@@ -108,20 +111,23 @@ export function AppSidebar() {
           <SidebarGroupLabel>Marketing Products</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.end}
-                      className={getNavCls(item.url, item.end)}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {open && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const itemUrl = item.url.replace('/dashboard', basePath);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={itemUrl} 
+                        end={item.end}
+                        className={getNavCls(itemUrl, item.end)}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {open && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -130,19 +136,22 @@ export function AppSidebar() {
           <SidebarGroupLabel>Growth Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {growthToolsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={getNavCls(item.url)}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {open && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {growthToolsItems.map((item) => {
+                const itemUrl = item.url.replace('/dashboard', basePath);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={itemUrl} 
+                        className={getNavCls(itemUrl)}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {open && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -154,8 +163,8 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <NavLink 
-                    to="/dashboard/training" 
-                    className={getNavCls("/dashboard/training")}
+                    to={`${basePath}/training`}
+                    className={getNavCls(`${basePath}/training`)}
                   >
                     <GraduationCap className="h-4 w-4" />
                     {open && <span>Training Videos</span>}
@@ -174,8 +183,8 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink 
-                      to="/dashboard/users" 
-                      className={getNavCls("/dashboard/users")}
+                      to={`${basePath}/users`}
+                      className={getNavCls(`${basePath}/users`)}
                     >
                       <Users className="h-4 w-4" />
                       {open && <span>User Management</span>}
@@ -185,8 +194,8 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink 
-                      to="/dashboard/system-messages" 
-                      className={getNavCls("/dashboard/system-messages")}
+                      to={`${basePath}/system-messages`}
+                      className={getNavCls(`${basePath}/system-messages`)}
                     >
                       <Bell className="h-4 w-4" />
                       {open && <span>System Messages</span>}
@@ -196,8 +205,8 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink 
-                      to="/dashboard/analytics" 
-                      className={getNavCls("/dashboard/analytics")}
+                      to={`${basePath}/analytics`}
+                      className={getNavCls(`${basePath}/analytics`)}
                     >
                       <BarChart3 className="h-4 w-4" />
                       {open && <span>Analytics</span>}
@@ -207,8 +216,8 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink 
-                      to="/dashboard/settings" 
-                      className={getNavCls("/dashboard/settings")}
+                      to={`${basePath}/settings`}
+                      className={getNavCls(`${basePath}/settings`)}
                     >
                       <Settings className="h-4 w-4" />
                       {open && <span>Settings</span>}
@@ -223,15 +232,29 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-border/5">
         <div className="p-2">
-          <Button
-            variant="ghost"
-            size={!open ? "icon" : "default"}
-            onClick={handleSignOut}
-            className="w-full justify-start text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            {open && <span className="ml-2">Sign Out</span>}
-          </Button>
+          {isDemoMode ? (
+            <Button
+              asChild
+              variant="ghost"
+              size={!open ? "icon" : "default"}
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
+            >
+              <Link to="/auth">
+                <LogOut className="h-4 w-4" />
+                {open && <span className="ml-2">Sign Up to Save</span>}
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size={!open ? "icon" : "default"}
+              onClick={handleSignOut}
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              {open && <span className="ml-2">Sign Out</span>}
+            </Button>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
