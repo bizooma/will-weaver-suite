@@ -6,8 +6,11 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
 import { TourWelcomeOverlay } from "@/components/TourWelcomeOverlay";
+import { TourConversionDialog } from "@/components/TourConversionDialog";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useTourTracking } from "@/hooks/useTourTracking";
 
 /**
  * Dashboard Tour Page
@@ -18,6 +21,11 @@ import { Sparkles, ArrowRight } from "lucide-react";
 function DashboardTourContent() {
   const { enableDemoMode } = useDemoMode();
   const [showWelcome, setShowWelcome] = useState(true);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showConversion, setShowConversion] = useState(false);
+  
+  // Track tour engagement
+  const { getTourEvents } = useTourTracking();
 
   useEffect(() => {
     // Enable demo mode when component mounts
@@ -28,12 +36,50 @@ function DashboardTourContent() {
     if (hasSeenWelcome) {
       setShowWelcome(false);
     }
-  }, [enableDemoMode]);
+
+    // Show demo mode toast on first interaction
+    const handleFirstInteraction = () => {
+      if (!hasInteracted) {
+        setHasInteracted(true);
+        toast({
+          title: "🎯 Tour Mode Active",
+          description: "You're exploring with demo data - sign up to save your work",
+          duration: 4000,
+        });
+      }
+    };
+
+    // Listen for any click to trigger first interaction toast
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+
+    // Show conversion dialog after exploring 3+ features
+    const checkEngagement = setInterval(() => {
+      const events = getTourEvents();
+      const uniqueFeatures = new Set(events.map(e => e.feature));
+      
+      if (uniqueFeatures.size >= 3 && !sessionStorage.getItem('conversion-shown')) {
+        setShowConversion(true);
+        sessionStorage.setItem('conversion-shown', 'true');
+      }
+    }, 30000); // Check every 30 seconds
+    
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      clearInterval(checkEngagement);
+    };
+  }, [enableDemoMode, hasInteracted, getTourEvents]);
 
   const handleCloseWelcome = () => {
     sessionStorage.setItem('tour-welcome-seen', 'true');
     setShowWelcome(false);
   };
+
+  const handleCloseConversion = () => {
+    setShowConversion(false);
+  };
+
+  const tourEvents = getTourEvents();
+  const exploredFeatures = [...new Set(tourEvents.map(e => e.feature))].filter(Boolean);
 
   return (
     <>
@@ -73,6 +119,11 @@ function DashboardTourContent() {
       </div>
 
       <TourWelcomeOverlay open={showWelcome} onClose={handleCloseWelcome} />
+      <TourConversionDialog 
+        open={showConversion} 
+        onClose={handleCloseConversion}
+        featuresExplored={exploredFeatures}
+      />
 
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
