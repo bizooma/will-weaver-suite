@@ -5,8 +5,12 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { DemoModeProvider, useDemoMode } from "@/contexts/DemoModeContext";
+import { TourGuideProvider } from "@/contexts/TourGuideContext";
 import { TourWelcomeOverlay } from "@/components/TourWelcomeOverlay";
 import { TourConversionDialog } from "@/components/TourConversionDialog";
+import { TourSpotlight } from "@/components/tour/TourSpotlight";
+import { TourTooltip } from "@/components/tour/TourTooltip";
+import { TourProgress } from "@/components/tour/TourProgress";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -125,10 +129,28 @@ function DashboardTourContent() {
         featuresExplored={exploredFeatures}
       />
 
+      {/* Tour Guide Components */}
+      <TourSpotlight />
+      <TourTooltip />
+
+      {/* Video Bot Mounting Point - Future Integration */}
+      <div 
+        id="video-bot-container" 
+        className="fixed bottom-6 right-6 z-50"
+        aria-label="Video tour guide mounting point"
+      >
+        {/* Video bot will be mounted here programmatically */}
+      </div>
+
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
           <AppSidebar />
-          <main className="flex-1">
+          <main className="flex-1 relative">
+            {/* Tour Progress Indicator */}
+            <div className="fixed top-20 right-6 z-40 hidden lg:block">
+              <TourProgress compact />
+            </div>
+            
             <DashboardContent />
           </main>
         </div>
@@ -140,7 +162,9 @@ function DashboardTourContent() {
 const DashboardTour = () => {
   return (
     <DemoModeProvider>
-      <DashboardTourContent />
+      <TourGuideProvider>
+        <DashboardTourContent />
+      </TourGuideProvider>
     </DemoModeProvider>
   );
 };
