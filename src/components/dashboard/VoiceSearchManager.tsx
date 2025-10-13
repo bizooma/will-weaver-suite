@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Smartphone, Target, TrendingUp } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoSupabase } from "@/hooks/useDemoSupabase";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -39,6 +40,8 @@ interface TestProgress {
 
 export function VoiceSearchManager() {
   const { user } = useAuth();
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [activeTab, setActiveTab] = useState("setup");
   const [tests, setTests] = useState<VoiceSearchTest[]>([]);
   const [currentTest, setCurrentTest] = useState<VoiceSearchTest | null>(null);
@@ -152,7 +155,7 @@ export function VoiceSearchManager() {
   const startTest = async (testId: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('voice-search-orchestrator', {
+      const { data, error } = await invoke('voice-search-orchestrator', {
         body: {
           testId,
           action: 'start'
@@ -174,7 +177,7 @@ export function VoiceSearchManager() {
   const monitorTestProgress = async (testId: string) => {
     const interval = setInterval(async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('voice-search-orchestrator', {
+        const { data, error } = await invoke('voice-search-orchestrator', {
           body: {
             testId,
             action: 'status'

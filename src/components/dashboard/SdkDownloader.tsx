@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, ExternalLink, Code2, FileText, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 
 interface SdkDownloaderProps {
   apiKey?: string;
@@ -12,6 +12,7 @@ interface SdkDownloaderProps {
 
 export function SdkDownloader({ apiKey }: SdkDownloaderProps) {
   const { toast } = useToast();
+  const { invoke } = useDemoEdgeFunctions();
   const [downloading, setDownloading] = useState<string | null>(null);
 
   const downloadSdk = async (type: string) => {
@@ -27,7 +28,7 @@ export function SdkDownloader({ apiKey }: SdkDownloaderProps) {
     setDownloading(type);
     
     try {
-      const { data, error } = await supabase.functions.invoke('generate-sdk', {
+      const { data, error } = await invoke('generate-sdk', {
         body: { 
           type,
           apiKey,

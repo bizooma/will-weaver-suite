@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
+import { useDemoEdgeFunctions } from '@/hooks/useDemoEdgeFunctions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +26,8 @@ interface SystemNotification {
 }
 
 export const SystemMessages = () => {
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -63,7 +66,7 @@ export const SystemMessages = () => {
 
     setIsCreating(true);
     try {
-      const { error } = await supabase.functions.invoke('system-notifications', {
+      const { error } = await invoke('system-notifications', {
         method: 'POST',
         headers: {
           authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useDemoSupabase } from '@/hooks/useDemoSupabase';
+import { useDemoEdgeFunctions } from '@/hooks/useDemoEdgeFunctions';
 import {
   Table,
   TableBody,
@@ -52,6 +53,8 @@ interface UserData {
 }
 
 export const UserManagement = () => {
+  const supabase = useDemoSupabase();
+  const { invoke } = useDemoEdgeFunctions();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +65,7 @@ export const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('admin-users', {
+      const { data, error } = await invoke('admin-users', {
         headers: {
           authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         }
@@ -85,7 +88,7 @@ export const UserManagement = () => {
     try {
       const status = action === 'pause' ? 'paused' : action === 'activate' ? 'active' : 'deleted';
       
-      const { error } = await supabase.functions.invoke('admin-manage-user', {
+      const { error } = await invoke('admin-manage-user', {
         body: {
           action: 'updateStatus',
           userId,
