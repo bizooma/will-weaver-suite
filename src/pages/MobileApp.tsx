@@ -1,17 +1,17 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import appMock from "@/assets/mobile-app-mock.jpg";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/mobile-app" : "/mobile-app";
 
 const MobileApp = () => {
   return (
     <main>
-      <Helmet>
-        <title>Custom Mobile Apps for Law Firms | Amicus Edge</title>
-        <meta name="description" content="Get a fully customized mobile app for your law firm. Includes document sharing, will maker, push notifications, scheduling, and legal resources." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Mobile App page */}
+      <SEOHead
+        title="Custom Mobile Apps for Law Firms | Amicus Edge"
+        description="Get a branded mobile app for your law firm with document sharing, push notifications, scheduling, and legal resources on iOS & Android."
+        path="/mobile-app"
+        keywords={['law firm mobile app', 'legal app development', 'attorney mobile app']}
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">

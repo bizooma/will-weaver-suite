@@ -1,12 +1,14 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 
 const Privacy = () => {
   return (
     <div className="container mx-auto max-w-4xl py-10">
-      <Helmet>
-        <title>Privacy Policy | Legal AI Assistant</title>
-        <meta name="description" content="Learn how we protect your privacy and handle your personal data." />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Privacy page */}
+      <SEOHead
+        title="Privacy Policy | Amicus Edge"
+        description="Learn how Amicus Edge protects your data and handles personal information for law firm clients."
+        path="/privacy"
+      />
       
       <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
       <div className="prose prose-lg max-w-none">

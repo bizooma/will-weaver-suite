@@ -1,6 +1,4 @@
-import { Helmet } from "react-helmet-async";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/blog" : "/blog";
+import SEOHead from "@/components/SEOHead";
 
 const posts = [
   { title: "Estate Planning Basics", slug: "estate-planning-basics", excerpt: "A primer on wills, trusts, and powers of attorney." },
@@ -11,19 +9,19 @@ const posts = [
 const Blog = () => {
   return (
     <main>
-      <Helmet>
-        <title>Blog & Resources | Legal Tech SaaS Demo</title>
-        <meta name="description" content="SEO‑ready resources on estate planning, elder law, and trusts." />
-        <link rel="canonical" href={canonical} />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Blog',
-            name: 'Legal Resources',
-            url: canonical
-          })}
-        </script>
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Blog page */}
+      <SEOHead
+        title="Legal Marketing Resources | Amicus Edge Blog"
+        description="Expert tips on law firm marketing, SEO, voice search, and AI-powered client engagement strategies."
+        path="/blog"
+        keywords={['law firm marketing', 'legal SEO blog', 'attorney marketing tips']}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          name: 'Amicus Edge Blog',
+          url: typeof window !== 'undefined' ? window.location.origin + '/blog' : '/blog',
+        }}
+      />
       <section className="container py-16">
         <h1 className="text-4xl md:text-5xl mb-6">Blog & Resources</h1>
         <div className="grid gap-6 md:grid-cols-3">

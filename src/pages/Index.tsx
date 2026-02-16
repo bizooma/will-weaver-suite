@@ -2,16 +2,12 @@ import heroBg from "@/assets/hero-legal-tech-light.jpg";
 import appMock from "@/assets/mobile-app-mock.jpg";
 import lawOfficeBackground from "@/assets/law-office-background.jpg";
 import financialTechBackground from "@/assets/financial-tech-background.jpg";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-
-import { generateMetaTags, generateStructuredData } from "@/lib/seo";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/" : "/";
 
 const Index = () => {
   const { user } = useAuth();
@@ -24,7 +20,6 @@ const Index = () => {
     document.body.appendChild(script);
 
     return () => {
-      // Cleanup script on unmount
       const existingScript = document.querySelector('script[src="https://assets.calendly.com/assets/external/widget.js"]');
       if (existingScript) {
         document.body.removeChild(existingScript);
@@ -32,43 +27,25 @@ const Index = () => {
     };
   }, []);
 
-  const seoConfig = {
-    title: 'Legal Tech SaaS Demo | AI-Powered Will Generator & Legal Tools',
-    description: 'Experience our AI-powered legal document generation platform featuring will creator, Alexa skill, and mobile app integrations. Professional demo for law firms.',
-    keywords: ['legal tech', 'will generator', 'legal AI', 'document automation', 'law firm software'],
-    type: 'website' as const,
-    url: '/',
-  };
-
-  const metaTags = generateMetaTags(seoConfig);
-  const structuredData = generateStructuredData(seoConfig);
-
   return (
     <main>
-      <Helmet>
-        <title>{metaTags.title}</title>
-        <meta name="description" content={metaTags.description} />
-        <meta name="keywords" content={metaTags.keywords} />
-        
-        <meta property="og:title" content={metaTags['og:title']} />
-        <meta property="og:description" content={metaTags['og:description']} />
-        <meta property="og:image" content={metaTags['og:image']} />
-        <meta property="og:url" content={metaTags['og:url']} />
-        <meta property="og:type" content={metaTags['og:type']} />
-        <meta property="og:site_name" content={metaTags['og:site_name']} />
-        
-        <meta name="twitter:card" content={metaTags['twitter:card']} />
-        <meta name="twitter:title" content={metaTags['twitter:title']} />
-        <meta name="twitter:description" content={metaTags['twitter:description']} />
-        <meta name="twitter:image" content={metaTags['twitter:image']} />
-        <meta name="twitter:site" content={metaTags['twitter:site']} />
-        
-        <link rel="canonical" href={metaTags.canonical} />
-        
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the homepage */}
+      <SEOHead
+        title="AI-Powered Legal Tech for Law Firms | Amicus Edge"
+        description="Grow your law firm with AI chatbots, SEO tools, QR codes, voice search, and branded mobile apps — all in one platform."
+        path="/"
+        keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO', 'voice search for lawyers']}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Amicus Edge',
+          description: 'AI-powered legal marketing platform built for law firms.',
+          url: typeof window !== 'undefined' ? window.location.origin : '',
+          applicationCategory: 'LegalApplication',
+          operatingSystem: 'Web Browser',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        }}
+      />
 
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">

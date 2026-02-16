@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,6 @@ import { toast } from "sonner";
 import { contactFormSchema, type ContactFormInput } from "@/lib/validation";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/contact" : "/contact";
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,11 +65,12 @@ const Contact = () => {
 
   return (
     <main>
-      <Helmet>
-        <title>Contact Amicus Edge | Legal Technology Solutions</title>
-        <meta name="description" content="Contact Amicus Edge for custom legal technology solutions including Alexa skills, mobile apps, and chatbots for your law firm." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Contact page */}
+      <SEOHead
+        title="Contact Amicus Edge | Legal Tech Solutions"
+        description="Get in touch to learn how Amicus Edge can modernize your law firm with AI chatbots, SEO tools, and branded mobile apps."
+        path="/contact"
+      />
       <section className="container py-16 grid gap-8 md:grid-cols-2">
         <div>
           <h1 className="text-4xl md:text-5xl mb-4">Contact Us</h1>

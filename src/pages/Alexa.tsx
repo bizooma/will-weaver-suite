@@ -1,16 +1,16 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/alexa" : "/alexa";
 
 const Alexa = () => {
   return (
     <main>
-      <Helmet>
-        <title>Custom Alexa Skills for Law Firms | Amicus Edge</title>
-        <meta name="description" content="Create custom-branded Alexa skills for your law firm. Allow clients to ask legal questions, schedule consultations, and access firm resources using voice commands." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Alexa page */}
+      <SEOHead
+        title="Custom Alexa Skills for Law Firms | Amicus Edge"
+        description="Create branded Alexa skills so clients can ask legal questions, schedule consultations, and access firm resources hands-free."
+        path="/alexa"
+        keywords={['Alexa skills', 'law firm voice assistant', 'legal voice search', 'smart speaker legal']}
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">

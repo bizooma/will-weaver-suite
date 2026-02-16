@@ -1,16 +1,15 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import headshot from "@/assets/attorney-headshot.jpg";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/about" : "/about";
 
 const About = () => {
   return (
     <main>
-      <Helmet>
-        <title>About Amicus Edge | Legal Technology Solutions for Law Firms</title>
-        <meta name="description" content="Amicus Edge provides cutting-edge legal technology including interactive will makers, Alexa skills, mobile apps, and video chatbots designed specifically for law firms." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the About page */}
+      <SEOHead
+        title="About Amicus Edge | Legal Tech for Law Firms"
+        description="Built by Legally Innovative, Amicus Edge delivers AI chatbots, SEO tools, and mobile apps designed specifically for law firms."
+        path="/about"
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">
