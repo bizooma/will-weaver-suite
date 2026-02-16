@@ -14,12 +14,16 @@ import {
   Users,
   Clock,
   Search,
-  QrCode
+  QrCode,
+  Download
 } from "lucide-react";
 import { ProductionReadinessPanel } from "./ProductionReadinessPanel";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminRole } from "@/hooks/useAdminRole";
+import { downloadAuditCSV } from "@/lib/platformAudit";
 
 export function DashboardOverview() {
+  const { isAdmin } = useAdminRole();
   const [stats, setStats] = useState([
     { label: "Active Chatbots", value: "-", change: "", icon: MessageSquare },
     { label: "Will Drafts", value: "-", change: "", icon: FileText },
@@ -109,9 +113,18 @@ export function DashboardOverview() {
             Welcome back! Here's what's happening with your legal tech tools.
           </p>
         </div>
-        <Badge variant="secondary" className="px-3 py-1">
-          Pro Plan
-        </Badge>
+        <div className="flex items-center gap-3">
+          {/* Admin-only button to download the full platform audit as CSV */}
+          {isAdmin && (
+            <Button variant="outline" size="sm" onClick={downloadAuditCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Audit Report
+            </Button>
+          )}
+          <Badge variant="secondary" className="px-3 py-1">
+            Pro Plan
+          </Badge>
+        </div>
       </div>
 
       {/* Stats Grid */}
