@@ -1,12 +1,15 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 
 const CookiePolicy = () => {
   return (
     <div className="container mx-auto max-w-4xl py-10">
-      <Helmet>
-        <title>Cookie Policy | Legal AI Assistant</title>
-        <meta name="description" content="Learn about how we use cookies and similar technologies on our platform." />
-      </Helmet>
+      {/* SEO meta tags for Cookie Policy page */}
+      <SEOHead
+        title="Cookie Policy | Amicus Edge"
+        description="Learn how Amicus Edge uses cookies and similar technologies to improve your law firm marketing experience."
+        path="/cookie-policy"
+        keywords={['cookie policy', 'data privacy', 'law firm platform cookies']}
+      />
       
       <h1 className="text-4xl font-bold mb-8">Cookie Policy</h1>
       <div className="prose prose-lg max-w-none">

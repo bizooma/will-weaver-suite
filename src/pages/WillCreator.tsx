@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { LegalDisclaimer } from "@/components/CookieConsentBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -758,21 +758,20 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
 
    return (
      <main>
-       <Helmet>
-         <title>{title} | Legal Tech SaaS Demo</title>
-         <meta name="description" content="Step-by-step guided will generator demo with white‑label options for law firms. Review and export PDF." />
-         <link rel="canonical" href={canonical} />
-         <script type="application/ld+json">
-           {JSON.stringify({
-             '@context': 'https://schema.org',
-             '@type': 'SoftwareApplication',
-             name: 'Will & Trust Creator',
-             applicationCategory: 'BusinessApplication',
-             offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-             provider: { '@type': 'Organization', name: brand || 'Legally Innovative' }
-           })}
-         </script>
-       </Helmet>
+       {/* SEO meta tags for Will Creator page */}
+       <SEOHead
+         title={`${title} | Amicus Edge`}
+         description="Step-by-step guided will generator for law firms. Create, review, and export legal documents as PDF."
+         path="/will-creator"
+         structuredData={{
+           '@context': 'https://schema.org',
+           '@type': 'SoftwareApplication',
+           name: 'Will & Trust Creator',
+           applicationCategory: 'BusinessApplication',
+           offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+           provider: { '@type': 'Organization', name: brand || 'Amicus Edge' }
+         }}
+       />
 
         <section className="container py-10">
           <LegalDisclaimer variant="banner" />

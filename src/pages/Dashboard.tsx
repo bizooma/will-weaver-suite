@@ -4,8 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
-import { generateMetaTags } from "@/lib/seo";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -24,10 +23,12 @@ const Dashboard = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Dashboard - Amicus Edge</title>
-        <meta name="description" content="Manage your legal tech tools including video chatbots, will creator, and more" />
-      </Helmet>
+      {/* SEO meta tags for Dashboard */}
+      <SEOHead
+        title="Dashboard | Amicus Edge"
+        description="Manage your law firm's marketing tools, chatbots, SEO analytics, and client engagement from one dashboard."
+        path="/dashboard"
+      />
       
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">

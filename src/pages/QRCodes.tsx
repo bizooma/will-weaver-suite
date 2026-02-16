@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,14 +79,13 @@ const QRCodes = () => {
 
   return (
     <>
-      <Helmet>
-        <title>QR Code Generator & Analytics | Professional QR Solutions</title>
-        <meta name="description" content="Create custom QR codes with advanced analytics. Track scans, manage campaigns, and boost engagement with our professional QR code platform." />
-        <meta name="keywords" content="QR code generator, QR analytics, custom QR codes, marketing QR codes, trackable QR codes" />
-        <meta property="og:title" content="QR Code Generator & Analytics | Professional QR Solutions" />
-        <meta property="og:description" content="Create custom QR codes with advanced analytics. Track scans, manage campaigns, and boost engagement." />
-        <link rel="canonical" href="/qr-codes" />
-      </Helmet>
+      {/* SEO meta tags for QR Codes marketing page */}
+      <SEOHead
+        title="QR Code Generator for Law Firms | Amicus Edge"
+        description="Create branded QR codes with analytics for your law firm. Track scans, manage campaigns, and boost client engagement."
+        path="/qr-codes"
+        keywords={['law firm QR codes', 'legal marketing QR', 'trackable QR codes', 'attorney QR generator']}
+      />
 
       <main className="min-h-screen">
         {/* Hero Section */}

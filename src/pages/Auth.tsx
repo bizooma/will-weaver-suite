@@ -7,7 +7,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { Helmet } from 'react-helmet-async';
+import SEOHead from '@/components/SEOHead';
 import { rateLimiter, SECURITY_CONFIG } from '@/lib/security';
 import { logger } from '@/lib/logger';
 
@@ -71,10 +71,12 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Helmet>
-        <title>Sign In | Legal AI Assistant</title>
-        <meta name="description" content="Sign in to your Legal AI Assistant account to create and manage your legal documents." />
-      </Helmet>
+      {/* SEO meta tags for Auth page */}
+      <SEOHead
+        title="Sign In | Amicus Edge"
+        description="Sign in to your Amicus Edge account to manage your law firm's marketing tools, chatbots, and SEO."
+        path="/auth"
+      />
       
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

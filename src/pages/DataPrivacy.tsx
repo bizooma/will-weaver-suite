@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { gdprDataManager, cookieManager, checkLegalCompliance } from '@/lib/compliance';
-import { Helmet } from 'react-helmet-async';
+import SEOHead from '@/components/SEOHead';
 import { GDPRNotice } from '@/components/CookieConsentBanner';
 
 const DataPrivacy = () => {
@@ -126,10 +126,13 @@ const DataPrivacy = () => {
 
   return (
     <div className="container mx-auto max-w-4xl py-10">
-      <Helmet>
-        <title>Data Privacy | Manage Your Personal Data</title>
-        <meta name="description" content="Manage your personal data, privacy settings, and GDPR rights." />
-      </Helmet>
+      {/* SEO meta tags for Data Privacy page */}
+      <SEOHead
+        title="Data Privacy Center | Amicus Edge"
+        description="Manage your personal data, privacy settings, and GDPR rights on the Amicus Edge legal marketing platform."
+        path="/data-privacy"
+        keywords={['data privacy', 'GDPR', 'law firm data management']}
+      />
       
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">Data Privacy Center</h1>

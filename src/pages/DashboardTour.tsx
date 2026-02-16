@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
@@ -87,17 +87,13 @@ function DashboardTourContent() {
 
   return (
     <>
-      <Helmet>
-        <title>Interactive Platform Tour - Amicus Edge Legal Marketing Software</title>
-        <meta 
-          name="description" 
-          content="Explore Amicus Edge's full legal marketing platform. Try our video chatbots, voice search optimization, QR codes, and more - no signup required." 
-        />
-        <meta 
-          name="keywords" 
-          content="legal marketing software demo, law firm technology tour, legal chatbot demo, voice search for lawyers" 
-        />
-      </Helmet>
+      {/* SEO meta tags for Dashboard Tour */}
+      <SEOHead
+        title="Interactive Platform Tour | Amicus Edge"
+        description="Explore Amicus Edge's legal marketing platform. Try chatbots, voice search, QR codes, and more — no signup required."
+        path="/tour"
+        keywords={['legal marketing demo', 'law firm technology tour', 'legal chatbot demo', 'voice search for lawyers']}
+      />
 
       {/* Demo Mode Banner */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg">
