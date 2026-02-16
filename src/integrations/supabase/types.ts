@@ -111,7 +111,7 @@ export type Database = {
           email: string
           email_sent: boolean
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           law_firm: string | null
           message: string
           name: string
@@ -128,7 +128,7 @@ export type Database = {
           email: string
           email_sent?: boolean
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           law_firm?: string | null
           message: string
           name: string
@@ -145,7 +145,7 @@ export type Database = {
           email?: string
           email_sent?: boolean
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           law_firm?: string | null
           message?: string
           name?: string
@@ -468,7 +468,7 @@ export type Database = {
           city: string | null
           country: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           qr_code_id: string
           referrer: string | null
           region: string | null
@@ -479,7 +479,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           qr_code_id: string
           referrer?: string | null
           region?: string | null
@@ -490,7 +490,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           qr_code_id?: string
           referrer?: string | null
           region?: string | null
@@ -1114,7 +1114,7 @@ export type Database = {
           chatbot_id: string
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           origin_domain: string | null
           session_id: string | null
           user_agent: string | null
@@ -1123,7 +1123,7 @@ export type Database = {
           chatbot_id: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           origin_domain?: string | null
           session_id?: string | null
           user_agent?: string | null
@@ -1132,7 +1132,7 @@ export type Database = {
           chatbot_id?: string
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           origin_domain?: string | null
           session_id?: string | null
           user_agent?: string | null
@@ -1193,10 +1193,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      generate_api_key: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_api_key: { Args: never; Returns: string }
       get_chatbot_widget_config: {
         Args: { chatbot_id_param: string }
         Returns: Json

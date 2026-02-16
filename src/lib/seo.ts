@@ -1,11 +1,13 @@
-// SEO optimization utilities
+// SEO optimization utilities for Amicus Edge — a legal-tech SaaS platform
 import { ENV_CONFIG } from './config';
 
+/** Configuration object for per-page SEO meta tags */
 export interface SEOConfig {
   title: string;
   description: string;
   keywords?: string[];
   image?: string;
+  imageAlt?: string;
   url?: string;
   type?: 'website' | 'article' | 'profile';
   author?: string;
@@ -13,39 +15,62 @@ export interface SEOConfig {
   modifiedTime?: string;
 }
 
+/** Brand constants shared across all social cards */
+const BRAND = {
+  siteName: 'Amicus Edge',
+  twitterSite: '@AmicusEdge',
+  locale: 'en_US',
+  defaultOgImage: '/og-default.png',
+  defaultImageAlt: 'Amicus Edge — AI-Powered Legal Tech for Law Firms',
+  imageWidth: '1200',
+  imageHeight: '630',
+} as const;
+
+/**
+ * Generates a flat object of meta-tag key/value pairs for a given page.
+ * Includes Open Graph, Twitter Card, image dimensions, locale, and alt text.
+ */
 export const generateMetaTags = (config: SEOConfig) => {
   const baseUrl = ENV_CONFIG.app.url;
   const fullUrl = config.url ? `${baseUrl}${config.url}` : baseUrl;
-  const image = config.image ? `${baseUrl}${config.image}` : `${baseUrl}/lovable-uploads/cc4784bf-4dbf-4471-baf8-5b973bd98614.png`;
+  const image = config.image
+    ? `${baseUrl}${config.image}`
+    : `${baseUrl}${BRAND.defaultOgImage}`;
+  const imageAlt = config.imageAlt || BRAND.defaultImageAlt;
 
   return {
     // Basic meta tags
     title: config.title,
     description: config.description,
     keywords: config.keywords?.join(', '),
-    
+
     // Open Graph tags
     'og:title': config.title,
     'og:description': config.description,
     'og:image': image,
+    'og:image:width': BRAND.imageWidth,
+    'og:image:height': BRAND.imageHeight,
+    'og:image:alt': imageAlt,
     'og:url': fullUrl,
     'og:type': config.type || 'website',
-    'og:site_name': ENV_CONFIG.app.name,
-    
+    'og:site_name': BRAND.siteName,
+    'og:locale': BRAND.locale,
+
     // Twitter Card tags
     'twitter:card': 'summary_large_image',
     'twitter:title': config.title,
     'twitter:description': config.description,
     'twitter:image': image,
-    'twitter:site': '@legal_ai_assistant',
-    
+    'twitter:image:alt': imageAlt,
+    'twitter:site': BRAND.twitterSite,
+
     // Article specific tags
     ...(config.type === 'article' && {
       'article:author': config.author,
       'article:published_time': config.publishedTime,
       'article:modified_time': config.modifiedTime,
     }),
-    
+
     // Canonical URL
     canonical: fullUrl,
   };
@@ -55,8 +80,8 @@ export const generateStructuredData = (config: SEOConfig) => {
   const baseSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: ENV_CONFIG.app.name,
-    description: ENV_CONFIG.app.description,
+    name: 'Amicus Edge',
+    description: 'AI-powered legal marketing platform built for law firms.',
     url: ENV_CONFIG.app.url,
     applicationCategory: 'LegalApplication',
     operatingSystem: 'Web Browser',
@@ -67,7 +92,7 @@ export const generateStructuredData = (config: SEOConfig) => {
     },
     creator: {
       '@type': 'Organization',
-      name: 'Legal AI Assistant',
+      name: 'Amicus Edge',
       url: ENV_CONFIG.app.url,
     },
   };

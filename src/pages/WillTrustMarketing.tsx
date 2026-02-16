@@ -1,16 +1,16 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/will-trust" : "/will-trust";
 
 const WillTrustMarketing = () => {
   return (
     <main>
-      <Helmet>
-        <title>Interactive Will & Trust Creator | Amicus Edge</title>
-        <meta name="description" content="Create legally compliant wills and trusts with our interactive digital platform. Secure, user-friendly estate planning tools for law firms and their clients." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Will & Trust page */}
+      <SEOHead
+        title="Interactive Will & Trust Creator | Amicus Edge"
+        description="Create legally compliant wills and trusts with our AI-powered platform. Secure, white-label estate planning tools built for law firms."
+        path="/will-trust"
+        keywords={['will creator', 'trust maker', 'estate planning software', 'law firm document automation']}
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">

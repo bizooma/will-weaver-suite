@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,14 +79,13 @@ const VideoChatbots = () => {
 
   return (
     <>
-      <Helmet>
-        <title>AI Video Chatbots | Interactive Customer Engagement Solutions</title>
-        <meta name="description" content="Deploy AI-powered video chatbots with lifelike avatars for 24/7 customer support, lead generation, and enhanced website engagement." />
-        <meta name="keywords" content="AI chatbots, video chatbots, customer support AI, website engagement, lead generation" />
-        <meta property="og:title" content="AI Video Chatbots | Interactive Customer Engagement Solutions" />
-        <meta property="og:description" content="Deploy AI-powered video chatbots with lifelike avatars for enhanced customer engagement." />
-        <link rel="canonical" href="/video-chatbots" />
-      </Helmet>
+      {/* Branded OG/Twitter meta tags for the Video Chatbots page */}
+      <SEOHead
+        title="AI Video Chatbots for Law Firms | Amicus Edge"
+        description="Deploy AI video chatbots with lifelike avatars for 24/7 client support, lead capture, and enhanced law firm website engagement."
+        path="/video-chatbots"
+        keywords={['AI chatbots', 'video chatbots for lawyers', 'law firm lead generation', 'legal client engagement']}
+      />
 
       <main className="min-h-screen">
         {/* Hero Section */}
