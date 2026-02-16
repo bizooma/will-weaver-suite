@@ -1,63 +1,68 @@
 
 
-# Custom Twitter Card and Open Graph for Social Sharing
+# Platform Functionality Audit -- Downloadable Spreadsheet
 
 ## What This Does
-Creates branded, law-firm-targeted social media preview cards that appear when someone shares any page from your site on Twitter/X, Facebook, LinkedIn, or other platforms. This ensures every shared link displays your brand, a compelling description, and a professional image -- driving more clicks from social media.
+Adds a one-click "Download Audit Report" button to the dashboard that generates and downloads a CSV spreadsheet containing a full functionality audit of every feature in the platform, with columns for feature name, category, status, and notes.
 
 ## Changes
 
-### 1. Create a dedicated OG image component
-Create `public/og-default.png` placeholder and update `index.html` with fallback OG/Twitter meta tags so crawlers that don't execute JavaScript still see proper social cards.
+### 1. Create audit data file
+Create `src/lib/platformAudit.ts` with the complete audit data as a structured array:
 
-### 2. Update `src/lib/seo.ts`
-- Update the `generateMetaTags` function with law-firm-specific defaults
-- Add `twitter:creator` support
-- Add `og:locale` tag
-- Set proper image dimensions (`og:image:width`, `og:image:height`)
-- Update Twitter site handle to match your brand
-- Add `og:image:alt` for accessibility
+| Feature | Category | Status | Notes |
+|---------|----------|--------|-------|
+| Supabase Auth (Email/Password) | Authentication | Functional | Login, signup, password reset all working |
+| Protected Routes | Authentication | Functional | ProtectedRoute component guards dashboard |
+| Dashboard Overview | Dashboard | Functional | Real stats from Supabase tables |
+| User Management | Dashboard | Functional | Add/remove users with role assignment |
+| System Messages | Dashboard | Functional | Notification system with read/unread |
+| AIO SEO Analyzer | Tools | Functional | OpenAI-powered analysis via edge function |
+| Chatbot Builder | Tools | Functional | Full CRUD, configuration, embed code |
+| Chatbot Training | Tools | Functional | URL and document training via OpenAI |
+| Chatbot Conversations | Tools | Functional | View/manage chat history |
+| Live Operator Link | Tools | Functional | Operator takeover for chatbot sessions |
+| QR Code Generator | Tools | Functional | Generate, track, with scan analytics |
+| Will and Trust Creator | Tools | Functional | Multi-step wizard, DOCX export, AI review |
+| Nonprofit Formation | Tools | Functional | 8-step wizard with draft save/resume |
+| Marketing Calendar | Marketing | Functional | Event CRUD with heritage month integration |
+| Contact Form | Marketing | Functional | Resend email via edge function |
+| SEOHead Meta Tags | SEO | Functional | OG, Twitter Card, JSON-LD on all pages |
+| Cookie Consent Banner | Compliance | Functional | GDPR-style consent banner |
+| Stripe Pricing Table | Payments | UI Only | PricingTable component exists but no checkout edge function |
+| Stripe Webhooks | Payments | Not Built | No webhook handler for subscription events |
+| Subscription Gating | Payments | Not Built | No logic to restrict features by plan |
+| Voice Search Simulator | Voice | Partial | Saves tests to DB; orchestrator lacks real API integration |
+| Google Search Analyzer | Voice | Placeholder | Edge function exists with TODO comments |
+| Bing Search Analyzer | Voice | Placeholder | Edge function exists with TODO comments |
+| Voice Assistant Simulator | Voice | Partial | Siri/Alexa simulation via OpenAI |
+| Alexa Skill Manager | Alexa | Marketing Only | Static marketing page, no skill builder |
+| Mobile App Manager | Mobile | Marketing Only | Static marketing page, no app builder |
+| Voice Agent Bar | Voice | Partial | ElevenLabs wired but needs API key |
+| Analytics Dashboard | Analytics | Basic | Shows counts only, no charts or trends |
+| Blog | Content | Static | Placeholder page, no CMS |
+| White Label Settings | Settings | Partial | DB schema and UI exist but not applied to frontend |
+| API Documentation | Developer | Functional | Interactive API docs with key management |
+| SDK Downloader | Developer | Functional | Generate SDK via edge function |
+| Production Readiness Panel | DevOps | Functional | Automated checks for deployment readiness |
+| Training Admin Manager | Admin | Functional | Manage training data across users |
+| Settings Manager | Settings | Functional | User preferences and configuration |
+| Video Chatbots Page | Marketing | Static | Marketing landing page only |
+| Draft Save/View | Tools | Functional | Save and resume nonprofit and will drafts |
+| Heritage Month Display | Marketing | Functional | Auto-displays relevant heritage months |
+| Tour/Demo Mode | Onboarding | Functional | Guided tour with mock data |
 
-### 3. Update `index.html` fallback meta tags
-- Replace generic Lovable OG image with your branded image (`/lovable-uploads/cc4784bf-4dbf-4471-baf8-5b973bd98614.png` or a new dedicated OG image)
-- Update `og:title`, `og:description`, `twitter:site` to reflect Amicus Edge branding
-- Add `og:image:width` and `og:image:height` (recommended: 1200x630)
-- Add `og:locale` set to `en_US`
+### 2. Create CSV export utility
+Add a `downloadAuditCSV()` function to `src/lib/platformAudit.ts` that converts the audit array into a CSV blob and triggers a browser download.
 
-### 4. Update per-page SEO configs
-Add custom OG data to each page that has a `<Helmet>`:
-- **Index**: "AI-Powered Legal Tech for Law Firms | Amicus Edge"
-- **About**: "About Amicus Edge | Legal Technology Built for Law Firms"
-- **Alexa**: "Custom Alexa Skills for Law Firms | Amicus Edge"
-- **Blog**: "Legal Marketing Resources for Law Firms | Amicus Edge"
-- **Contact, WillTrustMarketing, MobileApp, VideoChatbots**, etc. -- each gets a tailored title/description
-
-### 5. Create a reusable `<SEOHead>` component
-A new `src/components/SEOHead.tsx` component that standardizes all OG/Twitter tags across pages, reducing boilerplate. Each page passes a simple config object and gets the full set of meta tags including:
-- `og:title`, `og:description`, `og:image`, `og:url`, `og:type`, `og:site_name`, `og:locale`
-- `og:image:width`, `og:image:height`, `og:image:alt`
-- `twitter:card` (summary_large_image), `twitter:title`, `twitter:description`, `twitter:image`, `twitter:site`
-- Canonical URL
-- JSON-LD structured data
+### 3. Add download button to Dashboard
+Add a small "Download Audit Report" button in `DashboardOverview.tsx` (visible to admin users only) that calls the export function.
 
 ## Technical Details
 
 **Files to create:**
-- `src/components/SEOHead.tsx` -- reusable SEO meta tag component
+- `src/lib/platformAudit.ts` -- audit data array and CSV export function
 
 **Files to modify:**
-- `src/lib/seo.ts` -- add image dimension tags, locale, alt text, update branding
-- `index.html` -- update fallback meta tags for non-JS crawlers
-- `src/pages/Index.tsx` -- use new `SEOHead` component
-- `src/pages/About.tsx` -- use new `SEOHead` component
-- `src/pages/Alexa.tsx` -- use new `SEOHead` component
-- `src/pages/Blog.tsx` -- use new `SEOHead` component
-- `src/pages/Contact.tsx` -- use new `SEOHead` component
-- Other page files as needed
-
-**Key specs:**
-- OG image dimensions: 1200x630px (Facebook/LinkedIn optimal)
-- Twitter card type: `summary_large_image`
-- All descriptions capped at 160 characters for optimal display
-- All titles capped at 60 characters where possible
+- `src/components/dashboard/DashboardOverview.tsx` -- add download button for admins
 
