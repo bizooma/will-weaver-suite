@@ -44,6 +44,7 @@ import VideoChatbots from "./pages/VideoChatbots";
 import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
 import LiveOperators from "./pages/LiveOperators";
 import NonprofitFormation from "./pages/NonprofitFormation";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +124,7 @@ const AppContent = () => {
             <NonprofitFormation />
           </ProtectedRoute>
         } />
+        <Route path="/subscription-success" element={<SubscriptionSuccess />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
