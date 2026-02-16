@@ -1,14 +1,20 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { signUpSchema, signInSchema, sanitizeEmail, sanitizeString } from '@/lib/validation';
 import { logger } from '@/lib/logger';
+import { getTierByProductId, SUBSCRIPTION_TIERS } from '@/lib/subscriptionTiers';
 
+// Extended context type including subscription state
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  subscriptionStatus: 'loading' | 'active' | 'inactive';
+  subscriptionTier: string | null;
+  subscriptionEnd: string | null;
+  refreshSubscription: () => Promise<void>;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -29,11 +35,16 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = React.useState<User | null>(null);
-  const [session, setSession] = React.useState<Session | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  // Subscription state: status, tier name, and end date
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'loading' | 'active' | 'inactive'>('loading');
+  const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Update last login timestamp in profiles table
   const updateLastLogin = async (userId: string) => {
     try {
       await supabase
@@ -45,36 +56,93 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  React.useEffect(() => {
-    // Set up auth state listener
+  // Check subscription status by calling the check-subscription edge function
+  const refreshSubscription = useCallback(async () => {
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) {
+        setSubscriptionStatus('inactive');
+        setSubscriptionTier(null);
+        setSubscriptionEnd(null);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`,
+        },
+      });
+
+      if (error) {
+        logger.error('Failed to check subscription', error);
+        setSubscriptionStatus('inactive');
+        return;
+      }
+
+      if (data?.subscribed) {
+        setSubscriptionStatus('active');
+        // Resolve product ID to a human-readable tier name
+        const tierKey = getTierByProductId(data.product_id);
+        setSubscriptionTier(tierKey ? SUBSCRIPTION_TIERS[tierKey].name : 'Unknown');
+        setSubscriptionEnd(data.subscription_end);
+      } else {
+        setSubscriptionStatus('inactive');
+        setSubscriptionTier(null);
+        setSubscriptionEnd(null);
+      }
+    } catch (error) {
+      logger.error('Subscription check error', error);
+      setSubscriptionStatus('inactive');
+    }
+  }, []);
+
+  // Auth state listener
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Update last login when user signs in
+
         if (event === 'SIGNED_IN' && session?.user) {
-          setTimeout(() => {
-            updateLastLogin(session.user.id);
-          }, 0);
+          setTimeout(() => updateLastLogin(session.user.id), 0);
+          // Refresh subscription after sign in
+          setTimeout(() => refreshSubscription(), 500);
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setSubscriptionStatus('inactive');
+          setSubscriptionTier(null);
+          setSubscriptionEnd(null);
         }
       }
     );
 
-    // Check for existing session
+    // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) {
+        refreshSubscription();
+      } else {
+        setSubscriptionStatus('inactive');
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshSubscription]);
 
+  // Auto-refresh subscription status every 60 seconds while user is logged in
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(refreshSubscription, 60000);
+    return () => clearInterval(interval);
+  }, [user, refreshSubscription]);
+
+  // --- Sign Up ---
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      // Validate and sanitize inputs
       const sanitizedEmail = sanitizeEmail(email);
       const sanitizedDisplayName = displayName ? sanitizeString(displayName) : undefined;
       
@@ -86,17 +154,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0]?.message || 'Invalid input';
-        toast({
-          title: "Validation Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        toast({ title: "Validation Error", description: errorMessage, variant: "destructive" });
         logger.warn('Sign up validation failed', { email: sanitizedEmail, errors: validationResult.error.errors });
         return { error: new Error(errorMessage) };
       }
 
       const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password,
@@ -108,64 +171,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       if (error) {
         logger.error('Sign up failed', error, { email: sanitizedEmail });
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
       } else {
         logger.info('User signed up successfully', { email: sanitizedEmail });
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your signup.",
-        });
+        toast({ title: "Check your email", description: "We've sent you a confirmation link to complete your signup." });
       }
       
       return { error };
     } catch (error: any) {
       logger.error('Unexpected sign up error', error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      toast({ title: "An error occurred", description: "Please try again later.", variant: "destructive" });
       return { error };
     }
   };
 
+  // --- Sign In ---
   const signIn = async (email: string, password: string) => {
     try {
-      // Validate and sanitize inputs
       const sanitizedEmail = sanitizeEmail(email);
-      
-      const validationResult = signInSchema.safeParse({
-        email: sanitizedEmail,
-        password,
-      });
+      const validationResult = signInSchema.safeParse({ email: sanitizedEmail, password });
 
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0]?.message || 'Invalid input';
-        toast({
-          title: "Validation Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        toast({ title: "Validation Error", description: errorMessage, variant: "destructive" });
         logger.warn('Sign in validation failed', { email: sanitizedEmail, errors: validationResult.error.errors });
         return { error: new Error(errorMessage) };
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
-        password,
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email: sanitizedEmail, password });
       
       if (error) {
         logger.warn('Sign in failed', { email: sanitizedEmail, error: error.message });
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
       } else {
         logger.info('User signed in successfully', { email: sanitizedEmail });
       }
@@ -173,35 +210,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return { error };
     } catch (error: any) {
       logger.error('Unexpected sign in error', error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      toast({ title: "An error occurred", description: "Please try again later.", variant: "destructive" });
       return { error };
     }
   };
 
+  // --- Sign Out ---
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         logger.error('Sign out failed', error);
-        toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast({ title: "Sign out failed", description: error.message, variant: "destructive" });
       } else {
         logger.info('User signed out successfully');
       }
     } catch (error: any) {
       logger.error('Unexpected sign out error', error);
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      toast({ title: "An error occurred", description: "Please try again later.", variant: "destructive" });
     }
   };
 
@@ -209,6 +235,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     session,
     loading,
+    subscriptionStatus,
+    subscriptionTier,
+    subscriptionEnd,
+    refreshSubscription,
     signUp,
     signIn,
     signOut,
