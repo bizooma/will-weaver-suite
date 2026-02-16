@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,15 +57,13 @@ export default function VoiceSearchSimulator() {
 
   return (
     <>
-      <Helmet>
-        <title>Voice Search Simulator - Test Legal Marketing Across All Assistants | Amicus Edge</title>
-        <meta 
-          name="description" 
-          content="Test how Google, Bing, Siri, and Alexa respond to legal queries in your market. Get competitive analysis and optimization recommendations for voice search dominance." 
-        />
-        <meta name="keywords" content="voice search optimization, legal marketing, Google AI Overviews, Siri optimization, Alexa marketing, law firm SEO, voice assistant marketing" />
-        <link rel="canonical" href="https://30ecae11-2ec4-4042-9cb5-3f6dd42f16c7.lovableproject.com/voice-search-simulator" />
-      </Helmet>
+      {/* SEO meta tags for Voice Search Simulator page */}
+      <SEOHead
+        title="Voice Search Simulator for Law Firms | Amicus Edge"
+        description="Test how Google, Bing, Siri, and Alexa respond to legal queries in your market. Get optimization recommendations."
+        path="/voice-search-simulator"
+        keywords={['voice search optimization', 'legal marketing', 'Google AI Overviews', 'law firm SEO']}
+      />
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         {/* Hero Section */}

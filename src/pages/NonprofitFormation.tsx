@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Helmet } from 'react-helmet-async';
+import SEOHead from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -267,10 +267,13 @@ const NonprofitFormation = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Nonprofit Formation Wizard | AmicusEdge</title>
-        <meta name="description" content="Step-by-step wizard to help law firms establish nonprofits and qualify for Google Ad Grants" />
-      </Helmet>
+      {/* SEO meta tags for Nonprofit Formation wizard */}
+      <SEOHead
+        title="Nonprofit Formation Wizard | Amicus Edge"
+        description="Step-by-step wizard to help law firms establish nonprofits and qualify for Google Ad Grants."
+        path="/nonprofit-formation"
+        keywords={['nonprofit wizard', 'law firm nonprofit', 'Google Ad Grants qualification']}
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/50">
         <div className="container max-w-6xl mx-auto px-4 py-8">

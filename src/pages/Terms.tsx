@@ -1,12 +1,15 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 
 const Terms = () => {
   return (
     <div className="container mx-auto max-w-4xl py-10">
-      <Helmet>
-        <title>Terms of Service | Legal AI Assistant</title>
-        <meta name="description" content="Read our terms of service and user agreement." />
-      </Helmet>
+      {/* SEO meta tags for Terms of Service page */}
+      <SEOHead
+        title="Terms of Service | Amicus Edge"
+        description="Review the Amicus Edge terms of service, user agreement, and platform usage policies for law firms."
+        path="/terms"
+        keywords={['terms of service', 'legal tech agreement', 'law firm SaaS terms']}
+      />
       
       <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
       <div className="prose prose-lg max-w-none">

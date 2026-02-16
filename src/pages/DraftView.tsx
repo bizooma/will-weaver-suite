@@ -8,7 +8,7 @@ import { getDraftBySlug, WillDraft } from "@/hooks/useWillDrafts";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { exportWillDocx } from "@/utils/docxExport";
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 
 const DraftView = () => {
   const { slug } = useParams();
@@ -74,11 +74,12 @@ const DraftView = () => {
 
   return (
     <div className="container mx-auto max-w-4xl py-10">
-      <Helmet>
-        <title>View Will Draft | Shareable Link</title>
-        <meta name="description" content="View and share this will draft. Open in editor or export DOCX." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* SEO meta tags for Draft View page */}
+      <SEOHead
+        title="View Will Draft | Amicus Edge"
+        description="View and share this will draft. Open in editor or export as DOCX document."
+        path={`/drafts/${slug || ''}`}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Will Draft</CardTitle>

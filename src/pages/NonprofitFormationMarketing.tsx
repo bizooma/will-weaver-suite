@@ -1,16 +1,16 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/nonprofit-formation-info" : "/nonprofit-formation-info";
 
 const NonprofitFormationMarketing = () => {
   return (
     <main>
-      <Helmet>
-        <title>Nonprofit Formation & IRS 501(c)(3) Services | Amicus Edge</title>
-        <meta name="description" content="Expert nonprofit formation services including IRS Form 1023 preparation, 501(c)(3) status application, and Google Ad Grants qualification assistance." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* SEO meta tags for Nonprofit Formation marketing page */}
+      <SEOHead
+        title="Nonprofit Formation & 501(c)(3) | Amicus Edge"
+        description="Expert nonprofit formation services including IRS Form 1023 preparation, 501(c)(3) status, and Google Ad Grants."
+        path="/nonprofit-formation-info"
+        keywords={['nonprofit formation', '501c3 application', 'IRS Form 1023', 'Google Ad Grants']}
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">

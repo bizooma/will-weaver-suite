@@ -1,17 +1,17 @@
-import { Helmet } from "react-helmet-async";
+import SEOHead from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Brain, CheckCircle } from "lucide-react";
-
-const canonical = typeof window !== 'undefined' ? window.location.origin + "/aio-analyzer" : "/aio-analyzer";
 
 const AIOAnalyzer = () => {
   return (
     <main>
-      <Helmet>
-        <title>AIO SEO Analyzer | Comprehensive Website Analysis Tool | Amicus Edge</title>
-        <meta name="description" content="Analyze your website for SEO, Voice SEO, and AI Overview optimization. Get detailed insights and actionable recommendations to improve your search rankings." />
-        <link rel="canonical" href={canonical} />
-      </Helmet>
+      {/* SEO meta tags for AIO Analyzer page */}
+      <SEOHead
+        title="AIO SEO Analyzer for Law Firms | Amicus Edge"
+        description="Analyze your law firm website for SEO, Voice SEO, and AI Overview optimization. Get actionable recommendations."
+        path="/aio-analyzer"
+        keywords={['law firm SEO analyzer', 'AI overview optimization', 'voice SEO tool', 'legal website audit']}
+      />
       
       <article className="container py-16 max-w-4xl">
         <header className="mb-12">
