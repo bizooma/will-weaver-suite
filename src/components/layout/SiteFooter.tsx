@@ -36,8 +36,8 @@ const SiteFooter = () => {
             {/* Company Info */}
             <div className="space-y-4">
               <img 
-                src="/lovable-uploads/4ffe9938-1a7b-48ff-bede-e8a8b46f4d7a.png" 
-                alt="Amicus Edge - Law Firm Technology logo" 
+                src="/lovable-uploads/AE-Logo.png" 
+                alt="Amicus Edge - Law Firm Technology logo"
                 className="h-12 w-auto" 
                 width={240} 
                 height={48}
