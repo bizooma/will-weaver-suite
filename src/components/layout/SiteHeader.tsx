@@ -21,7 +21,7 @@ const SiteHeader = () => {
       <div className="container flex h-16 items-center justify-between">
         <NavLink to="/" className="flex items-center gap-2" aria-label="Amicus Edge - Law Firm Technology Home">
           <img
-            src="/lovable-uploads/a8024a82-d5ce-409a-802d-970fc6262d83.png"
+            src="/lovable-uploads/AE-Logo.png"
             alt="Amicus Edge - Law Firm Technology logo"
             className="h-12 md:h-14 w-auto"
             width={240}
