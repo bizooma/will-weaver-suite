@@ -45,6 +45,7 @@ import VoiceSearchSimulator from "./pages/VoiceSearchSimulator";
 import LiveOperators from "./pages/LiveOperators";
 import NonprofitFormation from "./pages/NonprofitFormation";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import JaxBar from "./pages/JaxBar";
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,7 @@ const AppContent = () => {
           </ProtectedRoute>
         } />
         <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+        <Route path="/jax-bar" element={<JaxBar />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
