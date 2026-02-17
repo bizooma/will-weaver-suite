@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import SEOHead from '@/components/SEOHead';
 import { rateLimiter, SECURITY_CONFIG } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/integrations/supabase/client';
+import { SUBSCRIPTION_TIERS, TierKey } from '@/lib/subscriptionTiers';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -19,12 +22,45 @@ const Auth = () => {
   const [rateLimitMessage, setRateLimitMessage] = useState('');
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    if (user) {
+  // Read the optional ?plan= query param (e.g. "basic", "standard", "pro_pi", "pro_estate")
+  const planParam = searchParams.get('plan') as TierKey | null;
+
+  /**
+   * After authentication, if a plan was selected, trigger Stripe checkout.
+   * Otherwise navigate to the dashboard.
+   */
+  const postAuthRedirect = async () => {
+    if (planParam && SUBSCRIPTION_TIERS[planParam]) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: { priceId: SUBSCRIPTION_TIERS[planParam].price_id },
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.open(data.url, '_blank');
+          // After opening checkout, send user to dashboard
+          navigate('/dashboard');
+        }
+      } catch (err: any) {
+        toast({ title: 'Checkout failed', description: err.message || 'Please try again.', variant: 'destructive' });
+        navigate('/dashboard');
+      }
+    } else {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  };
+
+  // If user is already logged in, handle redirect (including checkout if plan param exists)
+  useEffect(() => {
+    if (user) {
+      postAuthRedirect();
+    }
+  }, [user]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +80,7 @@ const Auth = () => {
     
     const { error } = await signIn(email, password);
     if (!error) {
-      navigate('/dashboard');
+      // postAuthRedirect is triggered by the useEffect when `user` changes
     }
     setLoading(false);
   };
@@ -81,7 +117,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Welcome</CardTitle>
-          <CardDescription>Sign in to your account or create a new one</CardDescription>
+          <CardDescription>
+            {planParam && SUBSCRIPTION_TIERS[planParam]
+              ? `Sign in or create an account to subscribe to the ${SUBSCRIPTION_TIERS[planParam].name} plan`
+              : 'Sign in to your account or create a new one'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {rateLimitMessage && (

@@ -6,11 +6,48 @@ import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Star } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { SUBSCRIPTION_TIERS, TierKey } from "@/lib/subscriptionTiers";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+
+  /**
+   * Handles "Get Started" button clicks on pricing cards.
+   * - If user is logged in: directly create a Stripe checkout session and redirect.
+   * - If not logged in: redirect to /auth with the plan query param so checkout
+   *   triggers automatically after authentication.
+   */
+  const handleGetStarted = async (tierKey: TierKey) => {
+    if (user) {
+      // User is authenticated — go straight to Stripe checkout
+      setCheckoutLoading(tierKey);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: { priceId: SUBSCRIPTION_TIERS[tierKey].price_id },
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.open(data.url, '_blank');
+        }
+      } catch (err: any) {
+        toast({ title: 'Checkout failed', description: err.message || 'Please try again.', variant: 'destructive' });
+      } finally {
+        setCheckoutLoading(null);
+      }
+    } else {
+      // Not logged in — send to auth page with plan param
+      navigate(`/auth?plan=${tierKey}`);
+    }
+  };
 
   // Load Calendly script
   useEffect(() => {
@@ -292,8 +329,9 @@ const Index = () => {
               </li>
             </ul>
             
-            <Button asChild variant="outline" size="lg" className="w-full">
-              <Link to="/contact">Get Started</Link>
+            {/* Subscribe button for Basic tier */}
+            <Button variant="outline" size="lg" className="w-full" disabled={checkoutLoading === 'basic'} onClick={() => handleGetStarted('basic')}>
+              {checkoutLoading === 'basic' ? 'Loading…' : 'Get Started'}
             </Button>
           </div>
 
@@ -327,8 +365,9 @@ const Index = () => {
               </li>
             </ul>
             
-            <Button asChild variant="outline" size="lg" className="w-full">
-              <Link to="/contact">Get Started</Link>
+            {/* Subscribe button for Standard tier */}
+            <Button variant="outline" size="lg" className="w-full" disabled={checkoutLoading === 'standard'} onClick={() => handleGetStarted('standard')}>
+              {checkoutLoading === 'standard' ? 'Loading…' : 'Get Started'}
             </Button>
           </div>
 
@@ -371,8 +410,9 @@ const Index = () => {
               </li>
             </ul>
             
-            <Button asChild variant="outline" size="lg" className="w-full">
-              <Link to="/contact">Get Started</Link>
+            {/* Subscribe button for Pro PI tier */}
+            <Button variant="outline" size="lg" className="w-full" disabled={checkoutLoading === 'pro_pi'} onClick={() => handleGetStarted('pro_pi')}>
+              {checkoutLoading === 'pro_pi' ? 'Loading…' : 'Get Started'}
             </Button>
           </div>
 
@@ -421,8 +461,9 @@ const Index = () => {
               </li>
             </ul>
             
-            <Button asChild variant="hero" size="lg" className="w-full">
-              <Link to="/contact">Get Started</Link>
+            {/* Subscribe button for Pro Estate tier */}
+            <Button variant="hero" size="lg" className="w-full" disabled={checkoutLoading === 'pro_estate'} onClick={() => handleGetStarted('pro_estate')}>
+              {checkoutLoading === 'pro_estate' ? 'Loading…' : 'Get Started'}
             </Button>
           </div>
         </div>
