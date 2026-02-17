@@ -18,7 +18,8 @@ import {
   Monitor,
   Building2,
   GraduationCap,
-  Sparkles
+  Sparkles,
+  Lock
 } from "lucide-react";
 import {
   Sidebar,
@@ -41,22 +42,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard } from "lucide-react";
 import { format } from "date-fns";
+import { hasTierAccess, type TierKey } from "@/lib/subscriptionTiers";
 
-const items = [
+/** Sidebar nav items with optional requiredTier for lock icon display */
+const items: { title: string; url: string; icon: any; end?: boolean; requiredTier?: TierKey }[] = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
-  { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search },
-  { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
-  { title: "Live Operators", url: "/dashboard/live-operators", icon: Monitor },
-  { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon },
-  { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode },
+  { title: "AIO Analyzer", url: "/dashboard/aio", icon: Search, requiredTier: "basic" },
+  { title: "Video Chatbots", url: "/dashboard/chatbots", icon: MessageSquare, requiredTier: "basic" },
+  { title: "Live Operators", url: "/dashboard/live-operators", icon: Monitor, requiredTier: "standard" },
+  { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon, requiredTier: "pro_pi" },
+  { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode, requiredTier: "basic" },
   { title: "Marketing Calendar", url: "/dashboard/marketing-calendar", icon: Calendar },
 ];
 
-const growthToolsItems = [
+const growthToolsItems: { title: string; url: string; icon: any; requiredTier?: TierKey }[] = [
   { title: "Foundation", url: "/dashboard/nonprofit-formation", icon: Building2 },
-  { title: "Will Creator", url: "/dashboard/wills", icon: FileText },
-  { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic },
-  { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone },
+  { title: "Will Creator", url: "/dashboard/wills", icon: FileText, requiredTier: "standard" },
+  { title: "Alexa Skill", url: "/dashboard/alexa", icon: Mic, requiredTier: "pro_pi" },
+  { title: "Mobile App", url: "/dashboard/mobile", icon: Smartphone, requiredTier: "pro_pi" },
 ];
 
 export function AppSidebar() {
@@ -81,6 +84,13 @@ export function AppSidebar() {
     isActive(path, end) 
       ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" 
       : "hover:bg-muted/50 text-muted-foreground hover:text-foreground";
+
+  /** Returns true if the item's required tier exceeds the user's active tier */
+  const isLocked = (requiredTier?: TierKey) => {
+    if (!requiredTier || isDemoMode) return false;
+    if (subscriptionStatus !== 'active') return !!requiredTier;
+    return !hasTierAccess(subscriptionTier, requiredTier);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -115,16 +125,22 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => {
                 const itemUrl = item.url.replace('/dashboard', basePath);
+                const locked = isLocked(item.requiredTier);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={itemUrl} 
                         end={item.end}
-                        className={getNavCls(itemUrl, item.end)}
+                        className={`${getNavCls(itemUrl, item.end)} ${locked ? 'opacity-60' : ''}`}
                       >
                         <item.icon className="h-4 w-4" />
-                        {open && <span>{item.title}</span>}
+                        {open && (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                          </span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -140,15 +156,21 @@ export function AppSidebar() {
             <SidebarMenu>
               {growthToolsItems.map((item) => {
                 const itemUrl = item.url.replace('/dashboard', basePath);
+                const locked = isLocked(item.requiredTier);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink 
                         to={itemUrl} 
-                        className={getNavCls(itemUrl)}
+                        className={`${getNavCls(itemUrl)} ${locked ? 'opacity-60' : ''}`}
                       >
                         <item.icon className="h-4 w-4" />
-                        {open && <span>{item.title}</span>}
+                        {open && (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                          </span>
+                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
