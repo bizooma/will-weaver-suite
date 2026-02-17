@@ -149,7 +149,7 @@ const JaxBar = () => {
 
       {/* Hero banner with background image — only used on JAX Bar page */}
       <section
-        className="relative border-b bg-cover bg-center"
+        className="relative border-b bg-cover bg-top"
         style={{ backgroundImage: `url(${jaxBarHero})` }}
       >
         {/* Dark overlay for text readability */}
