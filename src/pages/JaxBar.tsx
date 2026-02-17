@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SUBSCRIPTION_TIERS, TierKey } from "@/lib/subscriptionTiers";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
+import jaxBarHero from "@/assets/jax-bar-hero.jpg";
 
 /**
  * JAX Bar exclusive plan definitions — 50% off standard pricing.
@@ -146,25 +147,30 @@ const JaxBar = () => {
         <meta name="description" content="Exclusive 50% off Amicus Edge pricing for Jacksonville Bar Association members." />
       </Helmet>
 
-      {/* Hero banner */}
-      <section className="bg-primary/5 border-b">
-        <div className="container py-16 text-center">
+      {/* Hero banner with background image — only used on JAX Bar page */}
+      <section
+        className="relative border-b bg-cover bg-center"
+        style={{ backgroundImage: `url(${jaxBarHero})` }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-primary/75" />
+        <div className="container py-16 text-center relative z-10">
           <div className="flex justify-center mb-6">
             <Badge variant="secondary" className="text-sm px-4 py-1.5 gap-2">
               <Scale className="w-4 h-4" />
               Exclusive JAX Bar Member Pricing
             </Badge>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground">
             50% Off for JAX Bar Members
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed">
             As a proud sponsor of the{" "}
             <a
               href="https://jaxbar.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline hover:no-underline"
+              className="text-primary-foreground underline hover:no-underline"
             >
               Jacksonville Bar Association
             </a>
