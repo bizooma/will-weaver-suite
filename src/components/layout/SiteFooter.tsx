@@ -44,7 +44,7 @@ const SiteFooter = () => {
                 loading="lazy"
               />
               <p className="text-sm text-muted-foreground">
-                AI-powered legal document generation platform for demonstration purposes.
+                AI-powered marketing platform helping law firms grow with chatbots, SEO tools, voice search, QR codes, and branded mobile apps.
               </p>
               <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
                 <strong>Demo Only:</strong> Not for actual legal use.
