@@ -39,6 +39,8 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { CreditCard } from "lucide-react";
+import { format } from "date-fns";
 
 const items = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard, end: true },
@@ -60,7 +62,7 @@ const growthToolsItems = [
 export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, subscriptionStatus, subscriptionTier, subscriptionEnd } = useAuth();
   const { isAdmin } = useAdminRole();
   const { isDemoMode } = useDemoMode();
   const currentPath = location.pathname;
@@ -231,7 +233,34 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border/5">
-        <div className="p-2">
+        <div className="p-2 space-y-2">
+          {/* Subscription status badge — shows current plan and renewal date */}
+          {open && !isDemoMode && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">
+                  {subscriptionStatus === 'loading'
+                    ? 'Loading…'
+                    : subscriptionStatus === 'active' && subscriptionTier
+                      ? subscriptionTier
+                      : 'No Active Plan'}
+                </span>
+              </div>
+              {subscriptionStatus === 'active' && subscriptionEnd ? (
+                <p className="text-[11px] text-muted-foreground pl-6">
+                  Renews {format(new Date(subscriptionEnd), 'MMM d, yyyy')}
+                </p>
+              ) : subscriptionStatus !== 'loading' ? (
+                <p className="text-[11px] text-muted-foreground pl-6">
+                  <NavLink to="/#pricing" className="text-primary hover:underline">
+                    Upgrade your plan
+                  </NavLink>
+                </p>
+              ) : null}
+            </div>
+          )}
+
           {isDemoMode ? (
             <Button
               asChild
