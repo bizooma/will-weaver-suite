@@ -46,9 +46,6 @@ const SiteFooter = () => {
               <p className="text-sm text-muted-foreground">
                 AI-powered marketing platform helping law firms grow with chatbots, SEO tools, voice search, QR codes, and branded mobile apps.
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
-                <strong>Demo Only:</strong> Not for actual legal use.
-              </div>
               
               {/* App Download Buttons */}
               <div className="space-y-3 pt-2">
@@ -162,16 +159,8 @@ const SiteFooter = () => {
       {/* Bottom bar */}
       <div className="border-t bg-background/50">
         <div className="container py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
               © 2025 <a href="https://legallyinnovative.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Legally Innovative</a>, A Bizooma, LLC Company | All rights reserved.
-            </div>
-            
-            <div className="text-xs text-muted-foreground">
-              <span className="bg-red-50 text-red-700 px-3 py-1.5 rounded border border-red-200">
-                DEMO ONLY - Not for actual legal use
-              </span>
-            </div>
           </div>
         </div>
       </div>
