@@ -40,9 +40,18 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CreditCard } from "lucide-react";
 import { format } from "date-fns";
-import { hasTierAccess, type TierKey } from "@/lib/subscriptionTiers";
+import { hasTierAccess, SUBSCRIPTION_TIERS, type TierKey } from "@/lib/subscriptionTiers";
+
+/** Map tier keys to human-readable plan names for tooltip display */
+const TIER_LABEL: Record<TierKey, string> = {
+  basic: SUBSCRIPTION_TIERS.basic.name,
+  standard: SUBSCRIPTION_TIERS.standard.name,
+  pro_pi: SUBSCRIPTION_TIERS.pro_pi.name,
+  pro_estate: SUBSCRIPTION_TIERS.pro_estate.name,
+};
 
 /** Sidebar nav items with optional requiredTier for lock icon display */
 const items: { title: string; url: string; icon: any; end?: boolean; requiredTier?: TierKey }[] = [
@@ -138,7 +147,16 @@ export function AppSidebar() {
                         {open && (
                           <span className="flex items-center gap-2">
                             {item.title}
-                            {locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                            {locked && item.requiredTier && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Lock className="h-3 w-3 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                  Requires {TIER_LABEL[item.requiredTier]} plan or above
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </span>
                         )}
                       </NavLink>
@@ -168,7 +186,16 @@ export function AppSidebar() {
                         {open && (
                           <span className="flex items-center gap-2">
                             {item.title}
-                            {locked && <Lock className="h-3 w-3 text-muted-foreground" />}
+                            {locked && item.requiredTier && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Lock className="h-3 w-3 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                  Requires {TIER_LABEL[item.requiredTier]} plan or above
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </span>
                         )}
                       </NavLink>
