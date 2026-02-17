@@ -22,20 +22,21 @@ const About = () => {
         <section className="prose prose-lg max-w-none space-y-8">
           <div className="space-y-4">
             <p className="text-muted-foreground leading-relaxed">
-              Developed by <strong>Legally Innovative</strong>, a leader in law firm digital marketing and technology solutions, Amicus Edge was built to give firms a competitive advantage in an increasingly digital legal landscape.
+              Developed by <strong><a href="https://bizooma.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Bizooma</a></strong>, a leader in law firm digital marketing and technology solutions, Amicus Edge was built to give firms a competitive advantage in an increasingly digital legal landscape.
             </p>
             
+            {/* Bizooma Creative Agency logo with link */}
             <div className="flex items-center gap-4 my-6">
               <a 
-                href="https://legallyinnovative.com" 
+                href="https://bizooma.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="block hover:opacity-80 transition-opacity"
               >
                 <img 
-                  src="/lovable-uploads/e01568b0-2490-4606-a46d-db15c981805f.png" 
-                  alt="Legally Innovative Logo" 
-                  className="h-12 w-auto"
+                  src="/lovable-uploads/bizooma-logo.png" 
+                  alt="Bizooma Creative Agency Logo" 
+                  className="h-16 w-auto"
                 />
               </a>
             </div>
