@@ -154,7 +154,7 @@ const JaxBar = () => {
       >
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-primary/75" />
-        <div className="container py-16 text-center relative z-10">
+        <div className="container py-40 md:py-52 text-center relative z-10">
           <div className="flex justify-center mb-6">
             <Badge variant="secondary" className="text-sm px-4 py-1.5 gap-2">
               <Scale className="w-4 h-4" />
