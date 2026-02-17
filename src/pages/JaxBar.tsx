@@ -246,12 +246,12 @@ const JaxBar = () => {
           </p>
           <p className="text-sm text-muted-foreground">
             Questions? Contact us at{" "}
-            <a href="mailto:info@amicusedge.com" className="text-primary underline hover:no-underline">
-              info@amicusedge.com
+            <a href="mailto:joe@bizooma.com" className="text-primary underline hover:no-underline">
+              joe@bizooma.com
             </a>{" "}
             or call{" "}
-            <a href="tel:+19045555555" className="text-primary underline hover:no-underline">
-              (904) 555-5555
+            <a href="tel:+19042956670" className="text-primary underline hover:no-underline">
+              (904) 295-6670
             </a>
             .
           </p>
