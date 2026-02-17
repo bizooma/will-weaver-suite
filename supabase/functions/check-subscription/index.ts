@@ -86,10 +86,16 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      // Convert Unix timestamp to ISO date string
-      subscriptionEnd = new Date(
-        subscription.current_period_end * 1000
-      ).toISOString();
+      // Convert period end to ISO date string, handling both Unix timestamp and string formats
+      const periodEnd = subscription.current_period_end;
+      logStep("Period end raw value", { periodEnd, type: typeof periodEnd });
+      if (typeof periodEnd === "number") {
+        subscriptionEnd = new Date(periodEnd * 1000).toISOString();
+      } else if (typeof periodEnd === "string") {
+        subscriptionEnd = new Date(periodEnd).toISOString();
+      } else {
+        subscriptionEnd = null;
+      }
       // Extract the product ID from the subscription items
       productId = subscription.items.data[0].price.product as string;
       logStep("Active subscription found", {
