@@ -7,9 +7,9 @@ export const ENV_CONFIG = {
 
   // Application settings
   app: {
-    name: 'Legal AI Assistant',
+    name: 'Amicus Edge',
     version: '1.0.0',
-    description: 'AI-powered legal document generation platform',
+    description: 'AI-powered marketing platform helping law firms grow with chatbots, SEO tools, voice search, and mobile apps',
     url: typeof window !== 'undefined' ? window.location.origin : '',
   },
 
