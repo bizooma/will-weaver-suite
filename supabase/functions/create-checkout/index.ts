@@ -50,10 +50,10 @@ serve(async (req) => {
       throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Parse the request body to get the priceId
-    const { priceId } = await req.json();
+    // Parse the request body to get the priceId and optional couponId
+    const { priceId, couponId } = await req.json();
     if (!priceId) throw new Error("priceId is required");
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, couponId });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -74,15 +74,24 @@ serve(async (req) => {
     // Determine origin for success/cancel URLs
     const origin = req.headers.get("origin") || "https://will-weaver-suite.lovable.app";
 
-    // Create the Stripe Checkout session in subscription mode
-    const session = await stripe.checkout.sessions.create({
+    // Build the Stripe Checkout session options
+    const sessionOptions: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/subscription-success`,
       cancel_url: `${origin}/`,
-    });
+    };
+
+    // Apply coupon discount if provided (e.g. JAX Bar 50% off)
+    if (couponId) {
+      sessionOptions.discounts = [{ coupon: couponId }];
+      logStep("Applying coupon", { couponId });
+    }
+
+    // Create the Stripe Checkout session in subscription mode
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 

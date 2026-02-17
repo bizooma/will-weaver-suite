@@ -25,8 +25,9 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  // Read the optional ?plan= query param (e.g. "basic", "standard", "pro_pi", "pro_estate")
+  // Read the optional ?plan= and ?coupon= query params
   const planParam = searchParams.get('plan') as TierKey | null;
+  const couponParam = searchParams.get('coupon');
 
   /**
    * After authentication, if a plan was selected, trigger Stripe checkout.
@@ -36,8 +37,11 @@ const Auth = () => {
     if (planParam && SUBSCRIPTION_TIERS[planParam]) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        const body: any = { priceId: SUBSCRIPTION_TIERS[planParam].price_id };
+        // Pass coupon if present (e.g. JAX Bar 50% off)
+        if (couponParam) body.couponId = couponParam;
         const { data, error } = await supabase.functions.invoke('create-checkout', {
-          body: { priceId: SUBSCRIPTION_TIERS[planParam].price_id },
+          body,
           headers: { Authorization: `Bearer ${session?.access_token}` },
         });
         if (error) throw error;
