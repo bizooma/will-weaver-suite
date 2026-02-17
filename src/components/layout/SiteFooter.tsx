@@ -160,7 +160,7 @@ const SiteFooter = () => {
       <div className="border-t bg-background/50">
         <div className="container py-6">
           <div className="text-xs text-muted-foreground">
-              © 2025 <a href="https://legallyinnovative.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Legally Innovative</a>, A Bizooma, LLC Company | All rights reserved.
+              © 2026 <a href="https://bizooma.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Bizooma, LLC</a> &amp; Amicus Edge | All Rights Reserved.
           </div>
         </div>
       </div>
