@@ -206,7 +206,7 @@ import { useEffect as useD_IDEffect } from "react";
      // Load user settings for white-label if authenticated
      loadUserWhiteLabelSettings();
 
-     // Defaults to Legally Innovative palette if not provided
+     // Defaults to Bizooma / Amicus Edge palette if not provided
      const primaryHex = primary || '#0a3a64';
      const accentHex = accent || '#e0b04b';
      const hslPrimary = hexToHsl(primaryHex);
