@@ -1,72 +1,69 @@
 
 
-# Wire Up Stripe Subscriptions for Amicus Edge
+## Fix "Get Started" Buttons to Enable Signup and Stripe Checkout
 
-## Overview
-This plan connects your existing pricing table to real Stripe checkout sessions, adds subscription verification, and enables plan-based feature gating -- so law firms can actually purchase and manage their subscription plans.
+### Problem
+The four "Get Started" buttons on the homepage pricing section all link to `/contact` instead of initiating the proper subscription flow: **Create Account -> Pay via Stripe -> Access Dashboard**.
 
-## Step 1: Create Stripe Products and Prices
-Create four subscription products in Stripe matching your current pricing tiers:
+### Solution
 
-| Plan | Monthly Price | Stripe Product |
-|------|-------------|----------------|
-| Basic | $1,500/mo | New product + recurring price |
-| Standard | $2,500/mo | New product + recurring price |
-| Pro PI | $3,500/mo | New product + recurring price |
-| Pro Estate | $4,500/mo | New product + recurring price |
+**1. Update the Auth page to accept a `plan` query parameter**
 
-## Step 2: Create Edge Functions (3 new functions)
+When a user clicks "Get Started" on a pricing card, they'll be sent to `/auth?plan=basic` (or `standard`, `pro_pi`, `pro_estate`). The Auth page will:
+- Store the selected plan in local state
+- After successful signup or signin, automatically trigger the Stripe checkout for that plan instead of navigating directly to the dashboard
 
-### `create-checkout`
-- Accepts a `priceId` from the frontend
-- Authenticates the user via Supabase auth token
-- Looks up or creates a Stripe customer by email
-- Creates a Stripe Checkout session in `subscription` mode
-- Returns the checkout URL to redirect the user
+**2. Replace all four "Get Started" buttons on the homepage**
 
-### `check-subscription`
-- Authenticates the user, looks up their Stripe customer by email
-- Queries Stripe for active subscriptions
-- Returns subscription status, product ID, and end date
-- Called on login, page load, and periodically from the frontend
+Change the links from `/contact` to `/auth?plan=<tier_key>`:
+- Basic: `/auth?plan=basic`
+- Standard: `/auth?plan=standard`
+- Pro PI: `/auth?plan=pro_pi`
+- Pro Estate: `/auth?plan=pro_estate`
 
-### `customer-portal`
-- Authenticates the user, finds their Stripe customer
-- Creates a Stripe Billing Portal session
-- Returns the portal URL so users can manage/cancel their subscription
+If the user is already logged in, clicking "Get Started" will skip auth and go straight to Stripe checkout.
 
-## Step 3: Add Subscription State to AuthContext
-- Add `subscriptionStatus`, `subscriptionTier`, and `subscriptionEnd` to the auth context
-- Call `check-subscription` after login and on initial page load
-- Auto-refresh subscription status every 60 seconds
-- Store a tier mapping constant linking Stripe product IDs to plan names
+**3. Update the SubscriptionSuccess page redirect**
 
-## Step 4: Update PricingTable Component
-- Replace placeholder `priceId` values with real Stripe price IDs
-- Highlight the user's current active plan with a visual badge
-- Add a "Manage Subscription" button for existing subscribers that opens the Stripe Customer Portal
+After a successful checkout, the user lands on `/subscription-success`, which already refreshes their subscription status and shows a "Go to Dashboard" button. No changes needed here.
 
-## Step 5: Create Success Page
-- Add a `/subscription-success` route
-- Show a confirmation message after successful checkout
-- Auto-refresh subscription status on this page
+### User Flow
 
-## Step 6: Update `supabase/config.toml`
-- Register the three new edge functions with `verify_jwt = false` (JWT validated in code)
+```text
+Homepage "Get Started" (Basic)
+       |
+       v
+  Is user logged in?
+    YES --> Trigger Stripe Checkout immediately
+    NO  --> /auth?plan=basic (Sign Up or Sign In)
+              |
+              v
+         After auth success
+              |
+              v
+       Stripe Checkout opens (new tab)
+              |
+              v
+       /subscription-success
+              |
+              v
+         "Go to Dashboard" button
+```
 
-## Files to Create
-- `supabase/functions/create-checkout/index.ts`
-- `supabase/functions/check-subscription/index.ts`
-- `supabase/functions/customer-portal/index.ts`
-- `src/pages/SubscriptionSuccess.tsx`
+### Technical Details
 
-## Files to Modify
-- `src/contexts/AuthContext.tsx` -- add subscription state and check-subscription calls
-- `src/components/PricingTable.tsx` -- use real price IDs, show current plan, add manage button
-- `src/App.tsx` -- add `/subscription-success` route
-- `supabase/config.toml` -- register new edge functions
+**File: `src/pages/Index.tsx`** (4 button changes)
+- Replace `<Link to="/contact">Get Started</Link>` with links to `/auth?plan=basic`, `/auth?plan=standard`, `/auth?plan=pro_pi`, `/auth?plan=pro_estate`
+- For logged-in users, the button will instead call the `create-checkout` edge function directly and open Stripe checkout
 
-## Technical Notes
-- The `STRIPE_SECRET_KEY` secret is already configured in Supabase -- no additional secrets needed.
-- No webhooks are used; subscription status is verified by querying Stripe directly via the `check-subscription` function.
-- The existing `user_roles` table continues to control feature access; subscription tier is tracked separately via Stripe and surfaced in the UI.
+**File: `src/pages/Auth.tsx`** (add plan-aware checkout trigger)
+- Read `plan` from URL search params on mount
+- After successful sign-in or sign-up (and email confirmation), if a `plan` param exists, invoke `create-checkout` with the corresponding `price_id` from `SUBSCRIPTION_TIERS` and redirect to Stripe
+- If no `plan` param, navigate to `/dashboard` as before
+
+**File: `src/pages/Index.tsx`** (add checkout helper for logged-in users)
+- Import `useAuth`, `supabase`, and `SUBSCRIPTION_TIERS`
+- Create a `handleGetStarted(tierKey)` function that:
+  - If logged in: calls `create-checkout` and opens Stripe in a new tab
+  - If not logged in: navigates to `/auth?plan=tierKey`
+
