@@ -7,7 +7,7 @@ const About = () => {
       {/* Branded OG/Twitter meta tags for the About page */}
       <SEOHead
         title="About Amicus Edge | Legal Tech for Law Firms"
-        description="Built by Legally Innovative, Amicus Edge delivers AI chatbots, SEO tools, and mobile apps designed specifically for law firms."
+        description="Built by Bizooma, Amicus Edge delivers AI chatbots, SEO tools, voice search, and mobile apps designed specifically for law firms."
         path="/about"
       />
       
