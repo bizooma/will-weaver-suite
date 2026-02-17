@@ -12,16 +12,31 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, Crown, Scale } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { SUBSCRIPTION_TIERS, TierKey } from "@/lib/subscriptionTiers";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * JAX Bar exclusive plan definitions — 50% off standard pricing.
  * Each plan mirrors the main pricing but at the discounted rate.
  */
-const jaxBarPlans = [
+/** Stripe coupon ID for the 50% JAX Bar discount */
+const JAX_BAR_COUPON_ID = "YDW7b7eh";
+
+/** Map each plan to its corresponding subscription tier key */
+const jaxBarPlans: Array<{
+  name: string;
+  tierKey: TierKey;
+  originalPrice: string;
+  price: string;
+  description: string;
+  features: string[];
+  icon: typeof Check;
+  popular: boolean;
+}> = [
   {
     name: "Basic",
+    tierKey: "basic",
     originalPrice: "$1,500",
     price: "$750",
     description: "Essential tools for modern law firms",
@@ -37,6 +52,7 @@ const jaxBarPlans = [
   },
   {
     name: "Standard",
+    tierKey: "standard",
     originalPrice: "$2,500",
     price: "$1,250",
     description: "Enhanced tools with document creation",
@@ -51,6 +67,7 @@ const jaxBarPlans = [
   },
   {
     name: "Pro PI",
+    tierKey: "pro_pi",
     originalPrice: "$3,500",
     price: "$1,750",
     description: "Advanced tools with voice and mobile",
@@ -66,6 +83,7 @@ const jaxBarPlans = [
   },
   {
     name: "Pro Estate",
+    tierKey: "pro_estate",
     originalPrice: "$4,500",
     price: "$2,250",
     description: "Complete legal technology suite",
@@ -85,15 +103,37 @@ const jaxBarPlans = [
 
 const JaxBar = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = React.useState<string | null>(null);
 
-  /** Redirect to contact page so JAX Bar members can claim the offer */
-  const handleGetStarted = (planName: string) => {
+  /**
+   * Handle "Get Started" click — if logged in, trigger Stripe checkout
+   * with the JAX Bar 50% coupon. Otherwise, send to auth with plan param.
+   */
+  const handleGetStarted = async (tierKey: TierKey) => {
+    const tier = SUBSCRIPTION_TIERS[tierKey];
     if (!user) {
-      toast.info("Please sign in or contact us to claim your JAX Bar discount.");
+      // Send to auth page; after login the plan param triggers checkout
+      navigate(`/auth?plan=${tierKey}&coupon=${JAX_BAR_COUPON_ID}`);
+      return;
     }
-    // Navigate to contact page with plan info pre-filled
-    window.location.href = `/contact?subject=JAX%20Bar%20Sponsorship%20-%20${encodeURIComponent(planName)}%20Plan`;
+
+    setLoading(tierKey);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: tier.price_id, couponId: JAX_BAR_COUPON_ID },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Checkout failed. Please try again.");
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
@@ -185,13 +225,14 @@ const JaxBar = () => {
                   ))}
                 </ul>
 
-                {/* CTA button — routes to contact form with plan name */}
+                {/* CTA button — triggers Stripe checkout with 50% coupon */}
                 <Button
                   className={`w-full ${plan.popular ? "bg-primary hover:bg-primary/90" : ""}`}
                   variant={plan.popular ? "default" : "outline"}
-                  onClick={() => handleGetStarted(plan.name)}
+                  onClick={() => handleGetStarted(plan.tierKey)}
+                  disabled={loading === plan.tierKey}
                 >
-                  Get Started
+                  {loading === plan.tierKey ? "Loading…" : "Get Started"}
                 </Button>
               </CardContent>
             </Card>
