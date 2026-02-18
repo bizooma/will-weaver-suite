@@ -1,69 +1,28 @@
 
 
-## Fix "Get Started" Buttons to Enable Signup and Stripe Checkout
+# Fix: QR Code Not Scannable Due to Invisible Finder Patterns
 
-### Problem
-The four "Get Started" buttons on the homepage pricing section all link to `/contact` instead of initiating the proper subscription flow: **Create Account -> Pay via Stripe -> Access Dashboard**.
+## Problem
+The QR code generator defaults the "Eye Inner Color" to white (`#ffffff`), which matches the white background. This makes the inner dots of the three corner finder patterns invisible, preventing phones from detecting and reading the QR code.
 
-### Solution
+## Root Cause
+In `src/components/dashboard/QRCodeManager.tsx`, the form default state sets:
+- `eyeInnerColor: "#ffffff"` (white -- invisible on white background)
 
-**1. Update the Auth page to accept a `plan` query parameter**
+The `cornersDotOptions.color` in the QR code rendering uses this value, so the critical inner corner markers disappear.
 
-When a user clicks "Get Started" on a pricing card, they'll be sent to `/auth?plan=basic` (or `standard`, `pro_pi`, `pro_estate`). The Auth page will:
-- Store the selected plan in local state
-- After successful signup or signin, automatically trigger the Stripe checkout for that plan instead of navigating directly to the dashboard
+## Solution
+Change the default `eyeInnerColor` from `#ffffff` to `#000000` (black) in two places:
 
-**2. Replace all four "Get Started" buttons on the homepage**
+### File: `src/components/dashboard/QRCodeManager.tsx`
 
-Change the links from `/contact` to `/auth?plan=<tier_key>`:
-- Basic: `/auth?plan=basic`
-- Standard: `/auth?plan=standard`
-- Pro PI: `/auth?plan=pro_pi`
-- Pro Estate: `/auth?plan=pro_estate`
+1. **Initial form state (line 60)**: Change `eyeInnerColor` default from `"#ffffff"` to `"#000000"`
+2. **Form reset after creation (line 264)**: Change `eyeInnerColor` reset value from `"#ffffff"` to `"#000000"`
 
-If the user is already logged in, clicking "Get Started" will skip auth and go straight to Stripe checkout.
+This ensures the finder pattern inner dots are visible by default, making generated QR codes scannable.
 
-**3. Update the SubscriptionSuccess page redirect**
-
-After a successful checkout, the user lands on `/subscription-success`, which already refreshes their subscription status and shows a "Go to Dashboard" button. No changes needed here.
-
-### User Flow
-
-```text
-Homepage "Get Started" (Basic)
-       |
-       v
-  Is user logged in?
-    YES --> Trigger Stripe Checkout immediately
-    NO  --> /auth?plan=basic (Sign Up or Sign In)
-              |
-              v
-         After auth success
-              |
-              v
-       Stripe Checkout opens (new tab)
-              |
-              v
-       /subscription-success
-              |
-              v
-         "Go to Dashboard" button
-```
-
-### Technical Details
-
-**File: `src/pages/Index.tsx`** (4 button changes)
-- Replace `<Link to="/contact">Get Started</Link>` with links to `/auth?plan=basic`, `/auth?plan=standard`, `/auth?plan=pro_pi`, `/auth?plan=pro_estate`
-- For logged-in users, the button will instead call the `create-checkout` edge function directly and open Stripe checkout
-
-**File: `src/pages/Auth.tsx`** (add plan-aware checkout trigger)
-- Read `plan` from URL search params on mount
-- After successful sign-in or sign-up (and email confirmation), if a `plan` param exists, invoke `create-checkout` with the corresponding `price_id` from `SUBSCRIPTION_TIERS` and redirect to Stripe
-- If no `plan` param, navigate to `/dashboard` as before
-
-**File: `src/pages/Index.tsx`** (add checkout helper for logged-in users)
-- Import `useAuth`, `supabase`, and `SUBSCRIPTION_TIERS`
-- Create a `handleGetStarted(tierKey)` function that:
-  - If logged in: calls `create-checkout` and opens Stripe in a new tab
-  - If not logged in: navigates to `/auth?plan=tierKey`
+## Technical Details
+- The `cornersDotOptions.color` property in `qr-code-styling` controls the inner dots of the three corner squares
+- These dots are essential for QR scanners to locate and orient the code
+- Users can still customize this color, but the default will now produce a working QR code
 
