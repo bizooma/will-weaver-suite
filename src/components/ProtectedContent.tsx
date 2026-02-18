@@ -28,12 +28,17 @@ export function ProtectedContent({
   fallbackTitle,
   fallbackDescription 
 }: ProtectedContentProps) {
-  const { hasAccess, loading, isFreeUser } = useUserRole();
+  const { hasAccess, loading, isFreeUser, isAdmin: isAdminUser } = useUserRole();
   const { isDemoMode } = useDemoMode();
   const { subscriptionStatus, subscriptionTier } = useAuth();
 
   // In demo mode, show all content unlocked
   if (isDemoMode) {
+    return <>{children}</>;
+  }
+
+  // Admins bypass all role and tier gates
+  if (!loading && isAdminUser) {
     return <>{children}</>;
   }
 
