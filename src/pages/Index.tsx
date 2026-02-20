@@ -229,12 +229,12 @@ const Index = () => {
       </section>
 
       <section className="container pt-16 pb-20 grid gap-10 md:grid-cols-2 items-center">
-        {/* Casey app screenshot — constrained to phone-sized proportions */}
+        {/* Casey app demo — multi-phone showcase image */}
         <div className="flex justify-center">
           <img
             src={appMock}
-            alt="Win With Casey mobile app screenshot showing law firm client tools"
-            className="rounded-2xl shadow-lg max-w-[320px] w-full border border-border"
+            alt="Win With Casey mobile app screens showing accident reporting, emergency services, and client tools for law firms"
+            className="w-full max-w-[500px]"
             loading="lazy"
           />
         </div>
