@@ -1,5 +1,5 @@
 import heroBg from "@/assets/hero-legal-tech-light.jpg";
-import appMock from "@/assets/mobile-app-mock.jpg";
+import appMock from "@/assets/casey-app-screen.png";
 import lawOfficeBackground from "@/assets/law-office-background.jpg";
 import financialTechBackground from "@/assets/financial-tech-background.jpg";
 import SEOHead from "@/components/SEOHead";
