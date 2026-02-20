@@ -229,8 +229,14 @@ const Index = () => {
       </section>
 
       <section className="container pt-16 pb-20 grid gap-10 md:grid-cols-2 items-center">
-        <div>
-          <img src={appMock} alt="Mobile app mockup" className="rounded-xl shadow" loading="lazy" />
+        {/* Casey app screenshot — constrained to phone-sized proportions */}
+        <div className="flex justify-center">
+          <img
+            src={appMock}
+            alt="Win With Casey mobile app screenshot showing law firm client tools"
+            className="rounded-2xl shadow-lg max-w-[320px] w-full border border-border"
+            loading="lazy"
+          />
         </div>
         <div>
           <h2 className="text-3xl mb-3">Built for Performance</h2>
