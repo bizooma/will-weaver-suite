@@ -15,6 +15,7 @@ import { ColorPicker } from "@/components/ui/color-picker";
 import { PatternSelector } from "@/components/ui/pattern-selector";
 import QRCodeStyling from "qr-code-styling";
 import { generateSlug } from "@/utils/slug";
+import { QRCodeAnalyticsDashboard, type QRAnalyticsData } from "./QRCodeAnalyticsDashboard";
 
 interface QRCodeData {
   id: string;
@@ -27,14 +28,7 @@ interface QRCodeData {
   updated_at: string;
 }
 
-interface QRScanData {
-  totalScans: number;
-  scansToday: number;
-  scansLastWeek: number;
-  topCountries: Array<{ country: string; count: number }>;
-  hourlyScans: Array<{ hour: number; count: number }>;
-  recentScans: Array<any>;
-}
+// Analytics data now uses the rich QRAnalyticsData type from the dashboard component
 
 export function QRCodeManager() {
   const supabase = useDemoSupabase();
@@ -44,7 +38,8 @@ export function QRCodeManager() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
   const [selectedQRCode, setSelectedQRCode] = useState<QRCodeData | null>(null);
-  const [analytics, setAnalytics] = useState<QRScanData | null>(null);
+  const [analytics, setAnalytics] = useState<QRAnalyticsData | null>(null);
+  const [showAnalyticsDashboard, setShowAnalyticsDashboard] = useState(false);
   const [qrCodeImage, setQRCodeImage] = useState<string>("");
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewQRCode, setPreviewQRCode] = useState<QRCodeData | null>(null);
@@ -311,6 +306,7 @@ export function QRCodeManager() {
     }
   };
 
+  /** Fetch rich analytics from the edge function and open the full dashboard. */
   const fetchAnalytics = async (qrCode: QRCodeData) => {
     try {
       const response = await fetch(
@@ -329,14 +325,10 @@ export function QRCodeManager() {
         throw new Error(`Failed to fetch analytics: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: QRAnalyticsData = await response.json();
       setAnalytics(data);
       setSelectedQRCode(qrCode);
-      
-      // Generate QR code image
-      const qrImage = await generateQRCodeImage(qrCode);
-      setQRCodeImage(qrImage);
-      setAnalyticsDialogOpen(true);
+      setShowAnalyticsDashboard(true);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       toast.error('Failed to load analytics');
@@ -353,6 +345,18 @@ export function QRCodeManager() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-pulse">Loading QR codes...</div>
+      </div>
+    );
+  }
+
+  // If the full analytics dashboard is open, render it instead of the QR list
+  if (showAnalyticsDashboard && analytics) {
+    return (
+      <div className="p-6">
+        <QRCodeAnalyticsDashboard
+          data={analytics}
+          onBack={() => setShowAnalyticsDashboard(false)}
+        />
       </div>
     );
   }
@@ -642,79 +646,7 @@ export function QRCodeManager() {
         </div>
       )}
 
-      {/* Analytics Dialog */}
-      <Dialog open={analyticsDialogOpen} onOpenChange={setAnalyticsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Analytics - {selectedQRCode?.name}</DialogTitle>
-            <DialogDescription>
-              Scan analytics and performance metrics
-            </DialogDescription>
-          </DialogHeader>
-          {analytics && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-6">
-                {qrCodeImage && (
-                  <div className="flex flex-col items-center gap-2">
-                    <img src={qrCodeImage} alt="QR Code" className="w-24 h-24" />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => selectedQRCode && downloadQRCode(selectedQRCode)}
-                      className="gap-1"
-                    >
-                      <Download className="h-3 w-3" />
-                      Download
-                    </Button>
-                  </div>
-                )}
-                <div className="grid grid-cols-3 gap-4 flex-1">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{analytics.totalScans}</div>
-                    <div className="text-sm text-muted-foreground">Total Scans</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{analytics.scansToday}</div>
-                    <div className="text-sm text-muted-foreground">Today</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{analytics.scansLastWeek}</div>
-                    <div className="text-sm text-muted-foreground">This Week</div>
-                  </div>
-                </div>
-              </div>
-
-              {analytics.topCountries.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Top Countries</h4>
-                  <div className="space-y-2">
-                    {analytics.topCountries.map((country, index) => (
-                      <div key={index} className="flex justify-between items-center">
-                        <span>{country.country || 'Unknown'}</span>
-                        <Badge variant="secondary">{country.count}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {analytics.recentScans.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Recent Scans</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {analytics.recentScans.slice(0, 5).map((scan, index) => (
-                      <div key={index} className="text-sm text-muted-foreground">
-                        {new Date(scan.scanned_at).toLocaleString()}
-                        {scan.country && ` - ${scan.country}`}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Analytics Dialog removed — replaced by inline dashboard below */}
 
       {/* Preview Dialog */}
       <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
