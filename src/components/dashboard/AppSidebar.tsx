@@ -296,6 +296,11 @@ export function AppSidebar() {
                       ? subscriptionTier
                       : 'No Active Plan'}
                 </span>
+                {isAdmin && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20">
+                    Admin
+                  </Badge>
+                )}
               </div>
               {subscriptionStatus === 'active' && subscriptionEnd ? (
                 <p className="text-[11px] text-muted-foreground pl-6">
