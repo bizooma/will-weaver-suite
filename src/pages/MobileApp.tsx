@@ -130,8 +130,9 @@ const MobileApp = () => {
           </div>
         </section>
 
-        <div className="mt-12 text-center">
-          <img src={appMock} alt="Custom mobile app mockup for law firms" className="rounded-xl shadow mx-auto max-w-md" loading="lazy" />
+        {/* Casey app multi-phone demo showcase */}
+        <div className="mt-12 flex justify-center">
+          <img src={appMock} alt="Casey mobile app screens showing accident reporting, emergency services, and client tools for law firms" className="w-full max-w-[560px]" loading="lazy" />
         </div>
       </article>
     </main>
