@@ -130,13 +130,15 @@ export function FunctionalSettingsManager() {
     }
   };
 
+  /** Save profile data AND company name (which lives in user_settings) */
   const saveProfile = async () => {
     if (!user) return;
     
     try {
       setSaving(true);
       
-      const { error } = await supabase
+      // Save profile fields (display_name, email)
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert(
           {
@@ -144,12 +146,20 @@ export function FunctionalSettingsManager() {
             display_name: profile.display_name,
             email: profile.email,
           },
-          {
-            onConflict: 'user_id'
-          }
+          { onConflict: 'user_id' }
         );
       
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Also persist company_name into user_settings so it isn't lost
+      const { error: settingsError } = await supabase
+        .from('user_settings')
+        .upsert(
+          { user_id: user.id, ...settings },
+          { onConflict: 'user_id' }
+        );
+
+      if (settingsError) throw settingsError;
       
       toast({
         title: "Success",
@@ -173,12 +183,13 @@ export function FunctionalSettingsManager() {
     try {
       setSaving(true);
       
+      // Upsert with onConflict to ensure existing rows are updated, not duplicated
       const { error } = await supabase
         .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          ...settings,
-        });
+        .upsert(
+          { user_id: user.id, ...settings },
+          { onConflict: 'user_id' }
+        );
       
       if (error) throw error;
       
