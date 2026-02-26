@@ -102,3 +102,6 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
+
+[functions.qr-backfill-geo]
+verify_jwt = false
