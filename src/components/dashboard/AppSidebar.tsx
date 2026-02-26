@@ -94,9 +94,10 @@ export function AppSidebar() {
       ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" 
       : "hover:bg-muted/50 text-muted-foreground hover:text-foreground";
 
-  /** Returns true if the item's required tier exceeds the user's active tier */
+  /** Returns true if the item's required tier exceeds the user's active tier.
+   *  Admins bypass all tier locks. */
   const isLocked = (requiredTier?: TierKey) => {
-    if (!requiredTier || isDemoMode) return false;
+    if (!requiredTier || isDemoMode || isAdmin) return false;
     if (subscriptionStatus !== 'active') return !!requiredTier;
     return !hasTierAccess(subscriptionTier, requiredTier);
   };
