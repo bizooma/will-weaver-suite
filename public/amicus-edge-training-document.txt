@@ -1,0 +1,426 @@
+AMICUS EDGE — COMPLETE PLATFORM TRAINING DOCUMENT
+===================================================
+Company: Amicus Edge by Bizooma, LLC
+Website: https://will-weaver-suite.lovable.app
+Contact: joe@bizooma.com
+
+This document contains complete information about all Amicus Edge services,
+features, and subscription plans. Use this to answer any questions about our
+platform, pricing, capabilities, and the value we provide to law firms.
+
+===================================================
+COMPANY OVERVIEW
+===================================================
+
+Amicus Edge is an AI-powered legal technology platform built exclusively for
+law firms. We help attorneys modernize their practices with cutting-edge
+marketing tools, client engagement features, and document automation — all
+from a single, easy-to-use dashboard.
+
+Our platform combines Video Chatbots, QR Code Generation, AIO/SEO Analysis,
+Voice Search Optimization, Custom Alexa Skills, Branded Mobile Apps,
+Interactive Will & Trust Creation, Nonprofit Formation tools, a Marketing
+Calendar, and Live Operator support into one comprehensive solution.
+
+===================================================
+SERVICE 1: AI VIDEO CHATBOTS
+===================================================
+
+Our AI Video Chatbots let law firms add intelligent, branded chatbot widgets
+to their websites. Key features include:
+
+- AI Video Avatars: Lifelike AI avatars that speak and interact naturally
+  with website visitors.
+- Intelligent Responses: Advanced AI understands context and provides
+  accurate, helpful answers about your firm's practice areas.
+- Natural Conversations: Seamless voice and text interactions that feel like
+  talking to a real person.
+- Custom Branding: Fully customizable avatars, voices, colors, and
+  interfaces to match your firm's brand.
+- 24/7 Availability: Never miss a lead with round-the-clock customer
+  support and engagement.
+- Performance Analytics: Detailed insights into conversations, engagement
+  rates, and conversion metrics.
+- Live Operator Handoff: Seamlessly transfer conversations from the AI bot
+  to a live human operator when needed.
+- Trainable Knowledge Base: Upload documents (PDF, TXT, DOC, DOCX) or add
+  website URLs to train the chatbot with your firm's specific knowledge.
+- Embeddable Widget: Get a simple embed code to add the chatbot to any
+  website in minutes.
+- Calendly Integration: Connect your Calendly link so the chatbot can help
+  visitors schedule consultations directly.
+
+Benefits:
+- Reduce customer service costs by up to 80%
+- Increase website engagement and conversion rates
+- Provide instant responses to visitor questions
+- Capture leads even when your office is closed
+- Scale client support without hiring additional staff
+- Multilingual support for diverse client bases
+- Easy integration with any existing website
+
+===================================================
+SERVICE 2: QR CODE GENERATOR
+===================================================
+
+Our QR Code Generator helps law firms create professional, trackable QR
+codes for marketing materials, business cards, event signage, and more.
+
+Key Features:
+- Custom QR Codes: Generate professional QR codes with custom colors,
+  logos, patterns, and styling options.
+- Advanced Analytics: Track scans by location, device type, time of day,
+  and user behavior with a detailed analytics dashboard.
+- Easy Management: Create, edit, activate/deactivate, and manage all QR
+  codes from one centralized dashboard.
+- URL Redirection: Link QR codes to websites, social media profiles,
+  contact information, Google reviews, or any digital content.
+- Mobile Optimized: All QR codes work perfectly on every device and with
+  all major scanning applications.
+- Click & Scan Tracking: Monitor engagement with real-time click and scan
+  tracking, including geographic data.
+
+Benefits:
+- Unlimited QR code generation
+- Real-time analytics dashboard
+- Custom branding options (colors, logos, patterns)
+- Mobile-responsive design
+- Secure URL redirection
+- Export options (PNG, SVG)
+- Bulk QR code creation
+- API integration available
+
+Use Cases for Law Firms:
+- Business cards with links to your website or intake form
+- Event signage linking to registration or resources
+- Print ads linking to landing pages
+- Office signage for Wi-Fi access, directions, or reviews
+- Direct mail campaigns with trackable response rates
+
+===================================================
+SERVICE 3: AIO SEO ANALYZER
+===================================================
+
+The AIO (AI-Optimized) Analyzer provides comprehensive website analysis
+across three critical dimensions of modern search visibility.
+
+What It Analyzes:
+1. Traditional SEO: Meta tags, headings, content structure, mobile
+   responsiveness, page speed, and technical SEO factors.
+2. Voice SEO: How well your content is optimized for voice assistants like
+   Siri, Alexa, and Google Assistant. Evaluates conversational content,
+   FAQ structure, and natural language patterns.
+3. AI Overview Optimization: Whether your content is structured to appear
+   in AI-generated search summaries (Google AI Overviews, Bing Copilot,
+   etc.). Checks schema markup, content authority, and citation-readiness.
+
+Key Features:
+- Instant website scoring across all three dimensions
+- Actionable recommendations prioritized by impact
+- Competitive benchmarking against other law firms
+- Historical tracking to measure improvement over time
+- Detailed reports exportable for client presentations
+
+Why It Matters for Law Firms:
+The digital landscape is evolving rapidly. Traditional SEO alone is no
+longer sufficient. AI-powered search, voice assistants, and AI overviews
+are changing how potential clients find legal services. Our analyzer
+ensures your firm stays visible across all modern search channels.
+
+===================================================
+SERVICE 4: VOICE SEARCH SIMULATOR
+===================================================
+
+The Voice Search Simulator tests how your law firm appears when potential
+clients ask voice assistants for legal help in your market.
+
+Key Features:
+- Multi-Platform Testing: Test how Google, Bing, Siri, and Alexa respond
+  to legal queries in your target market.
+- Market-Specific Analysis: Get location-based insights for your city,
+  state, or zip code to understand local voice search competition.
+- Performance Scoring: Receive detailed scores for presence, frequency,
+  and competitive performance across all voice assistants.
+- Competitor Intelligence: See which competing firms dominate voice search
+  results and understand why they're winning.
+- Optimization Engine: Get actionable recommendations with prioritized
+  action items and impact scores.
+- Compliance Monitoring: Ensure your voice search presence meets legal
+  advertising requirements by state.
+
+Benefits:
+- Understand your firm's voice search visibility
+- Identify gaps in your voice search strategy
+- Track improvements over time
+- Stay ahead of competitors in voice search
+- Ensure compliance with legal advertising rules
+
+===================================================
+SERVICE 5: CUSTOM ALEXA SKILLS
+===================================================
+
+We create custom-branded Amazon Alexa skills for law firms, allowing
+clients and prospects to interact with your firm hands-free.
+
+What Your Alexa Skill Can Do:
+- Ask Legal Questions: Provide helpful answers to common questions in
+  your practice areas directly through Alexa.
+- Start a Will or Trust: Clients can initiate the interactive document
+  creator directly from their Alexa device.
+- Schedule Consultations: Book appointments with your firm using just
+  their voice.
+- Access Firm Resources: Share updates, guides, and important
+  information on demand.
+
+Why Your Firm Needs an Alexa Skill:
+- Meet clients where they already are — on smart speakers
+- Provide instant, hands-free access to your services
+- Stand out from competitors who aren't using voice technology
+- Build brand recognition through daily voice interactions
+- Available on all Alexa-enabled devices (Echo, Fire TV, etc.)
+
+Availability: Included in Pro PI and Pro Estate subscription plans.
+
+===================================================
+SERVICE 6: BRANDED MOBILE APP
+===================================================
+
+We design and develop fully customized mobile apps that carry your firm's
+name, logo, and brand on both iOS and Android devices.
+
+What Your App Can Do:
+- Document Access & Sharing: Let clients view and upload important files
+  securely through the app.
+- Interactive Will & Trust Maker: Give clients the ability to start or
+  complete their estate planning right in the app.
+- Push Notifications: Send timely updates, reminders, and announcements
+  directly to clients' phones.
+- Consultation Scheduling: Make it easy for clients to book appointments
+  without calling your office.
+- Legal Resources & FAQs: Provide helpful guides, articles, and answers
+  to common legal questions.
+- Firm Contact & Directions: One-tap calling, email, and GPS directions
+  to your office.
+
+Benefits:
+- Stay connected with clients anytime, anywhere
+- Strengthen your brand presence on mobile devices
+- Reduce phone calls with self-service features
+- Improve client satisfaction and retention
+- Stand out from competitors without mobile apps
+
+Availability: Included in Pro PI and Pro Estate subscription plans.
+
+===================================================
+SERVICE 7: INTERACTIVE WILL & TRUST CREATOR
+===================================================
+
+Transform your estate planning practice with our cutting-edge Interactive
+Will & Trust Creator. Guide clients through the complex process of
+creating legally sound estate planning documents.
+
+Key Features:
+- Step-by-Step Guidance: Intuitive questionnaires walk clients through
+  every decision point in creating their will or trust.
+- Legal Compliance: All documents are generated to meet state-specific
+  legal requirements.
+- Secure Document Storage: Bank-level encryption protects sensitive
+  client information.
+- Professional Review: Built-in review workflows ensure attorney
+  oversight of all generated documents.
+- AI-Powered Assistance: Smart suggestions and clause generation help
+  clients make informed decisions.
+- Export Options: Download completed documents as professionally
+  formatted DOCX files.
+
+Benefits:
+- Streamline the estate planning process for your clients
+- Reduce time spent on routine document drafting
+- Increase client satisfaction with a modern experience
+- Generate additional revenue with a scalable service
+- White-label option to brand as your own tool
+
+Availability: Included in Standard and Pro Estate subscription plans.
+
+===================================================
+SERVICE 8: NONPROFIT FORMATION & 501(c)(3)
+===================================================
+
+Launch nonprofit organizations with confidence using our comprehensive
+Nonprofit Formation Platform.
+
+Key Features:
+- IRS Form 1023 Preparation: Step-by-step guidance through the complete
+  501(c)(3) application process.
+- Google Ad Grants Eligibility: Ensure your nonprofit qualifies for up
+  to $10,000/month in free Google advertising.
+- Legal Compliance Checks: Automated validation ensures all requirements
+  are met before submission.
+- Professional Review: Legal experts review your application to maximize
+  approval chances.
+- Document Export: Generate completed Form 1023 applications ready for
+  submission to the IRS.
+
+Benefits:
+- Simplify the complex nonprofit formation process
+- Reduce errors and rejection rates
+- Save time compared to manual preparation
+- Access to Google Ad Grants qualification assistance
+- Professional review before submission
+
+===================================================
+SERVICE 9: MARKETING CALENDAR
+===================================================
+
+A built-in marketing calendar with heritage months, legal awareness
+dates, and content suggestions to help law firms plan their marketing
+throughout the year.
+
+Key Features:
+- Pre-loaded with heritage months and legal awareness dates
+- Content suggestions for each event
+- Custom event creation
+- Tag-based organization
+- Easy-to-use calendar interface
+
+===================================================
+SERVICE 10: LIVE OPERATOR SUPPORT
+===================================================
+
+Seamlessly transfer chatbot conversations to live human operators when
+the AI chatbot cannot fully address a visitor's needs.
+
+Key Features:
+- Real-time conversation monitoring
+- One-click operator takeover
+- Operator notes and session tracking
+- Conversation history preservation
+- Multi-operator support
+
+===================================================
+SUBSCRIPTION PLANS & PRICING
+===================================================
+
+Amicus Edge offers four subscription tiers. All plans include a 30-day
+money-back guarantee and can be cancelled anytime.
+
+--- BASIC PLAN: $1,500/month ---
+Perfect for law firms getting started with digital marketing tools.
+
+Included Features:
+- AIO SEO Analyzer
+- Video Chatbots (with training and embedding)
+- QR Code Generator (with analytics)
+- Marketing Calendar
+- Basic Analytics Dashboard
+
+--- STANDARD PLAN: $2,500/month ---
+Enhanced tools with document creation capabilities.
+
+Included Features:
+- Everything in Basic
+- Will & Trust Creator (interactive estate planning)
+- Advanced Analytics
+- Priority Support
+
+--- PRO PI PLAN: $3,500/month ---
+Advanced tools designed for personal injury and litigation firms.
+
+Included Features:
+- Everything in Basic
+- Custom Alexa Skill
+- Branded Mobile App (iOS & Android)
+- Voice Search Optimization & Simulator
+- Advanced Analytics
+
+--- PRO ESTATE PLAN: $4,500/month ---
+The complete legal technology suite for full-service firms.
+
+Included Features:
+- Everything in Standard (includes Will & Trust Creator)
+- Custom Alexa Skill
+- Branded Mobile App (iOS & Android)
+- Voice Search Optimization & Simulator
+- Custom Integrations
+- Dedicated Account Manager
+- 24/7 Phone Support
+
+===================================================
+FREQUENTLY ASKED QUESTIONS
+===================================================
+
+Q: What is Amicus Edge?
+A: Amicus Edge is an all-in-one AI-powered marketing and technology
+platform built specifically for law firms. It combines chatbots, SEO
+tools, QR codes, voice search, mobile apps, and document automation
+into a single dashboard.
+
+Q: Who is Amicus Edge for?
+A: Amicus Edge is designed exclusively for law firms and legal
+professionals who want to modernize their practice, attract more
+clients, and streamline their operations with AI-powered tools.
+
+Q: How much does Amicus Edge cost?
+A: Plans start at $1,500/month for Basic and go up to $4,500/month
+for Pro Estate. All plans include a 30-day money-back guarantee.
+
+Q: Can I try before I buy?
+A: Yes! We offer demos and a 30-day money-back guarantee on all
+plans so you can experience the platform risk-free.
+
+Q: How do the QR codes work?
+A: You create custom QR codes from the dashboard with your brand
+colors and logo. Each QR code links to any URL you choose and
+includes full scan analytics — tracking location, device, time,
+and engagement metrics in real time.
+
+Q: Can I train the chatbot with my own content?
+A: Yes! You can upload documents (PDF, TXT, DOC, DOCX) or add
+website URLs through the training dashboard. The chatbot will learn
+from your content and use it to answer visitor questions accurately.
+
+Q: What is the AIO Analyzer?
+A: The AIO (AI-Optimized) Analyzer scans your website and scores it
+across three dimensions: traditional SEO, Voice SEO, and AI Overview
+optimization. It provides actionable recommendations to improve your
+visibility in modern search.
+
+Q: What is the Voice Search Simulator?
+A: The Voice Search Simulator tests how your firm appears when people
+ask Google, Siri, Alexa, and Bing for legal services in your market.
+It provides scores and recommendations to improve your voice search
+visibility.
+
+Q: Do I need technical skills to use Amicus Edge?
+A: No. The platform is designed to be user-friendly with no coding
+required. The chatbot widget can be added to any website with a
+simple embed code, and all tools are managed through an intuitive
+dashboard.
+
+Q: Can I cancel my subscription?
+A: Yes, you can cancel anytime. All plans come with a 30-day
+money-back guarantee.
+
+Q: How do I get started?
+A: Visit our website, choose a plan, and sign up. You'll get
+immediate access to your dashboard where you can start setting up
+your tools right away.
+
+Q: Who built Amicus Edge?
+A: Amicus Edge is developed by Bizooma, LLC, a technology company
+specializing in AI-powered solutions for the legal industry.
+
+Q: What makes Amicus Edge different from other legal tech platforms?
+A: Amicus Edge is the only platform that combines AI chatbots, SEO
+analysis, voice search optimization, QR codes, Alexa skills, mobile
+apps, and document automation into a single, affordable platform
+built specifically for law firms.
+
+Q: Is my data secure?
+A: Yes. We use bank-level encryption and secure cloud infrastructure
+to protect all client and firm data. Our platform is built on
+enterprise-grade security standards.
+
+===================================================
+END OF TRAINING DOCUMENT
+===================================================
