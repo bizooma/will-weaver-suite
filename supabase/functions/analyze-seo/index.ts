@@ -33,7 +33,7 @@ interface ContentAnalysis {
   semanticKeywords: string[];
   topicRelevance: number;
   contentFreshness: boolean;
-  duplicateContent: boolean;
+  
 }
 
 interface CompetitiveAnalysis {
