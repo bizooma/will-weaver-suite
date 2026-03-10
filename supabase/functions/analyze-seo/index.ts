@@ -184,7 +184,7 @@ function analyzeContentQuality(html: string): ContentAnalysis {
     semanticKeywords: sortedKeywords,
     topicRelevance: Math.min(100, Math.max(0, sortedKeywords.length * 10)),
     contentFreshness: html.includes(new Date().getFullYear().toString()),
-    duplicateContent: false // Placeholder - would need external API
+    
   };
 }
 
