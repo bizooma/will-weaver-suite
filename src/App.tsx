@@ -131,7 +131,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isEmbed && <SiteFooter />}
-      {!isEmbed && <VoiceAgentBar agentId="bQYvVXsrFk4WxoQMcYno" />}
+      
       
       {!isEmbed && <CookieConsentBanner />}
     </>
