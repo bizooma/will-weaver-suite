@@ -24,7 +24,7 @@ interface TechnicalSEO {
   mobileFriendly: boolean;
   
   canonicalTag: boolean;
-  robotsTxt: boolean;
+  
   sitemap: boolean;
 }
 
@@ -33,7 +33,7 @@ interface ContentAnalysis {
   semanticKeywords: string[];
   topicRelevance: number;
   contentFreshness: boolean;
-  duplicateContent: boolean;
+  
 }
 
 interface CompetitiveAnalysis {
@@ -164,7 +164,7 @@ function analyzeTechnicalSEO(html: string, url: string): TechnicalSEO {
     mobileFriendly: html.includes('viewport') || html.includes('mobile'),
     
     canonicalTag: html.includes('rel="canonical"'),
-    robotsTxt: true, // Placeholder - would need robots.txt check
+    
     sitemap: html.includes('sitemap') || false
   };
 }
@@ -184,7 +184,7 @@ function analyzeContentQuality(html: string): ContentAnalysis {
     semanticKeywords: sortedKeywords,
     topicRelevance: Math.min(100, Math.max(0, sortedKeywords.length * 10)),
     contentFreshness: html.includes(new Date().getFullYear().toString()),
-    duplicateContent: false // Placeholder - would need external API
+    
   };
 }
 
