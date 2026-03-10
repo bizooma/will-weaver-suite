@@ -22,7 +22,7 @@ interface PageMetrics {
 interface TechnicalSEO {
   ssl: boolean;
   mobileFriendly: boolean;
-  pageSpeed: number;
+  
   canonicalTag: boolean;
   robotsTxt: boolean;
   sitemap: boolean;
