@@ -540,7 +540,7 @@ function generateRecommendations(analysis: any) {
   // Technical improvements
   if (!analysis.technicalSEO.canonicalTag) technical.push('Add canonical tags to prevent duplicate content');
   if (!analysis.technicalSEO.mobileFriendly) technical.push('Improve mobile responsiveness');
-  technical.push('Optimize page loading speed and Core Web Vitals');
+  
   technical.push('Implement comprehensive internal linking strategy');
   
   return { priority, quick_wins: quickWins, long_term: longTerm, technical };
