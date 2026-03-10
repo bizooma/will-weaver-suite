@@ -162,7 +162,7 @@ function analyzeTechnicalSEO(html: string, url: string): TechnicalSEO {
   return {
     ssl: url.startsWith('https://'),
     mobileFriendly: html.includes('viewport') || html.includes('mobile'),
-    pageSpeed: 75, // Placeholder - would need actual performance API
+    
     canonicalTag: html.includes('rel="canonical"'),
     robotsTxt: true, // Placeholder - would need robots.txt check
     sitemap: html.includes('sitemap') || false
