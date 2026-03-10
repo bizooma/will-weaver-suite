@@ -142,6 +142,14 @@ const LiveOperators = () => {
         description: "You've taken over this conversation",
       });
 
+      // Update the selected conversation locally so the message input appears immediately
+      setSelectedConversation(prev => prev?.id === conversationId ? {
+        ...prev,
+        operator_status: 'human_active',
+        operator_user_id: user.id,
+        operator_taken_at: new Date().toISOString(),
+      } : prev);
+
       fetchConversations();
     } catch (error) {
       console.error('Error taking over conversation:', error);
