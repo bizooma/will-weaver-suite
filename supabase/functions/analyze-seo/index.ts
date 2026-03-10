@@ -24,7 +24,7 @@ interface TechnicalSEO {
   mobileFriendly: boolean;
   
   canonicalTag: boolean;
-  robotsTxt: boolean;
+  
   sitemap: boolean;
 }
 
