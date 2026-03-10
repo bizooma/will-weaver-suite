@@ -22,7 +22,7 @@ interface PageMetrics {
 interface TechnicalSEO {
   ssl: boolean;
   mobileFriendly: boolean;
-  pageSpeed: number;
+  
   canonicalTag: boolean;
   robotsTxt: boolean;
   sitemap: boolean;
@@ -162,7 +162,7 @@ function analyzeTechnicalSEO(html: string, url: string): TechnicalSEO {
   return {
     ssl: url.startsWith('https://'),
     mobileFriendly: html.includes('viewport') || html.includes('mobile'),
-    pageSpeed: 75, // Placeholder - would need actual performance API
+    
     canonicalTag: html.includes('rel="canonical"'),
     robotsTxt: true, // Placeholder - would need robots.txt check
     sitemap: html.includes('sitemap') || false
@@ -540,7 +540,7 @@ function generateRecommendations(analysis: any) {
   // Technical improvements
   if (!analysis.technicalSEO.canonicalTag) technical.push('Add canonical tags to prevent duplicate content');
   if (!analysis.technicalSEO.mobileFriendly) technical.push('Improve mobile responsiveness');
-  technical.push('Optimize page loading speed and Core Web Vitals');
+  
   technical.push('Implement comprehensive internal linking strategy');
   
   return { priority, quick_wins: quickWins, long_term: longTerm, technical };
