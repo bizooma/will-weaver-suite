@@ -164,7 +164,7 @@ function analyzeTechnicalSEO(html: string, url: string): TechnicalSEO {
     mobileFriendly: html.includes('viewport') || html.includes('mobile'),
     
     canonicalTag: html.includes('rel="canonical"'),
-    robotsTxt: true, // Placeholder - would need robots.txt check
+    
     sitemap: html.includes('sitemap') || false
   };
 }
