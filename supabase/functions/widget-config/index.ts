@@ -81,7 +81,8 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      // Handle conversation logging
+      // Handle widget load logging — only log to widget_requests, NOT chatbot_conversations.
+      // Creating a conversation record here caused empty rows flooding the dashboard.
       const body: WidgetRequestBody = await req.json();
       const { chatbotId, origin, sessionId } = body;
 
@@ -95,19 +96,25 @@ serve(async (req) => {
         );
       }
 
-      // Log conversation start
-      const { error: logError } = await supabase.from('chatbot_conversations').insert({
+      // Log page load to widget_requests analytics table only
+      const generatedSessionId = sessionId || crypto.randomUUID();
+      const userAgent = req.headers.get('user-agent');
+      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
+
+      const { error: logError } = await supabase.from('widget_requests').insert({
         chatbot_id: chatbotId,
-        session_id: sessionId || crypto.randomUUID(),
-        conversation_data: { origin, timestamp: new Date().toISOString() }
+        origin_domain: origin,
+        ip_address: clientIP,
+        user_agent: userAgent,
+        session_id: generatedSessionId,
       });
 
       if (logError) {
-        console.error('Error logging conversation:', logError);
+        console.error('Error logging widget request:', logError);
       }
 
       return new Response(
-        JSON.stringify({ success: true, sessionId: sessionId || crypto.randomUUID() }),
+        JSON.stringify({ success: true, sessionId: generatedSessionId }),
         { 
           status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
