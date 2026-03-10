@@ -50,17 +50,21 @@ serve(async (req) => {
       const fileName = filePath.toLowerCase();
 
       if (fileName.endsWith('.txt')) {
-        // Plain text file
+        // Plain text file - read directly
         textContent = await fileData.text();
       } else if (fileName.endsWith('.pdf')) {
-        // For PDF files, we'd need a PDF parsing library
-        // For now, we'll return an error and suggest using text files
-        throw new Error('PDF processing not yet implemented. Please use .txt files for now.');
+        // PDF file - extract text using pdf-parse
+        console.log('Processing PDF file...');
+        const arrayBuffer = await fileData.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+        const pdfData = await pdf(buffer);
+        textContent = pdfData.text || '';
+        console.log(`Extracted ${textContent.length} characters from PDF (${pdfData.numpages} pages)`);
       } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
-        // For Word documents, we'd need a document parsing library
-        throw new Error('Word document processing not yet implemented. Please use .txt files for now.');
+        // Word documents not yet supported
+        throw new Error('Word document processing not yet supported. Please use .txt or .pdf files.');
       } else {
-        throw new Error('Unsupported file format. Please use .txt files.');
+        throw new Error('Unsupported file format. Please use .txt or .pdf files.');
       }
 
       if (!textContent || textContent.trim().length < 50) {
