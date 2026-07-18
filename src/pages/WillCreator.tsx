@@ -638,31 +638,40 @@ import { useEffect as useD_IDEffect } from "react";
    }
 
     async function handleExportDocx() {
-      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
-      try {
-        await exportWillDocx({
-          title: 'Last Will and Testament (Draft)',
-          content: draft,
-          filename: `will-draft-${Date.now()}.docx`
-        });
-        toast.success('DOCX downloaded');
-      } catch (e) {
-        console.error(e);
-        toast.error('Failed to export DOCX');
-      }
-    }
+       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
+       if (!canComplete) {
+         toast.error('Please resolve validation issues before exporting');
+         setStep(TOTAL_STEPS);
+         return;
+       }
+       try {
+         await exportWillDocx({
+           title: 'Last Will and Testament (Draft)',
+           content: draft,
+           filename: `will-draft-${Date.now()}.docx`
+         });
+         toast.success('DOCX downloaded');
+       } catch (e) {
+         console.error(e);
+         toast.error('Failed to export DOCX');
+       }
+     }
 
     async function handleSaveShare() {
       if (isDemo) { toast.info('Demo mode: Saving is disabled.'); return; }
-      if (!data.fullName) { toast.error('Please enter your full name first'); return; }
-      
+      if (!canComplete) {
+        toast.error('Please resolve validation issues before sharing');
+        setStep(TOTAL_STEPS);
+        return;
+      }
       try {
         setSaving(true);
         const slug = await createDraft({ data, tone, step });
-        const url = `${window.location.origin}/draft/${slug}`;
+        // Route is /drafts/:slug (plural) — matches src/App.tsx
+        const url = `${window.location.origin}/drafts/${slug}`;
         try { await navigator.clipboard.writeText(url); } catch (_) {}
         toast.success('Draft saved & link copied');
-        navigate(`/draft/${slug}`);
+        navigate(`/drafts/${slug}`);
       } catch (e) {
         console.error(e);
         toast.error('Failed to save draft');
