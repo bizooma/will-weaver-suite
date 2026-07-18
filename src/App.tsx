@@ -21,7 +21,7 @@ import AIOAnalyzer from "./pages/AIOAnalyzer";
 import MobileApp from "./pages/MobileApp";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
-import CreateAdmin from "./pages/CreateAdmin";
+
 import Auth from "./pages/Auth";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -92,7 +92,7 @@ const AppContent = () => {
         <Route path="/mobile-app" element={<MobileApp />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/create-admin" element={<CreateAdmin />} />
+        
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/cookies" element={<CookiePolicy />} />

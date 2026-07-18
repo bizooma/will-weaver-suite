@@ -1198,6 +1198,18 @@ export type Database = {
         Args: { chatbot_id_param: string }
         Returns: Json
       }
+      get_will_draft_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          created_at: string
+          data: Json
+          id: string
+          slug: string
+          step: number
+          tone: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
