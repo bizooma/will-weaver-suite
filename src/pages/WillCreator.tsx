@@ -1529,11 +1529,11 @@ import { useEffect as useD_IDEffect } from "react";
                  
                  <div className="flex items-center justify-between">
                    <Button variant="outline" onClick={()=> setStep(1)}>Edit from Start</Button>
-                   <div className="flex gap-2">
-                     <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
-                     <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
-                     <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
-                   </div>
+                    <div className="flex gap-2">
+                      <Button variant="hero" onClick={handleExportPDF} disabled={!canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Download PDF</Button>
+                      <Button variant="outline" onClick={handleExportDocx} disabled={!canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Export DOCX</Button>
+                      <Button variant="secondary" onClick={handleSaveShare} disabled={saving || !canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Save & Share</Button>
+                    </div>
                  </div>
                </div>
              </div>
