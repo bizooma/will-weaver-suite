@@ -54,23 +54,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Optional origin allowlist: if the chatbot has one configured,
-    // reject requests from other origins.
+    // Optional origin allowlist stored in chatbots.configuration.allowedOrigins.
+    // If set, reject requests whose Origin host isn't listed.
     const { data: chatbotMeta } = await supabase
       .from('chatbots')
-      .select('allowed_origins, is_active')
+      .select('configuration, is_active')
       .eq('id', chatbotId)
       .maybeSingle();
 
     if (chatbotMeta && chatbotMeta.is_active === false) {
       return jsonResponse({ error: 'Chatbot is disabled' }, 403);
     }
-    const allowlist = (chatbotMeta as { allowed_origins?: string[] | null } | null)?.allowed_origins;
-    if (Array.isArray(allowlist) && allowlist.length > 0) {
+    const cfg = (chatbotMeta as { configuration?: Record<string, unknown> } | null)?.configuration;
+    const rawList = cfg && Array.isArray((cfg as any).allowedOrigins) ? (cfg as any).allowedOrigins as unknown[] : [];
+    if (rawList.length > 0) {
       const origin = req.headers.get('origin') || '';
       let host = '';
       try { host = new URL(origin).host.toLowerCase(); } catch { /* ignore */ }
-      const ok = host && allowlist.some((entry) => {
+      const ok = host && rawList.some((entry) => {
         const e = String(entry).trim().toLowerCase();
         if (!e) return false;
         if (e.startsWith('*.')) return host === e.slice(2) || host.endsWith(e.slice(1));
@@ -80,6 +81,7 @@ serve(async (req) => {
         return jsonResponse({ error: 'Origin not allowed' }, 403);
       }
     }
+
 
 
     // Check if conversation has operator active
