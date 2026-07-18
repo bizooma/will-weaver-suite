@@ -212,9 +212,20 @@ async function sendEmails(formData: ContactFormData, submissionId: string): Prom
       })
     );
 
+    // Sender addresses. Configure CONTACT_FROM_EMAIL (e.g.
+    // "Amicus Edge <no-reply@amicusedge.com>") in Supabase secrets after
+    // verifying the sending domain in Resend so mail lands in inboxes
+    // instead of spam. Falls back to Resend's shared onboarding sender —
+    // that address only delivers to the Resend account owner, so real
+    // customer delivery requires the verified domain.
+    const userFromAddress =
+      Deno.env.get("CONTACT_FROM_EMAIL") || "Amicus Edge <onboarding@resend.dev>";
+    const businessFromAddress =
+      Deno.env.get("CONTACT_INTERNAL_FROM_EMAIL") || userFromAddress;
+
     // Send user confirmation email
     const userEmailResponse = await resend.emails.send({
-      from: "Amicus Edge <onboarding@resend.dev>",
+      from: userFromAddress,
       to: [formData.email],
       subject: "Thank you for contacting Amicus Edge",
       html: userEmailHtml,
@@ -222,11 +233,12 @@ async function sendEmails(formData: ContactFormData, submissionId: string): Prom
 
     // Send business notification email
     const businessEmailResponse = await resend.emails.send({
-      from: "Contact Form <onboarding@resend.dev>",
+      from: businessFromAddress,
       to: ["joe@bizooma.com"], // Business notification email
       subject: `New Contact: ${formData.subject} - ${formData.name}`,
       html: businessEmailHtml,
     });
+
 
     console.log('User email sent:', userEmailResponse);
     console.log('Business email sent:', businessEmailResponse);
