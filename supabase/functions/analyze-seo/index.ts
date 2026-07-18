@@ -84,6 +84,10 @@ interface SEOAnalysis {
 
 async function fetchPageContent(url: string): Promise<{ html: string; metrics: PageMetrics }> {
   try {
+    // SSRF guard: block non-http(s), localhost, and private IP ranges before
+    // making the outbound request. Throws on unsafe URLs.
+    await assertSafeUrl(url);
+
     const startTime = Date.now();
     const response = await fetch(url, {
       headers: {
@@ -96,6 +100,7 @@ async function fetchPageContent(url: string): Promise<{ html: string; metrics: P
         'Upgrade-Insecure-Requests': '1',
       },
     });
+
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
