@@ -8,6 +8,7 @@ import { getDraftBySlug, WillDraft } from "@/hooks/useWillDrafts";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { exportWillDocx } from "@/utils/docxExport";
+import { generateWillText, WillTemplateData } from "@/utils/willTemplate";
 import SEOHead from "@/components/SEOHead";
 
 const DraftView = () => {
@@ -61,12 +62,17 @@ const DraftView = () => {
     toast({ title: "Link copied", description: "Shareable link has been copied to your clipboard." });
   };
 
+  // Render the same formatted will the wizard produces (not raw JSON).
+  const willText = useMemo(
+    () => (draft?.data ? generateWillText(draft.data as WillTemplateData) : ""),
+    [draft],
+  );
+
   const onExportDocx = async () => {
     if (!draft) return;
-    const pretty = JSON.stringify(draft.data, null, 2);
     await exportWillDocx({
-      title: "Will Draft",
-      content: pretty,
+      title: "Last Will and Testament (Draft)",
+      content: willText,
       filename: `will-draft-${draft.slug}.docx`,
     });
     toast({ title: "DOCX generated", description: "Your document was downloaded." });
@@ -110,7 +116,7 @@ const DraftView = () => {
                 <div>Access denied. You don't have permission to view this draft.</div>
               </div>
             ) : draft ? (
-              <pre className="text-sm">{JSON.stringify(draft.data, null, 2)}</pre>
+              <pre className="whitespace-pre-wrap font-serif text-sm leading-relaxed">{willText}</pre>
             ) : (
               <div className="flex items-center justify-center py-8 text-muted-foreground">
                 <div>No draft found.</div>
