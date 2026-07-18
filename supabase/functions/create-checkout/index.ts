@@ -16,6 +16,25 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// === Server-side allowlists ===
+// Only these Stripe price IDs may be checked out. Sourced from
+// src/lib/subscriptionTiers.ts. Anything else the client sends is rejected
+// so callers can't smuggle in a $0 test price or a different product's ID.
+const ALLOWED_PRICE_IDS = new Set<string>([
+  "price_1T1TipEV6sbsDlR8A28XSSJ3",
+  "price_1T1TjAEV6sbsDlR8BbbvXtDy",
+  "price_1T1TjVEV6sbsDlR82m0egxS4",
+  "price_1T1TlrEV6sbsDlR8iLbCem1d",
+]);
+
+// Coupons the app is allowed to apply. Currently just the JAX Bar promo
+// (see src/pages/JaxBar.tsx). Users can't tack on arbitrary discounts by
+// guessing coupon IDs in DevTools — anything not on this list is rejected.
+const ALLOWED_COUPON_IDS = new Set<string>([
+  "YDW7b7eh", // JAX Bar 50% off
+]);
+
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
