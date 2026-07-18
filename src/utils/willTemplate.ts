@@ -93,7 +93,7 @@ ${data.petName ? `ARTICLE VIII - PET CARE
 I direct that my ${data.petType || "pet"} named ${data.petName} be cared for by ${data.petCaregiver || "[Pet Caregiver]"}.
 ${data.petInstructions ? `Pet Care Instructions: ${data.petInstructions}` : ""}` : ""}
 
-${data.funeralInstructions || (data.funeralPreference && data.funeralPreference !== "") ? `ARTICLE IX - FUNERAL ARRANGEMENTS
+${data.funeralInstructions || (data.funeralPreference && (data.funeralPreference as string) !== "") ? `ARTICLE IX - FUNERAL ARRANGEMENTS
 ${data.funeralPreference === "burial" ? "I prefer burial." : ""}
 ${data.funeralPreference === "cremation" ? "I prefer cremation." : ""}
 ${data.funeralPreference === "no_preference" ? "I have no specific preference for burial or cremation." : ""}
