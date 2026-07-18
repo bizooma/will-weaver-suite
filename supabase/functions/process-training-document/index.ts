@@ -16,16 +16,63 @@ serve(async (req) => {
   }
 
   try {
+    // === AuthN: require a valid Supabase JWT ===
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser(
+      authHeader.replace('Bearer ', ''),
+    );
+    if (userErr || !userData?.user?.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userId = userData.user.id;
+
     const { trainingSourceId, filePath } = await req.json();
-    
+
     if (!trainingSourceId || !filePath) {
       throw new Error('Missing trainingSourceId or filePath');
     }
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // Service-role client for the actual writes
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // === IDOR: verify the caller owns this training source ===
+    const { data: source, error: sourceErr } = await supabase
+      .from('training_sources')
+      .select('id, user_id, chatbot_id')
+      .eq('id', trainingSourceId)
+      .maybeSingle();
+    if (sourceErr || !source) {
+      return new Response(JSON.stringify({ error: 'Training source not found' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    let owned = source.user_id === userId;
+    if (!owned && source.chatbot_id) {
+      const { data: bot } = await supabase
+        .from('chatbots')
+        .select('user_id')
+        .eq('id', source.chatbot_id)
+        .maybeSingle();
+      owned = !!bot && bot.user_id === userId;
+    }
+    if (!owned) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     console.log(`Processing document: ${filePath} for training source: ${trainingSourceId}`);
 
@@ -34,6 +81,7 @@ serve(async (req) => {
       .from('training_sources')
       .update({ status: 'processing' })
       .eq('id', trainingSourceId);
+
 
     try {
       // Download the file from storage

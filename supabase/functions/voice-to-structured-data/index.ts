@@ -1,10 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders, guardAuthed } from "../_shared/security.ts";
 
 // Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
@@ -36,10 +32,15 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
   return result;
 }
 
+// Auth + rate + body-size gate — this is Whisper + GPT chained, so it's the
+// most expensive of the voice endpoints. Cap at 20/min per user.
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+
+  const guard = await guardAuthed(req, { maxBytes: 6_000_000, limit: 20, windowSeconds: 60 });
+  if (guard instanceof Response) return guard;
 
   try {
     const { audio } = await req.json();

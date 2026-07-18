@@ -1,12 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { assertSafeUrl } from '../_shared/url-guard.ts';
 
 // CORS headers including all required Supabase client headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
 
 // Helper function to extract content from meta tags and OpenGraph data
 function extractMetaContent(html: string): string {
@@ -108,16 +110,72 @@ serve(async (req) => {
   }
 
   try {
+    // === AuthN: require a valid Supabase JWT ===
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser(
+      authHeader.replace('Bearer ', ''),
+    );
+    if (userErr || !userData?.user?.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userId = userData.user.id;
+
     const { trainingSourceId, url } = await req.json();
-    
     if (!trainingSourceId || !url) {
       throw new Error('Missing trainingSourceId or url');
     }
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // Service-role client for the actual writes
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // === IDOR: ensure the caller owns this training source ===
+    const { data: source, error: sourceErr } = await supabase
+      .from('training_sources')
+      .select('id, user_id, chatbot_id')
+      .eq('id', trainingSourceId)
+      .maybeSingle();
+    if (sourceErr || !source) {
+      return new Response(JSON.stringify({ error: 'Training source not found' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    // training_sources may key ownership via user_id directly or via chatbot -> user
+    let owned = source.user_id === userId;
+    if (!owned && source.chatbot_id) {
+      const { data: bot } = await supabase
+        .from('chatbots')
+        .select('user_id')
+        .eq('id', source.chatbot_id)
+        .maybeSingle();
+      owned = !!bot && bot.user_id === userId;
+    }
+    if (!owned) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // === SSRF guard: reject non-http(s), private / loopback / link-local hosts ===
+    try {
+      await assertSafeUrl(url);
+    } catch (guardErr) {
+      return new Response(JSON.stringify({ error: `Blocked URL: ${(guardErr as Error).message}` }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     console.log(`Processing URL: ${url} for training source: ${trainingSourceId}`);
 
@@ -138,8 +196,9 @@ serve(async (req) => {
           'Connection': 'keep-alive',
           'Upgrade-Insecure-Requests': '1',
         },
-        timeout: 30000, // 30 second timeout
+        signal: AbortSignal.timeout(30_000),
       });
+
 
       if (!response.ok) {
         throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);

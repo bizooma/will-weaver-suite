@@ -1,28 +1,88 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.54.0';
+import {
+  corsHeaders,
+  enforceBodySize,
+  checkRateLimit,
+  getClientIp,
+  jsonResponse,
+} from '../_shared/security.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
+// PUBLIC endpoint — a widget on any embedding site posts here. We cannot
+// require auth, so protection comes from:
+//  1. 16 KB body cap (chat prompts are small)
+//  2. Rate limit per IP + chatbotId (default 20 req/min); prevents a single
+//     script from burning through OpenAI credit while still allowing normal
+//     conversation pacing across multiple concurrent visitors.
+//  3. Origin allowlist: if the chatbot row has `allowed_origins` (array of
+//     hostnames), the request Origin must match one; empty/null = allow all
+//     (backwards compatible with existing chatbots that were not configured).
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Enforce body size before parsing JSON
+  const sizeErr = enforceBodySize(req, 16_000);
+  if (sizeErr) return sizeErr;
+
   try {
     const { message, chatbotId, sessionId } = await req.json();
-    
-    console.log('Received request:', { message, chatbotId });
+
+    if (typeof message !== 'string' || typeof chatbotId !== 'string') {
+      return jsonResponse({ error: 'Invalid request body' }, 400);
+    }
+    // Cap the incoming message size as a defense in depth measure
+    const userMessageText = message.slice(0, 4000);
+
+    // Rate limit per IP + chatbot to slow single-source abuse
+    const ip = getClientIp(req);
+    const rl = checkRateLimit({
+      key: `chatbot:${chatbotId}:${ip}`,
+      limit: 20,
+      windowSeconds: 60,
+    });
+    if (rl) return rl;
+
+    console.log('Received request:', { chatbotId, ipHash: ip.slice(0, 6) });
 
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Optional origin allowlist stored in chatbots.configuration.allowedOrigins.
+    // If set, reject requests whose Origin host isn't listed.
+    const { data: chatbotMeta } = await supabase
+      .from('chatbots')
+      .select('configuration, is_active')
+      .eq('id', chatbotId)
+      .maybeSingle();
+
+    if (chatbotMeta && chatbotMeta.is_active === false) {
+      return jsonResponse({ error: 'Chatbot is disabled' }, 403);
+    }
+    const cfg = (chatbotMeta as { configuration?: Record<string, unknown> } | null)?.configuration;
+    const rawList = cfg && Array.isArray((cfg as any).allowedOrigins) ? (cfg as any).allowedOrigins as unknown[] : [];
+    if (rawList.length > 0) {
+      const origin = req.headers.get('origin') || '';
+      let host = '';
+      try { host = new URL(origin).host.toLowerCase(); } catch { /* ignore */ }
+      const ok = host && rawList.some((entry) => {
+        const e = String(entry).trim().toLowerCase();
+        if (!e) return false;
+        if (e.startsWith('*.')) return host === e.slice(2) || host.endsWith(e.slice(1));
+        return host === e;
+      });
+      if (!ok) {
+        return jsonResponse({ error: 'Origin not allowed' }, 403);
+      }
+    }
+
+
 
     // Check if conversation has operator active
     if (sessionId) {
@@ -82,7 +142,7 @@ serve(async (req) => {
         console.log('Fetched content chunks:', contentChunks.length);
         
         // Expanded keyword set with simple synonyms
-        const baseTokens = message
+        const baseTokens = userMessageText
           .toLowerCase()
           .replace(/[^a-z0-9\s]/g, ' ')
           .split(/\s+/)
@@ -192,7 +252,7 @@ Answering rules:
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          { role: 'user', content: userMessageText }
         ],
         max_tokens: 450,
         temperature: 0.4,
@@ -222,7 +282,7 @@ Answering rules:
           .single();
 
         const currentTime = new Date().toISOString();
-        const userMessage = { type: 'user', content: message, timestamp: currentTime };
+        const userMessage = { type: 'user', content: userMessageText, timestamp: currentTime };
         const botMessage = { type: 'bot', content: aiResponse, timestamp: currentTime };
 
         if (existingConversation) {
