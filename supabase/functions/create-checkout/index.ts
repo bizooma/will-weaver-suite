@@ -72,7 +72,24 @@ serve(async (req) => {
     // Parse the request body to get the priceId and optional couponId
     const { priceId, couponId } = await req.json();
     if (!priceId) throw new Error("priceId is required");
+
+    // Enforce allowlists so callers can't inject arbitrary price/coupon IDs
+    if (!ALLOWED_PRICE_IDS.has(String(priceId))) {
+      logStep("Rejected priceId not on allowlist", { priceId });
+      return new Response(JSON.stringify({ error: "Invalid price" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (couponId && !ALLOWED_COUPON_IDS.has(String(couponId))) {
+      logStep("Rejected couponId not on allowlist", { couponId });
+      return new Response(JSON.stringify({ error: "Invalid coupon" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     logStep("Price ID received", { priceId, couponId });
+
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
