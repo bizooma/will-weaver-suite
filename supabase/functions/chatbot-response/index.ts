@@ -142,7 +142,7 @@ serve(async (req) => {
         console.log('Fetched content chunks:', contentChunks.length);
         
         // Expanded keyword set with simple synonyms
-        const baseTokens = message
+        const baseTokens = userMessageText
           .toLowerCase()
           .replace(/[^a-z0-9\s]/g, ' ')
           .split(/\s+/)
@@ -252,7 +252,7 @@ Answering rules:
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          { role: 'user', content: userMessageText }
         ],
         max_tokens: 450,
         temperature: 0.4,
@@ -282,7 +282,7 @@ Answering rules:
           .single();
 
         const currentTime = new Date().toISOString();
-        const userMessage = { type: 'user', content: message, timestamp: currentTime };
+        const userMessage = { type: 'user', content: userMessageText, timestamp: currentTime };
         const botMessage = { type: 'bot', content: aiResponse, timestamp: currentTime };
 
         if (existingConversation) {
