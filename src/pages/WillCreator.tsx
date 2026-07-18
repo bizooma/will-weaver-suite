@@ -15,6 +15,7 @@ import CopilotPanel from "@/components/CopilotPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createDraft, getDraftBySlug } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
+import { generateWillText } from "@/utils/willTemplate";
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "@/components/VoiceButton";
 import { useFormAutoFill } from "@/hooks/useFormAutoFill";
@@ -118,7 +119,9 @@ import { useEffect as useD_IDEffect } from "react";
 
  const canonical = typeof window !== 'undefined' ? window.location.origin + "/will-creator" : "/will-creator";
 
- const TOTAL_STEPS = 10;
+ // Total steps in the wizard. Step 11 is the Review & Export screen — it must
+ // be reachable via the Next button, so TOTAL_STEPS includes it.
+ const TOTAL_STEPS = 11;
 
  const usStates = [
      "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
@@ -172,16 +175,24 @@ import { useEffect as useD_IDEffect } from "react";
       try { return new URLSearchParams(window.location.search).get('embed') === '1'; } catch { return false; }
     }, []);
 
+    // Validation rules enforced before allowing Complete/Export. Keep these
+    // in sync with the inline error list shown on the Review step.
     const validationIssues = useMemo(() => {
       const issues: string[] = [];
-      if (!data.fullName) issues.push('Missing full legal name');
+      if (!data.fullName?.trim()) issues.push('Missing full legal name');
+      if (!data.dob?.trim()) issues.push('Missing date of birth');
+      if (!data.address?.trim()) issues.push('Missing address');
       if (!data.state) issues.push('Missing state of residence');
-      if (!data.executor.name) issues.push('Missing executor name');
-      if (data.addGuardians && !data.guardian?.name) issues.push('Guardian name required when guardians are enabled');
-      const sum = data.residue.reduce((sum, r)=> sum + (parseFloat(r.percentage||'0') || 0), 0);
-      if (Math.round(sum) !== 100) issues.push('Residue total must equal 100%');
+      if (!data.executor?.name?.trim()) issues.push('Missing executor name');
+      if (data.addGuardians && !data.guardian?.name?.trim()) issues.push('Guardian name required when guardians are enabled');
+      const namedBeneficiaries = (data.beneficiaries || []).filter(b => b?.name?.trim());
+      if (namedBeneficiaries.length === 0) issues.push('Add at least one beneficiary with a name');
+      const sum = data.residue.reduce((s, r) => s + (parseFloat(r.percentage || '0') || 0), 0);
+      if (Math.round(sum) !== 100) issues.push(`Residue total must equal 100% (currently ${Math.round(sum)}%)`);
       return issues;
     }, [data]);
+
+    const canComplete = validationIssues.length === 0;
   
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
