@@ -15,6 +15,7 @@ import CopilotPanel from "@/components/CopilotPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createDraft, getDraftBySlug } from "@/hooks/useWillDrafts";
 import { exportWillDocx } from "@/utils/docxExport";
+import { generateWillText } from "@/utils/willTemplate";
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "@/components/VoiceButton";
 import { useFormAutoFill } from "@/hooks/useFormAutoFill";
@@ -118,7 +119,9 @@ import { useEffect as useD_IDEffect } from "react";
 
  const canonical = typeof window !== 'undefined' ? window.location.origin + "/will-creator" : "/will-creator";
 
- const TOTAL_STEPS = 10;
+ // Total steps in the wizard. Step 11 is the Review & Export screen — it must
+ // be reachable via the Next button, so TOTAL_STEPS includes it.
+ const TOTAL_STEPS = 11;
 
  const usStates = [
      "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
@@ -172,16 +175,24 @@ import { useEffect as useD_IDEffect } from "react";
       try { return new URLSearchParams(window.location.search).get('embed') === '1'; } catch { return false; }
     }, []);
 
+    // Validation rules enforced before allowing Complete/Export. Keep these
+    // in sync with the inline error list shown on the Review step.
     const validationIssues = useMemo(() => {
       const issues: string[] = [];
-      if (!data.fullName) issues.push('Missing full legal name');
+      if (!data.fullName?.trim()) issues.push('Missing full legal name');
+      if (!data.dob?.trim()) issues.push('Missing date of birth');
+      if (!data.address?.trim()) issues.push('Missing address');
       if (!data.state) issues.push('Missing state of residence');
-      if (!data.executor.name) issues.push('Missing executor name');
-      if (data.addGuardians && !data.guardian?.name) issues.push('Guardian name required when guardians are enabled');
-      const sum = data.residue.reduce((sum, r)=> sum + (parseFloat(r.percentage||'0') || 0), 0);
-      if (Math.round(sum) !== 100) issues.push('Residue total must equal 100%');
+      if (!data.executor?.name?.trim()) issues.push('Missing executor name');
+      if (data.addGuardians && !data.guardian?.name?.trim()) issues.push('Guardian name required when guardians are enabled');
+      const namedBeneficiaries = (data.beneficiaries || []).filter(b => b?.name?.trim());
+      if (namedBeneficiaries.length === 0) issues.push('Add at least one beneficiary with a name');
+      const sum = data.residue.reduce((s, r) => s + (parseFloat(r.percentage || '0') || 0), 0);
+      if (Math.round(sum) !== 100) issues.push(`Residue total must equal 100% (currently ${Math.round(sum)}%)`);
       return issues;
     }, [data]);
+
+    const canComplete = validationIssues.length === 0;
   
    const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
    const prev = () => setStep((s) => Math.max(1, s - 1));
@@ -343,73 +354,8 @@ import { useEffect as useD_IDEffect } from "react";
 
     const title = brand ? `${brand} Will & Trust Creator` : "Will & Trust Creator";
 
-    // Generate draft text (the actual will)
-    const draft = useMemo(() => {
-     const bList = data.beneficiaries.filter(b=>b.name).map((b,i)=>`${i+1}) ${b.name}${b.dob?` (b. ${b.dob})`:''} – ${b.relationship}`).join("\n");
-     const gList = data.gifts.map((g,i)=>`${i+1}) ${g.description} → ${g.beneficiary}`).join("\n");
-     const rList = data.residue.map((r,i)=>`${i+1}) ${r.beneficiary} (${r.percentage}%)`).join("\n");
-     const witnessList = data.witnesses.filter(w=>w).join(", ");
-     
-     return `LAST WILL AND TESTAMENT OF ${data.fullName?.toUpperCase() || 'YOUR NAME'}
-
-I, ${data.fullName || 'your name'}, of ${data.address || 'your address'}, ${data.state || 'your state'}, being of sound mind and memory, do hereby make, publish and declare this to be my Last Will and Testament.
-
-ARTICLE I - REVOCATION
-I hereby revoke all former wills and codicils heretofore made by me.
-
-ARTICLE II - IDENTIFICATION
-${data.dob ? `I was born on ${data.dob}.` : ''} 
-${data.maritalStatus === 'married' && data.spouse?.name ? `I am married to ${data.spouse.name}.` : ''}
-${data.maritalStatus === 'single' ? 'I am unmarried.' : ''}
-${data.maritalStatus === 'divorced' ? 'I am divorced.' : ''}
-${data.maritalStatus === 'widowed' ? 'I am widowed.' : ''}
-
-ARTICLE III - BENEFICIARIES
-${bList || 'No beneficiaries listed.'}
-
-ARTICLE IV - EXECUTOR
-I nominate ${data.executor.name || '[Executor Name]'}${data.executor.address ? `, of ${data.executor.address},` : ''} to serve as Executor of this Will.
-${data.altExecutor?.name ? `If my primary Executor is unable or unwilling to serve, I nominate ${data.altExecutor.name}${data.altExecutor.address ? `, of ${data.altExecutor.address},` : ''} as alternate Executor.` : ''}
-
-${data.addGuardians && data.guardian?.name ? `ARTICLE V - GUARDIANSHIP
-I nominate ${data.guardian.name}${data.guardian.address ? `, of ${data.guardian.address},` : ''} as guardian for any minor children.
-${data.guardianInstructions ? `\nGuardian Instructions: ${data.guardianInstructions}` : ''}
-${data.altGuardian?.name ? `\nIf my primary guardian is unable or unwilling to serve, I nominate ${data.altGuardian.name}${data.altGuardian.address ? `, of ${data.altGuardian.address},` : ''} as alternate guardian.` : ''}
-${data.altGuardianInstructions ? `\nAlternate Guardian Instructions: ${data.altGuardianInstructions}` : ''}` : ''}
-
-${data.gifts.length > 0 ? `ARTICLE VI - SPECIFIC GIFTS
-${gList}` : ''}
-
-ARTICLE VII - RESIDUARY ESTATE
-I give the rest, residue, and remainder of my estate to:
-${rList}
-
-${data.petName ? `ARTICLE VIII - PET CARE
-I direct that my ${data.petType || 'pet'} named ${data.petName} be cared for by ${data.petCaregiver || '[Pet Caregiver]'}.
-${data.petInstructions ? `Pet Care Instructions: ${data.petInstructions}` : ''}` : ''}
-
-${data.funeralInstructions || data.funeralPreference !== '' ? `ARTICLE IX - FUNERAL ARRANGEMENTS
-${data.funeralPreference === 'burial' ? 'I prefer burial.' : ''}
-${data.funeralPreference === 'cremation' ? 'I prefer cremation.' : ''}
-${data.funeralPreference === 'no_preference' ? 'I have no specific preference for burial or cremation.' : ''}
-${data.funeralInstructions ? `\nFuneral Instructions: ${data.funeralInstructions}` : ''}` : ''}
-
-ARTICLE X - EXECUTION
-IN WITNESS WHEREOF, I have executed this Last Will and Testament on the _____ day of __________, 20__.
-
-_________________________________
-${data.fullName || 'Your Signature'}
-
-
-WITNESSES:
-We, the undersigned, certify that the testator signed this Will in our presence, that we witnessed the signing, and that we signed below in the testator's presence and in the presence of each other.
-
-Witness 1: ${data.witnesses[0] || '___________________________'}    Date: ________
-
-Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ________
-
-[Note: This is a draft document. Consult with a licensed attorney before execution.]`;
-   }, [data]);
+    // Generate draft text via shared template so DraftView renders/exports the same doc.
+    const draft = useMemo(() => generateWillText(data), [data]);
 
    const generateFuneralInstructionsWithAI = async () => {
      setFuneralLoading(true);
@@ -570,6 +516,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
    // Export functions
    async function handleExportPDF() {
      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
+     if (!canComplete) {
+       toast.error('Please resolve validation issues before exporting');
+       setStep(TOTAL_STEPS);
+       return;
+     }
      try {
        const pdfDoc = await PDFDocument.create();
        const times = await pdfDoc.embedFont(StandardFonts.TimesRoman);
@@ -692,31 +643,40 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
    }
 
     async function handleExportDocx() {
-      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
-      try {
-        await exportWillDocx({
-          title: 'Last Will and Testament (Draft)',
-          content: draft,
-          filename: `will-draft-${Date.now()}.docx`
-        });
-        toast.success('DOCX downloaded');
-      } catch (e) {
-        console.error(e);
-        toast.error('Failed to export DOCX');
-      }
-    }
+       if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
+       if (!canComplete) {
+         toast.error('Please resolve validation issues before exporting');
+         setStep(TOTAL_STEPS);
+         return;
+       }
+       try {
+         await exportWillDocx({
+           title: 'Last Will and Testament (Draft)',
+           content: draft,
+           filename: `will-draft-${Date.now()}.docx`
+         });
+         toast.success('DOCX downloaded');
+       } catch (e) {
+         console.error(e);
+         toast.error('Failed to export DOCX');
+       }
+     }
 
     async function handleSaveShare() {
       if (isDemo) { toast.info('Demo mode: Saving is disabled.'); return; }
-      if (!data.fullName) { toast.error('Please enter your full name first'); return; }
-      
+      if (!canComplete) {
+        toast.error('Please resolve validation issues before sharing');
+        setStep(TOTAL_STEPS);
+        return;
+      }
       try {
         setSaving(true);
         const slug = await createDraft({ data, tone, step });
-        const url = `${window.location.origin}/draft/${slug}`;
+        // Route is /drafts/:slug (plural) — matches src/App.tsx
+        const url = `${window.location.origin}/drafts/${slug}`;
         try { await navigator.clipboard.writeText(url); } catch (_) {}
         toast.success('Draft saved & link copied');
-        navigate(`/draft/${slug}`);
+        navigate(`/drafts/${slug}`);
       } catch (e) {
         console.error(e);
         toast.error('Failed to save draft');
@@ -738,19 +698,45 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
      document.head.appendChild(script);
    }, [didAvatarLoaded]);
 
-   // UI bits
+   // UI bits. Step TOTAL_STEPS (11) = Review & Export screen.
+   // On step TOTAL_STEPS - 1 (10), the Next button becomes "Review & Export"
+   // and takes the user to the review screen — this is what makes the
+   // review/validation/AI-review pane actually reachable.
    const StepActions = (
      <div className="mt-6 flex items-center justify-between">
        <Button variant="outline" onClick={prev} disabled={step===1}>Back</Button>
-        {step < TOTAL_STEPS ? (
-          <Button variant="hero" onClick={next}>Next</Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
-            <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
-            <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
-          </div>
-        )}
+       {step < TOTAL_STEPS ? (
+         <Button variant="hero" onClick={next}>
+           {step === TOTAL_STEPS - 1 ? 'Review & Export' : 'Next'}
+         </Button>
+       ) : (
+         <div className="flex gap-2">
+           <Button
+             variant="hero"
+             onClick={handleExportPDF}
+             disabled={!canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Download PDF
+           </Button>
+           <Button
+             variant="outline"
+             onClick={handleExportDocx}
+             disabled={!canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Export DOCX
+           </Button>
+           <Button
+             variant="secondary"
+             onClick={handleSaveShare}
+             disabled={saving || !canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Save & Share
+           </Button>
+         </div>
+       )}
      </div>
    );
 
@@ -1403,11 +1389,9 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  </div>
                </div>
                
-                <div className="mt-4">
-                  <VoiceButton onResult={(text) => {
-                    setData(prev => ({ ...prev, additionalWishes: text.trim() }));
-                  }} />
-                </div>
+                {/* VoiceButton previously wrote to an unused `additionalWishes` key.
+                    The witnesses step has two explicit inputs above; no free-form
+                    voice capture belongs here, so the button was removed. */}
                {StepActions}
              </div>
            )}
@@ -1545,11 +1529,11 @@ Witness 2: ${data.witnesses[1] || '___________________________'}    Date: ______
                  
                  <div className="flex items-center justify-between">
                    <Button variant="outline" onClick={()=> setStep(1)}>Edit from Start</Button>
-                   <div className="flex gap-2">
-                     <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
-                     <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
-                     <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
-                   </div>
+                    <div className="flex gap-2">
+                      <Button variant="hero" onClick={handleExportPDF} disabled={!canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Download PDF</Button>
+                      <Button variant="outline" onClick={handleExportDocx} disabled={!canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Export DOCX</Button>
+                      <Button variant="secondary" onClick={handleSaveShare} disabled={saving || !canComplete} title={!canComplete ? 'Resolve validation issues first' : undefined}>Save & Share</Button>
+                    </div>
                  </div>
                </div>
              </div>
