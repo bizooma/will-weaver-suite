@@ -1389,11 +1389,9 @@ import { useEffect as useD_IDEffect } from "react";
                  </div>
                </div>
                
-                <div className="mt-4">
-                  <VoiceButton onResult={(text) => {
-                    setData(prev => ({ ...prev, additionalWishes: text.trim() }));
-                  }} />
-                </div>
+                {/* VoiceButton previously wrote to an unused `additionalWishes` key.
+                    The witnesses step has two explicit inputs above; no free-form
+                    voice capture belongs here, so the button was removed. */}
                {StepActions}
              </div>
            )}
