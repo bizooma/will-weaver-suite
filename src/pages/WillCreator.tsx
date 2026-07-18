@@ -516,6 +516,11 @@ import { useEffect as useD_IDEffect } from "react";
    // Export functions
    async function handleExportPDF() {
      if (isDemo) { toast.info('Demo mode: Export is disabled.'); return; }
+     if (!canComplete) {
+       toast.error('Please resolve validation issues before exporting');
+       setStep(TOTAL_STEPS);
+       return;
+     }
      try {
        const pdfDoc = await PDFDocument.create();
        const times = await pdfDoc.embedFont(StandardFonts.TimesRoman);
