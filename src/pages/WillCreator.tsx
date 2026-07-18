@@ -698,19 +698,45 @@ import { useEffect as useD_IDEffect } from "react";
      document.head.appendChild(script);
    }, [didAvatarLoaded]);
 
-   // UI bits
+   // UI bits. Step TOTAL_STEPS (11) = Review & Export screen.
+   // On step TOTAL_STEPS - 1 (10), the Next button becomes "Review & Export"
+   // and takes the user to the review screen — this is what makes the
+   // review/validation/AI-review pane actually reachable.
    const StepActions = (
      <div className="mt-6 flex items-center justify-between">
        <Button variant="outline" onClick={prev} disabled={step===1}>Back</Button>
-        {step < TOTAL_STEPS ? (
-          <Button variant="hero" onClick={next}>Next</Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="hero" onClick={handleExportPDF}>Download PDF</Button>
-            <Button variant="outline" onClick={handleExportDocx}>Export DOCX</Button>
-            <Button variant="secondary" onClick={handleSaveShare} disabled={saving}>Save & Share</Button>
-          </div>
-        )}
+       {step < TOTAL_STEPS ? (
+         <Button variant="hero" onClick={next}>
+           {step === TOTAL_STEPS - 1 ? 'Review & Export' : 'Next'}
+         </Button>
+       ) : (
+         <div className="flex gap-2">
+           <Button
+             variant="hero"
+             onClick={handleExportPDF}
+             disabled={!canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Download PDF
+           </Button>
+           <Button
+             variant="outline"
+             onClick={handleExportDocx}
+             disabled={!canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Export DOCX
+           </Button>
+           <Button
+             variant="secondary"
+             onClick={handleSaveShare}
+             disabled={saving || !canComplete}
+             title={!canComplete ? 'Resolve validation issues first' : undefined}
+           >
+             Save & Share
+           </Button>
+         </div>
+       )}
      </div>
    );
 
