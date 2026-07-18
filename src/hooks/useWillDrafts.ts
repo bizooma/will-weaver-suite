@@ -91,10 +91,11 @@ export async function getDraftBySlug(slug: string) {
       throw new Error('Invalid draft identifier');
     }
 
+    // Use the security-definer RPC get_will_draft_by_slug — direct SELECT on
+    // will_drafts is no longer allowed to the public, so shared-link access
+    // now goes through this function which returns a single row by slug.
     const { data, error } = await supabase
-      .from("will_drafts")
-      .select("*")
-      .eq("slug", slug.trim())
+      .rpc("get_will_draft_by_slug", { _slug: slug.trim() })
       .maybeSingle();
 
     if (error) {
@@ -102,7 +103,8 @@ export async function getDraftBySlug(slug: string) {
       throw new Error('Failed to retrieve draft');
     }
 
-    return data as WillDraft | null;
+    return (data as WillDraft | null) ?? null;
+
   } catch (error) {
     logger.error('Unexpected error in getDraftBySlug', error as Error, { slug });
     throw error;
