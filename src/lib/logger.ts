@@ -42,17 +42,41 @@ class Logger {
     return true;
   }
 
+  /**
+   * GDPR: internal analytics/observability requires user consent under the
+   * ePrivacy Directive when it involves storing or transmitting device
+   * information tied to a user. Read the same consent record the cookie
+   * banner writes (see src/lib/compliance.ts). Never send to prod logging
+   * without an explicit `analytics: true` consent choice.
+   */
+  private hasAnalyticsConsent(): boolean {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return false;
+      const stored = localStorage.getItem('gdpr_cookie_consent');
+      if (!stored) return false;
+      const parsed = JSON.parse(stored) as { analytics?: boolean };
+      return parsed?.analytics === true;
+    } catch {
+      return false;
+    }
+  }
+
   private sendToProdLogging(logEntry: LogEntry): void {
     // In production, this would send to a logging service like:
     // - Sentry for error tracking
     // - LogRocket for user session replay
     // - CloudWatch/DataDog for application monitoring
-    
-    if (!this.isDevelopment) {
+    //
+    // Consent-gated: only forward to external analytics/logging when the
+    // user has granted analytics consent in the cookie banner. Errors that
+    // don't identify the user could arguably ship without consent, but we
+    // keep the gate strict here — safer default for GDPR compliance.
+    if (!this.isDevelopment && this.hasAnalyticsConsent()) {
       // Example: Send to external logging service
       // await fetch('/api/logs', { method: 'POST', body: JSON.stringify(logEntry) });
     }
   }
+
 
   debug(message: string, context?: Record<string, unknown>): void {
     if (!this.shouldLog(LOG_LEVELS.DEBUG)) return;
