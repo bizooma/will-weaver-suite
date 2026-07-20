@@ -128,6 +128,11 @@ const AppContent = () => {
         } />
         <Route path="/subscription-success" element={<SubscriptionSuccess />} />
         <Route path="/jax-bar" element={<JaxBar />} />
+        <Route path="/ai-visibility" element={
+          <ProtectedRoute>
+            <AIVisibility />
+          </ProtectedRoute>
+        } />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
