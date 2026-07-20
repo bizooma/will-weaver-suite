@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import SEOHead from "@/components/SEOHead";
-import { LegalDisclaimer } from "@/components/CookieConsentBanner";
+import { LegalDisclaimer } from "@/components/compliance/LegalNotices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

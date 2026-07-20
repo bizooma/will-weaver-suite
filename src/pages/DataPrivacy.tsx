@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { gdprDataManager, cookieManager, checkLegalCompliance } from '@/lib/compliance';
 import SEOHead from '@/components/SEOHead';
-import { GDPRNotice } from '@/components/CookieConsentBanner';
+import { GDPRNotice } from '@/components/compliance/LegalNotices';
 
 const DataPrivacy = () => {
   const { user } = useAuth();
