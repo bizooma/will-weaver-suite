@@ -46,6 +46,7 @@ import LiveOperators from "./pages/LiveOperators";
 import NonprofitFormation from "./pages/NonprofitFormation";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import JaxBar from "./pages/JaxBar";
+import AIVisibility from "./pages/AIVisibility";
 
 const queryClient = new QueryClient();
 
