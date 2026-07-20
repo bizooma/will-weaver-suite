@@ -30,7 +30,7 @@ import DataPrivacy from "./pages/DataPrivacy";
 import Dashboard from "./pages/Dashboard";
 import DashboardTour from "./pages/DashboardTour";
 import ProductionDashboard from "./pages/ProductionDashboard";
-import CookieConsentBanner from "./components/CookieConsentBanner";
+
 import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import ScrollToTop from "./components/ScrollToTop";
@@ -137,9 +137,6 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isEmbed && <SiteFooter />}
-      
-      
-      {!isEmbed && <CookieConsentBanner />}
     </>
   );
 };
