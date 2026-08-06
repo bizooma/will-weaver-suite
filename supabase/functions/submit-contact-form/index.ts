@@ -5,6 +5,7 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22';
 import React from 'npm:react@18.3.1';
 import { UserConfirmationEmail } from './_templates/user-confirmation.tsx';
 import { BusinessNotificationEmail } from './_templates/business-notification.tsx';
+import { verifyTurnstile } from '../_shared/turnstile.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,8 @@ interface ContactFormData {
   lawFirm?: string;
   city?: string;
   state?: string;
+  /** Cloudflare Turnstile token produced by the browser widget. */
+  turnstileToken?: string;
 }
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -50,6 +53,16 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse and validate form data
     const formData: ContactFormData = await req.json();
     
+    // Bot protection: verify the Turnstile token with Cloudflare before doing
+    // any work (DB write, emails, Sheets sync). Only success === true passes.
+    const turnstile = await verifyTurnstile(formData.turnstileToken, clientIP);
+    if (!turnstile.success) {
+      return new Response(
+        JSON.stringify({ error: "Human verification failed. Please try again." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Basic validation
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       return new Response(

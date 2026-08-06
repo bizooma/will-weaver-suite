@@ -243,6 +243,30 @@ export type Database = {
         }
         Relationships: []
       }
+      form_submission_log: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: number
+          ip: string | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: never
+          ip?: string | null
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: never
+          ip?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       marketing_events: {
         Row: {
           content_suggestions: Json
