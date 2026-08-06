@@ -10,9 +10,15 @@ import { toast } from "sonner";
 import { contactFormSchema, type ContactFormInput } from "@/lib/validation";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Cloudflare Turnstile: token proving the visitor is human. Required before
+  // submitting; verified server-side by the submit-contact-form edge function.
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  // Incrementing this forces the widget to issue a fresh (single-use) token.
+  const [turnstileReset, setTurnstileReset] = useState(0);
   
   const form = useForm<ContactFormInput>({
     resolver: zodResolver(contactFormSchema),
@@ -29,6 +35,12 @@ const Contact = () => {
 
   const onSubmit = async (data: ContactFormInput) => {
     if (isSubmitting) return;
+
+    // Block submission until the bot check has produced a token.
+    if (!turnstileToken) {
+      toast.error("Please complete the human verification check.");
+      return;
+    }
     
     setIsSubmitting(true);
     
@@ -36,7 +48,8 @@ const Contact = () => {
       console.log("Submitting contact form:", data);
       
       const { data: result, error } = await supabase.functions.invoke('submit-contact-form', {
-        body: data,
+        // The Turnstile token travels with the form payload.
+        body: { ...data, turnstileToken },
       });
 
       if (error) {
@@ -54,12 +67,20 @@ const Contact = () => {
       console.log("Contact form submitted successfully:", result);
       toast.success(result?.message || "Thank you for your message. We'll get back to you soon!");
       form.reset();
+      // Tokens are single-use — reset the widget for any subsequent submission.
+      setTurnstileToken(null);
+      setTurnstileReset((n) => n + 1);
       
     } catch (error) {
       console.error("Contact form submission error:", error);
       toast.error("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
+      // Any failed attempt consumed the token; force a new challenge.
+      if (turnstileToken) {
+        setTurnstileToken(null);
+        setTurnstileReset((n) => n + 1);
+      }
     }
   };
 
@@ -181,11 +202,18 @@ const Contact = () => {
                 </FormItem>
               )}
             />
+            {/* Cloudflare Turnstile bot protection for this public form */}
+            <div className="md:col-span-2">
+              <TurnstileWidget
+                onVerify={setTurnstileToken}
+                resetSignal={turnstileReset}
+              />
+            </div>
             <div className="md:col-span-2">
               <Button 
                 variant="hero" 
                 type="submit" 
-                disabled={isSubmitting}
+                disabled={isSubmitting || !turnstileToken}
                 className="w-full md:w-auto"
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
