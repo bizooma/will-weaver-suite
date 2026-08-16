@@ -49,9 +49,31 @@ interface QuestionResult {
   queryId: string;
   question: string;
   mentioned: boolean;
+  /** Question contains the firm's own name — shown but excluded from scoring. */
+  branded: boolean;
   snippets: { platform: string; snippet: string; isCitation: boolean }[];
   competitors: string[];
 }
+
+/**
+ * Scorecard written by voice-search-analysis. Scores are per MODEL ANSWER (same
+ * denominator as ai_visibility_runs) and exclude branded questions.
+ */
+interface TestAnalysis {
+  presence_score: number;
+  frequency_score: number;
+  competitive_score: number;
+  overall_score: number;
+  competitor_data: {
+    topCompetitors?: [string, number][];
+    platformBreakdown?: { platform: string; mentions: number; total: number; score: number }[];
+    scoredAnswers?: number;
+    mentionAnswers?: number;
+    brandedQuestionsExcluded?: number;
+  } | null;
+  optimization_suggestions: { priority: string; category: string; title: string; description: string; impact: number }[] | null;
+}
+
 
 export function VoiceSearchManager() {
   const { user } = useAuth();
