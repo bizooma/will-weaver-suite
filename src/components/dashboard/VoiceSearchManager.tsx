@@ -639,9 +639,16 @@ export function VoiceSearchManager() {
                 {testProgress && (
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm">
-                      <span>Test Progress</span>
+                      <span>
+                        Test Progress
+                        {/* Elapsed time keeps a long-running question looking alive. */}
+                        {startedAt !== null && (
+                          <span className="text-muted-foreground"> • {formatElapsed(elapsedSeconds)} elapsed</span>
+                        )}
+                      </span>
                       <span>{testProgress.percentage}%</span>
                     </div>
+
                     <Progress value={testProgress.percentage} className="w-full" />
                     {/* Four counters so Total = Completed + Failed + Unavailable is verifiable. */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
