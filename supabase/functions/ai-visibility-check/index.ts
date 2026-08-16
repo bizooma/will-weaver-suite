@@ -131,26 +131,32 @@ serve(async (req) => {
     const citation_count = results.filter((r) => r.isCitation).length;
     const overall_score = total > 0 ? Math.round((mention_count / total) * 100) : 0;
 
-    // Never discard insert errors: a missing INSERT policy used to fail silently
-    // here and no run was ever persisted.
-    const { data: run, error: runError } = await supabase.from("ai_visibility_runs").insert({
-      user_id: user.id, domain, prompts: limited,
-      platforms: MODELS.map((m) => m.platform),
-      total_checks: total, mention_count, citation_count, overall_score,
-    }).select().single();
+    // Analysis-only mode: return the findings without persisting anything.
+    let run: { id: string } | null = null;
+    if (persist) {
+      // Never discard insert errors: a missing INSERT policy used to fail silently
+      // here and no run was ever persisted.
+      const { data: runRow, error: runError } = await supabase.from("ai_visibility_runs").insert({
+        user_id: user.id, domain, prompts: limited,
+        platforms: MODELS.map((m) => m.platform),
+        total_checks: total, mention_count, citation_count, overall_score,
+      }).select().single();
 
-    if (runError) console.error("ai_visibility_runs insert failed:", runError);
+      if (runError) console.error("ai_visibility_runs insert failed:", runError);
+      run = runRow ?? null;
 
-    if (run) {
-      const { error: resultsError } = await supabase.from("ai_visibility_results").insert(
-        results.map((r) => ({
-          run_id: run.id, platform: r.platform, prompt: r.prompt,
-          has_mention: r.hasMention, is_citation: r.isCitation,
-          confidence: r.confidence, mention_text: r.mentionText, competitors: r.competitors,
-        }))
-      );
-      if (resultsError) console.error("ai_visibility_results insert failed:", resultsError);
+      if (run) {
+        const { error: resultsError } = await supabase.from("ai_visibility_results").insert(
+          results.map((r) => ({
+            run_id: run!.id, platform: r.platform, prompt: r.prompt,
+            has_mention: r.hasMention, is_citation: r.isCitation,
+            confidence: r.confidence, mention_text: r.mentionText, competitors: r.competitors,
+          }))
+        );
+        if (resultsError) console.error("ai_visibility_results insert failed:", resultsError);
+      }
     }
+
 
 
     return new Response(JSON.stringify({ success: true, run_id: run?.id ?? null, domain, overall_score, total_checks: total, mention_count, citation_count, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
