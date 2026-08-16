@@ -405,36 +405,54 @@ export function VoiceSearchManager() {
               </div>
 
               <div className="space-y-4">
-                <Label>Voice Assistants</Label>
+                <Label>AI Assistants & Search Engines</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {assistantOptions.map((assistant) => (
-                    <Card key={assistant.id} className="p-4 opacity-60">
-                      <div className="flex items-center space-x-3">
-                        {/* Disabled until a SERP data provider is configured. */}
-                        <Checkbox id={assistant.id} checked={false} disabled />
-                        <assistant.icon className="h-6 w-6 text-muted-foreground" />
-                        <div>
-                          <Label htmlFor={assistant.id} className="font-medium">
-                            {assistant.name}
-                          </Label>
-                          <p className="text-sm text-muted-foreground">{assistant.description}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Coming soon — requires SERP data provider
-                          </p>
+                  {assistantOptions.map((assistant) => {
+                    const checked = formData.selectedAssistants.includes(assistant.id);
+                    return (
+                      <Card key={assistant.id} className={`p-4 ${assistant.available ? "" : "opacity-60"}`}>
+                        <div className="flex items-center space-x-3">
+                          {/* Unavailable providers stay visible but locked. */}
+                          <Checkbox
+                            id={assistant.id}
+                            checked={assistant.available ? checked : false}
+                            disabled={!assistant.available}
+                            onCheckedChange={(value) => {
+                              if (!assistant.available) return;
+                              setFormData(prev => ({
+                                ...prev,
+                                selectedAssistants: value
+                                  ? [...new Set([...prev.selectedAssistants, assistant.id])]
+                                  : prev.selectedAssistants.filter(a => a !== assistant.id),
+                              }));
+                            }}
+                          />
+                          <assistant.icon className={`h-6 w-6 ${assistant.available ? "text-primary" : "text-muted-foreground"}`} />
+                          <div>
+                            <Label htmlFor={assistant.id} className="font-medium">
+                              {assistant.name}
+                            </Label>
+                            <p className="text-sm text-muted-foreground">{assistant.description}</p>
+                            {!assistant.available && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Coming soon — requires SERP data provider
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
 
               <div className="flex justify-end">
                 <Button 
                   onClick={createTest}
-                  disabled={isLoading || !formData.name || !formData.marketCity || !formData.marketState || formData.selectedAssistants.length === 0}
+                  disabled={isLoading || !formData.name || !formData.marketCity || !formData.marketState || !formData.firmDomain.trim() || formData.selectedAssistants.length === 0}
                   className="min-w-[150px]"
                 >
+
                   {isLoading ? "Creating..." : "Create Test"}
                 </Button>
               </div>
