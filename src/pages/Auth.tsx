@@ -20,6 +20,21 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [rateLimitMessage, setRateLimitMessage] = useState('');
+
+  /**
+   * Cloudflare Turnstile state.
+   * Supabase Auth CAPTCHA protection requires a single-use token on every
+   * sign-in / sign-up call. The two tab panels render independent widgets, so
+   * each keeps its own token and its own reset counter (bumping the counter
+   * forces the widget to issue a fresh token after a failed attempt).
+   */
+  const [signInToken, setSignInToken] = useState<string | null>(null);
+  const [signUpToken, setSignUpToken] = useState<string | null>(null);
+  const [signInReset, setSignInReset] = useState(0);
+  const [signUpReset, setSignUpReset] = useState(0);
+  // Set when the widget never produces a token (blocked script / offline).
+  const [signInCaptchaError, setSignInCaptchaError] = useState(false);
+  const [signUpCaptchaError, setSignUpCaptchaError] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
