@@ -292,6 +292,10 @@ export function VoiceSearchManager() {
           clearInterval(interval);
           setActiveTab("results");
           loadTests();
+          // Keep the final counts on screen (the results tab renders the same
+          // progress card) and load the per-question results.
+          setCurrentTest(prev => (prev ? { ...prev, status: data.status } : prev));
+          if (data.status !== 'unavailable') loadResults(testId);
         }
       } catch (error) {
         console.error('Error monitoring test progress:', error);
