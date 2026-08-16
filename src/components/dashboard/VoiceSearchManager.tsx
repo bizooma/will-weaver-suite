@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Smartphone, Target, TrendingUp, AlertCircle } from "lucide-react";
+import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Target, TrendingUp, AlertCircle } from "lucide-react";
 import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
@@ -77,12 +77,21 @@ export function VoiceSearchManager() {
     "Medical Malpractice"
   ];
 
+  /**
+   * Selectable providers.
+   *
+   * Siri and Alexa are intentionally absent: there is no public API that returns
+   * what those assistants would answer (SiriKit / Alexa Skills Kit only let you
+   * publish a skill), so they can never produce real data and must not be offered.
+   *
+   * Google and Bing remain listed but are disabled until a paid SERP data
+   * provider is wired up — they are genuinely buildable later.
+   */
   const assistantOptions = [
-    { id: "google", name: "Google Search", icon: Search, description: "AI Overviews & Local Pack" },
-    { id: "bing", name: "Bing Copilot", icon: MessageSquare, description: "Chat Responses & Web Results" },
-    { id: "siri", name: "Siri", icon: Smartphone, description: "Apple Maps & Business Connect" },
-    { id: "alexa", name: "Alexa", icon: Mic, description: "Skills & Local Business" }
+    { id: "google", name: "Google Search", icon: Search, description: "AI Overviews & Local Pack", available: false },
+    { id: "bing", name: "Bing Copilot", icon: MessageSquare, description: "Chat Responses & Web Results", available: false }
   ];
+
 
   const suggestedQuestions = [
     "What should I do after a car accident?",
@@ -392,35 +401,24 @@ export function VoiceSearchManager() {
                 <Label>Voice Assistants</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {assistantOptions.map((assistant) => (
-                    <Card key={assistant.id} className="p-4 hover:bg-muted/50 cursor-pointer">
+                    <Card key={assistant.id} className="p-4 opacity-60">
                       <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id={assistant.id}
-                          checked={formData.selectedAssistants.includes(assistant.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setFormData(prev => ({
-                                ...prev,
-                                selectedAssistants: [...prev.selectedAssistants, assistant.id]
-                              }));
-                            } else {
-                              setFormData(prev => ({
-                                ...prev,
-                                selectedAssistants: prev.selectedAssistants.filter(a => a !== assistant.id)
-                              }));
-                            }
-                          }}
-                        />
-                        <assistant.icon className="h-6 w-6 text-primary" />
+                        {/* Disabled until a SERP data provider is configured. */}
+                        <Checkbox id={assistant.id} checked={false} disabled />
+                        <assistant.icon className="h-6 w-6 text-muted-foreground" />
                         <div>
-                          <Label htmlFor={assistant.id} className="font-medium cursor-pointer">
+                          <Label htmlFor={assistant.id} className="font-medium">
                             {assistant.name}
                           </Label>
                           <p className="text-sm text-muted-foreground">{assistant.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Coming soon — requires SERP data provider
+                          </p>
                         </div>
                       </div>
                     </Card>
                   ))}
+
                 </div>
               </div>
 
