@@ -146,7 +146,7 @@ export function VoiceSearchManager() {
           market_zip: formData.marketZip || null,
           practice_areas: formData.practiceAreas,
           custom_practice_area: formData.customPracticeArea || null,
-          test_questions: formData.testQuestions.filter(q => q.trim()),
+          test_questions: formData.testQuestions.filter(q => q.trim()).slice(0, 8),
           selected_assistants: formData.selectedAssistants,
           settings: {
             firmDomain: formData.firmDomain,
@@ -219,10 +219,20 @@ export function VoiceSearchManager() {
     }, 2000);
   };
 
+  /**
+   * Hard cap on questions per test. ai-visibility-check runs each prompt
+   * sequentially against 2 models with a pacing delay, so more than 8 questions
+   * cannot complete inside the edge function time limit. The orchestrator
+   * enforces the same cap server-side.
+   */
+  const MAX_QUESTIONS = 8;
+
   const addTestQuestion = () => {
     setFormData(prev => ({
       ...prev,
-      testQuestions: [...prev.testQuestions, ""]
+      testQuestions: prev.testQuestions.length >= MAX_QUESTIONS
+        ? prev.testQuestions
+        : [...prev.testQuestions, ""]
     }));
   };
 
@@ -236,9 +246,12 @@ export function VoiceSearchManager() {
   const addSuggestedQuestion = (question: string) => {
     setFormData(prev => ({
       ...prev,
+      // Filtering blanks first keeps the empty starter row from eating a slot.
       testQuestions: [...prev.testQuestions.filter(q => q.trim()), question]
+        .slice(0, MAX_QUESTIONS)
     }));
   };
+
 
   return (
     <div className="p-6 space-y-6">
@@ -372,12 +385,25 @@ export function VoiceSearchManager() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label>Test Questions</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addTestQuestion}>
+                  <div>
+                    <Label>Test Questions</Label>
+                    {/* Runtime cap: 2 AI models per question, run sequentially. */}
+                    <p className="text-xs text-muted-foreground">
+                      Up to {MAX_QUESTIONS} questions per test
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addTestQuestion}
+                    disabled={formData.testQuestions.length >= MAX_QUESTIONS}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Question
                   </Button>
                 </div>
+
                 
                 {formData.testQuestions.map((question, index) => (
                   <Textarea

@@ -81,8 +81,15 @@ serve(async (req) => {
     if (test.user_id !== user.id) return json({ error: 'Forbidden' }, 403);
 
     if (action === 'start') {
-      const questions: string[] = (test.test_questions || []).filter((q: string) => q?.trim());
+      // Cap the workload: ai-visibility-check queries 2 models per prompt with a
+      // pacing delay between calls, so more than 8 questions cannot finish inside
+      // the edge function time limit. Enforced here as well as in the UI.
+      const MAX_QUESTIONS = 8;
+      const questions: string[] = (test.test_questions || [])
+        .filter((q: string) => q?.trim())
+        .slice(0, MAX_QUESTIONS);
       const assistants: string[] = test.selected_assistants || [];
+
 
       // One query row per (question, assistant) pair — unchanged contract.
       const queries = [];
@@ -222,7 +229,12 @@ serve(async (req) => {
         })();
 
         // Finalize in the background; never block the request on model latency.
-        work.then(async () => {
+        // EdgeRuntime.waitUntil keeps the isolate alive after the response is
+        // sent — without it Supabase tears the isolate down immediately and a
+        // 30s+ AI fan-out is killed mid-flight, leaving queries 'pending' and
+        // the test stuck at 'running' forever.
+        const finalize = work.then(async () => {
+
           /**
            * Gate on REAL DATA, not per-query statuses: count the rows actually
            * written to voice_search_results for this test. Zero rows means we
@@ -257,6 +269,13 @@ serve(async (req) => {
             .update({ status: 'completed' })
             .eq('id', testId);
         }).catch((e) => console.error('Finalize failed:', e));
+
+        // @ts-ignore - EdgeRuntime is provided by the Supabase edge runtime.
+        if (typeof EdgeRuntime !== 'undefined') {
+          // @ts-ignore
+          EdgeRuntime.waitUntil(finalize);
+        }
+
       }
 
       return json({
@@ -277,8 +296,30 @@ serve(async (req) => {
       const failedQueries = queries?.filter((q) => q.status === 'failed').length || 0;
       const unavailableQueries = queries?.filter((q) => q.status === 'unavailable').length || 0;
 
+      /**
+       * Stall safety net: if the isolate died mid-run (or anything else stranded
+       * the test), a 'running' test would never reach a terminal status and the
+       * UI would poll forever. Anything still 'running' after 5 minutes is dead.
+       */
+      let reportedStatus = test.status;
+      const STALE_MS = 5 * 60 * 1000;
+      const updatedAt = test.updated_at ? new Date(test.updated_at).getTime() : NaN;
+      if (
+        reportedStatus === 'running' &&
+        Number.isFinite(updatedAt) &&
+        Date.now() - updatedAt > STALE_MS
+      ) {
+        console.log(`Test ${testId} stalled in 'running'; marking failed`);
+        await supabase
+          .from('voice_search_tests')
+          .update({ status: 'failed' })
+          .eq('id', testId);
+        reportedStatus = 'failed';
+      }
+
       return json({
-        status: test.status,
+        status: reportedStatus,
+
         progress: {
           total: totalQueries,
           completed: completedQueries,
