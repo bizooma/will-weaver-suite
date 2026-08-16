@@ -166,7 +166,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: sanitizedDisplayName ? { display_name: sanitizedDisplayName } : undefined
+          data: sanitizedDisplayName ? { display_name: sanitizedDisplayName } : undefined,
+          // Single-use Turnstile token verified by Supabase Auth CAPTCHA protection.
+          captchaToken,
         }
       });
       
