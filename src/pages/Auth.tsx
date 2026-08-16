@@ -36,7 +36,22 @@ const Auth = () => {
   // Set when the widget never produces a token (blocked script / offline).
   const [signInCaptchaError, setSignInCaptchaError] = useState(false);
   const [signUpCaptchaError, setSignUpCaptchaError] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+
+  /**
+   * Forgot-password flow. Supabase Auth CAPTCHA protection also gates the
+   * recovery endpoint, so this reveal-on-click form carries its own independent
+   * Turnstile token and reset counter — it must never share the sign-in token.
+   */
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [resetSignal, setResetSignal] = useState(0);
+  const [resetSending, setResetSending] = useState(false);
+  // Neutral confirmation text — never reveals whether the address is registered.
+  const [resetSent, setResetSent] = useState(false);
+
+  const { signIn, signUp, resetPassword, user } = useAuth();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
