@@ -830,20 +830,35 @@ export function VoiceSearchManager() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-3xl font-bold text-primary">{analysis.overall_score}%</div>
-                        <div className="text-sm text-muted-foreground">Overall</div>
+                    {/* HEADLINE = presence_score only. The composite blends
+                        visibility with competitive standing, so it is never the
+                        primary number (it overstated visibility previously). */}
+                    <div>
+                      <div className="text-5xl font-bold text-primary">{analysis.presence_score}%</div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        AI Visibility — share of assistant answers that named the firm
                       </div>
-                      <div>
-                        <div className="text-3xl font-bold">{analysis.presence_score}%</div>
-                        <div className="text-sm text-muted-foreground">Presence</div>
+                      {(analysis.competitor_data?.platformBreakdown?.length ?? 0) > 0 && (
+                        <div className="text-sm font-medium mt-2 capitalize">
+                          {analysis.competitor_data!.platformBreakdown!
+                            .map((p) => `${p.platform} ${p.mentions}/${p.total}`)
+                            .join(' · ')}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Secondary, clearly labelled stats. */}
+                    <div className="flex flex-wrap gap-6 pt-2 border-t">
+                      <div title="Blends per-answer visibility with how the firm compares to the competitors detected in this run.">
+                        <div className="text-lg font-semibold">{analysis.overall_score}%</div>
+                        <div className="text-xs text-muted-foreground">Composite score (visibility + competitive standing)</div>
                       </div>
-                      <div>
-                        <div className="text-3xl font-bold">{analysis.competitive_score}%</div>
-                        <div className="text-sm text-muted-foreground">Competitive</div>
+                      <div title="How the firm's mention count compares to the average of the top 3 competitors detected.">
+                        <div className="text-lg font-semibold">{analysis.competitive_score}%</div>
+                        <div className="text-xs text-muted-foreground">Competitive standing</div>
                       </div>
                     </div>
+
 
                     {(analysis.competitor_data?.platformBreakdown?.length ?? 0) > 0 && (
                       <div>
