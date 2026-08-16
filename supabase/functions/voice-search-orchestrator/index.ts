@@ -229,7 +229,12 @@ serve(async (req) => {
         })();
 
         // Finalize in the background; never block the request on model latency.
-        work.then(async () => {
+        // EdgeRuntime.waitUntil keeps the isolate alive after the response is
+        // sent — without it Supabase tears the isolate down immediately and a
+        // 30s+ AI fan-out is killed mid-flight, leaving queries 'pending' and
+        // the test stuck at 'running' forever.
+        const finalize = work.then(async () => {
+
           /**
            * Gate on REAL DATA, not per-query statuses: count the rows actually
            * written to voice_search_results for this test. Zero rows means we
