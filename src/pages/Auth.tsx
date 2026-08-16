@@ -81,6 +81,30 @@ const Auth = () => {
     }
   }, [user]);
 
+  /**
+   * If neither widget produced a token within 12 seconds we assume the
+   * Turnstile script was blocked (ad blocker / network failure) and surface an
+   * explanation instead of leaving the submit buttons silently disabled.
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSignInCaptchaError((prev) => (signInToken ? false : true));
+      setSignUpCaptchaError((prev) => (signUpToken ? false : true));
+    }, 12000);
+    return () => clearTimeout(timer);
+    // Re-armed whenever a widget resets so a fresh challenge gets its own grace period.
+  }, [signInReset, signUpReset]);
+
+  // Clear the "could not load" notice as soon as a token arrives.
+  const handleSignInVerify = (token: string | null) => {
+    setSignInToken(token);
+    if (token) setSignInCaptchaError(false);
+  };
+  const handleSignUpVerify = (token: string | null) => {
+    setSignUpToken(token);
+    if (token) setSignUpCaptchaError(false);
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
