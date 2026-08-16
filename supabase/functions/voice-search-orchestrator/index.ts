@@ -201,7 +201,7 @@ serve(async (req) => {
           completed: completedQueries,
           failed: failedQueries,
           unavailable: unavailableQueries,
-          percentage: totalQueries > 0 ? Math.round((completedQueries + failedQueries) / totalQueries * 100) : 0
+          percentage: totalQueries > 0 ? Math.round((completedQueries + failedQueries + unavailableQueries) / totalQueries * 100) : 0
         }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
