@@ -1031,10 +1031,23 @@ export function VoiceSearchManager() {
                           {test.market_city}, {test.market_state} • {new Date(test.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant={test.status === 'completed' ? 'default' : test.status === 'running' ? 'secondary' : 'outline'}>
-                        {test.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={test.status === 'completed' ? 'default' : test.status === 'running' ? 'secondary' : 'outline'}>
+                          {test.status}
+                        </Badge>
+                        {/* Delete is blocked while a run is in progress. */}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Delete test ${test.name}`}
+                          disabled={test.status === 'running'}
+                          onClick={() => setTestToDelete(test)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
+
                     
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
