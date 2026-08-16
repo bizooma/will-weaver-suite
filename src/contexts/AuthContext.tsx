@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [user, refreshSubscription]);
 
   // --- Sign Up ---
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, captchaToken?: string) => {
     try {
       const sanitizedEmail = sanitizeEmail(email);
       const sanitizedDisplayName = displayName ? sanitizeString(displayName) : undefined;
