@@ -201,6 +201,48 @@ export function VoiceSearchManager() {
   };
 
   /**
+   * Permanently delete a test. Database foreign keys cascade the delete to the
+   * test's queries, their results and its analysis row, so one delete removes
+   * everything. A test that is still 'running' is never deletable.
+   */
+  const handleDeleteTest = async () => {
+    if (!testToDelete) return;
+    if (testToDelete.status === 'running') {
+      toast.error('This test is still running. Wait for it to finish before deleting.');
+      setTestToDelete(null);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('voice_search_tests')
+        .delete()
+        .eq('id', testToDelete.id);
+
+      // Surface the real reason rather than failing silently.
+      if (error) throw error;
+
+      // Clear any view still pointing at the deleted test.
+      if (currentTest?.id === testToDelete.id) {
+        setCurrentTest(null);
+        setQuestionResults([]);
+        setAnalysis(null);
+      }
+
+      toast.success(`Deleted "${testToDelete.name}" and all of its results.`);
+      setTestToDelete(null);
+      await loadTests();
+    } catch (error: any) {
+      console.error('Error deleting test:', error);
+      toast.error(error?.message || 'Failed to delete this test. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+
+  /**
    * Load the per-question results for a finished test. Two plain queries
    * (queries, then their results) joined in JS — RLS scopes both to the owner.
    */
