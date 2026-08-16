@@ -16,19 +16,29 @@ async function callAI(prompt: string, model: string, retries = 3): Promise<strin
   const KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!KEY) throw new Error("LOVABLE_API_KEY not configured");
   for (let attempt = 0; attempt < retries; attempt++) {
+    // gpt-5 family models reject any non-default `temperature`, which made every
+    // openai/* call fail with 400 while gemini succeeded. Omit it for openai.
+    const body: Record<string, unknown> = {
+      model,
+      messages: [{ role: "user", content: prompt }],
+    };
+    if (!model.startsWith("openai/")) body.temperature = 0.3;
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], temperature: 0.3 }),
+      body: JSON.stringify(body),
     });
     if (res.ok) {
       const data = await res.json();
       const content = data.choices?.[0]?.message?.content ?? "";
       if (content.trim()) return content;
-    } else if (res.status === 402) {
-      throw new Error("AI credits depleted");
-    } else if (res.status !== 429 && res.status < 500) {
-      throw new Error(`AI API failed: ${res.status}`);
+    } else {
+      // Always surface the gateway's body so the next failure is diagnosable.
+      const errBody = await res.text().catch(() => "<unreadable>");
+      console.error(`AI gateway error ${res.status} for ${model}:`, errBody);
+      if (res.status === 402) throw new Error("AI credits depleted");
+      if (res.status !== 429 && res.status < 500) throw new Error(`AI API failed: ${res.status}`);
     }
     await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 1000));
   }
@@ -40,24 +50,47 @@ function extractDomains(text: string): string[] {
   return [...new Set(matches.map((d) => d.toLowerCase().replace(/^www\./, "")))];
 }
 
-function analyze(response: string, domain: string, prompt: string, platform: string) {
+function escapeRe(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Pull ~200 characters either side of the first match so the UI has real
+ * evidence. The previous sentence-splitting approach split on periods, which
+ * tore domains apart and never matched.
+ */
+function contextWindow(response: string, re: RegExp): string {
+  const m = re.exec(response);
+  if (!m) return "";
+  const start = Math.max(0, m.index - 200);
+  const end = Math.min(response.length, m.index + m[0].length + 200);
+  return `${start > 0 ? "…" : ""}${response.slice(start, end).trim()}${end < response.length ? "…" : ""}`;
+}
+
+function analyze(response: string, domain: string, prompt: string, platform: string, businessName?: string) {
   const clean = domain.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
-  const esc = clean.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const domainRe = new RegExp(esc, "i");
+  const esc = escapeRe(clean);
+  const name = (businessName || "").trim();
+  // Match either the domain OR the firm's business name — models normally write
+  // the name in prose rather than the URL.
+  const mentionRe = name
+    ? new RegExp(`${esc}|${escapeRe(name)}`, "i")
+    : new RegExp(esc, "i");
   const competitors = extractDomains(response).filter((d) => !d.includes(clean) && !clean.includes(d));
-  const mentioned = domainRe.test(response);
+  const mentioned = mentionRe.test(response);
   const isCitation = new RegExp(`https?:\\/\\/[^\\s)]*${esc}`, "i").test(response);
-  const sentence = response.split(/[.!?]+/).find((s) => domainRe.test(s)) ?? "";
+  const evidence = mentioned ? contextWindow(response, mentionRe) : "";
   return {
     platform,
     prompt,
     hasMention: mentioned,
     isCitation,
     confidence: mentioned ? (isCitation ? 1.0 : 0.8) : 0,
-    mentionText: (mentioned ? sentence : response).trim().slice(0, 500),
+    mentionText: (evidence || response).trim().slice(0, 500),
     competitors: competitors.slice(0, 10),
   };
 }
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
