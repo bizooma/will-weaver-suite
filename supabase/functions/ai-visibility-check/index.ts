@@ -103,9 +103,15 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { domain, prompts, businessName } = await req.json();
+    // `persist` (default true) controls whether this call writes its own
+    // ai_visibility_runs / ai_visibility_results rows. The voice-search
+    // orchestrator now calls this function once PER QUESTION so progress can be
+    // reported incrementally, and passes persist: false so we don't create one
+    // run row per question — it writes a single aggregate run itself afterwards.
+    const { domain, prompts, businessName, persist = true } = await req.json();
     if (!domain || !Array.isArray(prompts) || prompts.length === 0) throw new Error("domain and prompts[] are required");
     const limited = prompts.slice(0, MAX_PROMPTS);
+
 
     const results = [];
     for (const p of limited) {
@@ -125,26 +131,32 @@ serve(async (req) => {
     const citation_count = results.filter((r) => r.isCitation).length;
     const overall_score = total > 0 ? Math.round((mention_count / total) * 100) : 0;
 
-    // Never discard insert errors: a missing INSERT policy used to fail silently
-    // here and no run was ever persisted.
-    const { data: run, error: runError } = await supabase.from("ai_visibility_runs").insert({
-      user_id: user.id, domain, prompts: limited,
-      platforms: MODELS.map((m) => m.platform),
-      total_checks: total, mention_count, citation_count, overall_score,
-    }).select().single();
+    // Analysis-only mode: return the findings without persisting anything.
+    let run: { id: string } | null = null;
+    if (persist) {
+      // Never discard insert errors: a missing INSERT policy used to fail silently
+      // here and no run was ever persisted.
+      const { data: runRow, error: runError } = await supabase.from("ai_visibility_runs").insert({
+        user_id: user.id, domain, prompts: limited,
+        platforms: MODELS.map((m) => m.platform),
+        total_checks: total, mention_count, citation_count, overall_score,
+      }).select().single();
 
-    if (runError) console.error("ai_visibility_runs insert failed:", runError);
+      if (runError) console.error("ai_visibility_runs insert failed:", runError);
+      run = runRow ?? null;
 
-    if (run) {
-      const { error: resultsError } = await supabase.from("ai_visibility_results").insert(
-        results.map((r) => ({
-          run_id: run.id, platform: r.platform, prompt: r.prompt,
-          has_mention: r.hasMention, is_citation: r.isCitation,
-          confidence: r.confidence, mention_text: r.mentionText, competitors: r.competitors,
-        }))
-      );
-      if (resultsError) console.error("ai_visibility_results insert failed:", resultsError);
+      if (run) {
+        const { error: resultsError } = await supabase.from("ai_visibility_results").insert(
+          results.map((r) => ({
+            run_id: run!.id, platform: r.platform, prompt: r.prompt,
+            has_mention: r.hasMention, is_citation: r.isCitation,
+            confidence: r.confidence, mention_text: r.mentionText, competitors: r.competitors,
+          }))
+        );
+        if (resultsError) console.error("ai_visibility_results insert failed:", resultsError);
+      }
     }
+
 
 
     return new Response(JSON.stringify({ success: true, run_id: run?.id ?? null, domain, overall_score, total_checks: total, mention_count, citation_count, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

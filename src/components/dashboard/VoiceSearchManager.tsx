@@ -65,6 +65,24 @@ export function VoiceSearchManager() {
   // Per-question results for the currently selected test (results tab).
   const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
+  // True while the 'start' request is in flight — blocks a double click.
+  const [isStarting, setIsStarting] = useState(false);
+  // Wall-clock start of the current run; drives the elapsed-time readout so a
+  // slow step still looks alive next to the percentage.
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Tick the elapsed counter once a second while a run is in progress.
+  useEffect(() => {
+    if (startedAt === null) return;
+    const t = setInterval(() => setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [startedAt]);
+
+  /** mm:ss formatting for the elapsed readout. */
+  const formatElapsed = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
 
   // Form state
   const [formData, setFormData] = useState({
@@ -252,7 +270,17 @@ export function VoiceSearchManager() {
   };
 
   const startTest = async (testId: string) => {
-    setIsLoading(true);
+    // Guard the double click on the client too: the orchestrator answers 409 for
+    // an already-running test, but we should never even send the second request.
+    if (isStarting || currentTest?.status === 'running') return;
+    setIsStarting(true);
+    // Show the progress card immediately instead of waiting for the first poll.
+    setTestProgress({ total: 0, completed: 0, failed: 0, unavailable: 0, percentage: 0 });
+    setElapsedSeconds(0);
+    setStartedAt(Date.now());
+    setCurrentTest(prev => (prev ? { ...prev, status: 'running' } : prev));
+    setQuestionResults(null);
+
     try {
       const { data, error } = await invoke('voice-search-orchestrator', {
         body: {
@@ -263,13 +291,17 @@ export function VoiceSearchManager() {
 
       if (error) throw error;
 
-      toast.success('Voice search test started');
+      toast.success('AI search visibility test started');
       monitorTestProgress(testId);
     } catch (error) {
       console.error('Error starting test:', error);
-      toast.error('Failed to start voice search test');
+      toast.error('Failed to start test — it may already be running');
+      // Roll back the optimistic 'running' state so the button comes back.
+      setCurrentTest(prev => (prev ? { ...prev, status: 'pending' } : prev));
+      setTestProgress(null);
+      setStartedAt(null);
     } finally {
-      setIsLoading(false);
+      setIsStarting(false);
     }
   };
 
@@ -290,6 +322,7 @@ export function VoiceSearchManager() {
         // 'unavailable' means no provider returned live data — stop polling too.
         if (data.status === 'completed' || data.status === 'failed' || data.status === 'unavailable') {
           clearInterval(interval);
+          setStartedAt(null);
           setActiveTab("results");
           loadTests();
           // Keep the final counts on screen (the results tab renders the same
@@ -300,9 +333,11 @@ export function VoiceSearchManager() {
       } catch (error) {
         console.error('Error monitoring test progress:', error);
         clearInterval(interval);
+        setStartedAt(null);
       }
     }, 2000);
   };
+
 
   /**
    * Hard cap on questions per test. ai-visibility-check runs each prompt
@@ -604,9 +639,16 @@ export function VoiceSearchManager() {
                 {testProgress && (
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm">
-                      <span>Test Progress</span>
+                      <span>
+                        Test Progress
+                        {/* Elapsed time keeps a long-running question looking alive. */}
+                        {startedAt !== null && (
+                          <span className="text-muted-foreground"> • {formatElapsed(elapsedSeconds)} elapsed</span>
+                        )}
+                      </span>
                       <span>{testProgress.percentage}%</span>
                     </div>
+
                     <Progress value={testProgress.percentage} className="w-full" />
                     {/* Four counters so Total = Completed + Failed + Unavailable is verifiable. */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -634,14 +676,17 @@ export function VoiceSearchManager() {
                 {currentTest.status === 'pending' && (
                   <Button 
                     onClick={() => startTest(currentTest.id)}
-                    disabled={isLoading}
+                    // Disabled while the start request is in flight or the test
+                    // is already running — prevents duplicate query row sets.
+                    disabled={isStarting || currentTest.status !== 'pending'}
                     className="w-full"
                     size="lg"
                   >
                     <Play className="h-5 w-5 mr-2" />
-                    {isLoading ? "Starting Test..." : "Start Voice Search Test"}
+                    {isStarting ? "Starting Test..." : "Start Voice Search Test"}
                   </Button>
                 )}
+
 
                 {currentTest.status === 'running' && (
                   <div className="text-center py-8">
