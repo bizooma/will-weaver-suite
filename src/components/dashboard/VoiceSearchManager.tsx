@@ -107,6 +107,11 @@ export function VoiceSearchManager() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
+  // Test History delete flow: the test awaiting confirmation, and in-flight flag.
+  const [testToDelete, setTestToDelete] = useState<VoiceSearchTest | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+
   // Tick the elapsed counter once a second while a run is in progress.
   useEffect(() => {
     if (startedAt === null) return;
