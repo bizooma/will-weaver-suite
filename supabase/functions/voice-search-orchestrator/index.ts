@@ -141,13 +141,22 @@ serve(async (req) => {
         });
 
         // Don't await in the request path; finalize the test in the background.
-        Promise.all(processPromises).then(async (statuses) => {
-          const allUnavailable =
-            statuses.length > 0 && statuses.every((s) => s === 'unavailable');
+        Promise.all(processPromises).then(async () => {
+          /**
+           * Gate on REAL DATA, not per-query statuses. A provider call that throws is
+           * marked 'failed' rather than 'unavailable', so a status-based check could
+           * pass while zero result rows exist — analysis would then divide by zero.
+           * Count the rows actually written to voice_search_results for this test.
+           */
+          const queryIds = createdQueries.map((q) => q.id);
+          const { count: resultCount } = await supabase
+            .from('voice_search_results')
+            .select('id', { count: 'exact', head: true })
+            .in('query_id', queryIds);
 
-          if (allUnavailable) {
+          if (!resultCount || resultCount === 0) {
             // Nothing real was collected — never score or report on empty data.
-            console.log(`Test ${testId} had no available providers; marking unavailable`);
+            console.log(`Test ${testId} produced 0 result rows; marking unavailable`);
             await supabase
               .from('voice_search_tests')
               .update({ status: 'unavailable' })
@@ -164,6 +173,7 @@ serve(async (req) => {
             .update({ status: 'completed' })
             .eq('id', testId);
         });
+
       }
 
       return new Response(JSON.stringify({ 
