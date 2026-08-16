@@ -833,7 +833,16 @@ export function VoiceSearchManager() {
 
                     {test.status === 'completed' && (
                       <div className="mt-4 flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // Load this historical test's per-question results.
+                            setCurrentTest(test);
+                            setActiveTab("results");
+                            loadResults(test.id);
+                          }}
+                        >
                           <BarChart3 className="h-4 w-4 mr-2" />
                           View Results
                         </Button>
