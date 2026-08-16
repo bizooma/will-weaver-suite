@@ -188,7 +188,8 @@ export function VoiceSearchManager() {
 
         setTestProgress(data.progress);
 
-        if (data.status === 'completed' || data.status === 'failed') {
+        // 'unavailable' means no provider returned live data — stop polling too.
+        if (data.status === 'completed' || data.status === 'failed' || data.status === 'unavailable') {
           clearInterval(interval);
           setActiveTab("results");
           loadTests();
