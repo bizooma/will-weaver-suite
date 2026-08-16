@@ -595,6 +595,13 @@ export function VoiceSearchManager() {
                         </Button>
                       </div>
                     )}
+
+                    {/* No live provider data: show a plain notice, never a score or export. */}
+                    {test.status === 'unavailable' && (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Live voice assistant data is not currently available. No results were generated for this test.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
