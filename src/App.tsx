@@ -23,6 +23,8 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import CookiePolicy from "./pages/CookiePolicy";
@@ -73,6 +75,9 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
+        {/* Public route: Supabase recovery links land here with a session in the URL fragment */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
           <Route path="/dashboard/*" element={
             <ProtectedRoute>
               <Dashboard />
