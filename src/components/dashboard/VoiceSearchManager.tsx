@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Smartphone, Target, TrendingUp } from "lucide-react";
+import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Smartphone, Target, TrendingUp, AlertCircle } from "lucide-react";
 import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
@@ -188,7 +188,8 @@ export function VoiceSearchManager() {
 
         setTestProgress(data.progress);
 
-        if (data.status === 'completed' || data.status === 'failed') {
+        // 'unavailable' means no provider returned live data — stop polling too.
+        if (data.status === 'completed' || data.status === 'failed' || data.status === 'unavailable') {
           clearInterval(interval);
           setActiveTab("results");
           loadTests();
@@ -509,16 +510,30 @@ export function VoiceSearchManager() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-6">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
-              <p className="text-muted-foreground">
-                Detailed analysis and recommendations will appear here after your test completes.
-              </p>
-            </CardContent>
-          </Card>
+          {/* When a test ends as 'unavailable', no live provider data was collected.
+              We must never show scores, charts, or a results table in that case. */}
+          {currentTest?.status === 'unavailable' ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Live voice assistant data is not currently available. No results were generated for this test.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
+                <p className="text-muted-foreground">
+                  Detailed analysis and recommendations will appear here after your test completes.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
+
 
         <TabsContent value="history" className="space-y-6">
           {tests.length > 0 ? (
@@ -579,6 +594,13 @@ export function VoiceSearchManager() {
                           Export Report
                         </Button>
                       </div>
+                    )}
+
+                    {/* No live provider data: show a plain notice, never a score or export. */}
+                    {test.status === 'unavailable' && (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Live voice assistant data is not currently available. No results were generated for this test.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
