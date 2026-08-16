@@ -81,8 +81,15 @@ serve(async (req) => {
     if (test.user_id !== user.id) return json({ error: 'Forbidden' }, 403);
 
     if (action === 'start') {
-      const questions: string[] = (test.test_questions || []).filter((q: string) => q?.trim());
+      // Cap the workload: ai-visibility-check queries 2 models per prompt with a
+      // pacing delay between calls, so more than 8 questions cannot finish inside
+      // the edge function time limit. Enforced here as well as in the UI.
+      const MAX_QUESTIONS = 8;
+      const questions: string[] = (test.test_questions || [])
+        .filter((q: string) => q?.trim())
+        .slice(0, MAX_QUESTIONS);
       const assistants: string[] = test.selected_assistants || [];
+
 
       // One query row per (question, assistant) pair — unchanged contract.
       const queries = [];
