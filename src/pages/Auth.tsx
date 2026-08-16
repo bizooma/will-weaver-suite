@@ -254,7 +254,9 @@ const Auth = () => {
                 </Button>
               </form>
 
-              {/* Forgot password: reveals its own email field + its own Turnstile widget */}
+              {/* Forgot password: reveals its own email field + its own Turnstile widget.
+                  While open, the sign-in form (and its Turnstile widget) is hidden so
+                  only one security widget is visible at a time. */}
               <div className="mt-4 border-t pt-4">
                 {!showForgot ? (
                   <button
@@ -285,17 +287,23 @@ const Auth = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleForgotPassword} className="space-y-3">
+                    {/* Section heading — distinct from the field label below */}
+                    <h3 className="text-base font-semibold">Reset your password</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="reset-email">Reset your password</Label>
+                      <Label htmlFor="reset-email">Email address</Label>
                       <Input
                         id="reset-email"
                         type="email"
-                        placeholder="you@lawfirm.com"
+                        placeholder="name@example.com"
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         maxLength={SECURITY_CONFIG.INPUT_LIMITS.EMAIL_MAX_LENGTH}
                         required
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the email address you signed up with. We'll send a link to reset
+                        your password.
+                      </p>
                     </div>
                     {/* Independent token: Supabase CAPTCHA also gates the recovery endpoint */}
                     <TurnstileWidget onVerify={setResetToken} resetSignal={resetSignal} />
