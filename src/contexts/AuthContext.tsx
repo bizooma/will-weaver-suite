@@ -201,7 +201,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error: new Error(errorMessage) };
       }
 
-      const { error } = await supabase.auth.signInWithPassword({ email: sanitizedEmail, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password,
+        // Single-use Turnstile token verified by Supabase Auth CAPTCHA protection.
+        options: { captchaToken },
+      });
       
       if (error) {
         logger.warn('Sign in failed', { email: sanitizedEmail, error: error.message });
