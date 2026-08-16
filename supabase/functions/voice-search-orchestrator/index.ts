@@ -301,7 +301,11 @@ serve(async (req) => {
                 total_checks: totalChecks,
                 mention_count: mentionCount,
                 citation_count: citationCount,
-                overall_score: Math.round((mentionCount / totalChecks) * 100),
+                // Same formula as voice_search_analysis.presence_score.
+                overall_score: totalChecks > 0
+                  ? Math.round((mentionCount / totalChecks) * 100)
+                  : 0,
+                excluded_branded: excludedBranded,
               })
               .select()
               .single();
