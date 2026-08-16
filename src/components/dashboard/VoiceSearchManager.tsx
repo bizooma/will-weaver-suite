@@ -40,6 +40,19 @@ interface TestProgress {
   percentage: number;
 }
 
+/**
+ * One row of the results view: a test question, whether the firm was mentioned
+ * in any assistant's answer, the evidence snippets (one per platform) and the
+ * competitor names the assistants surfaced instead.
+ */
+interface QuestionResult {
+  queryId: string;
+  question: string;
+  mentioned: boolean;
+  snippets: { platform: string; snippet: string; isCitation: boolean }[];
+  competitors: string[];
+}
+
 export function VoiceSearchManager() {
   const { user } = useAuth();
   const supabase = useDemoSupabase();
