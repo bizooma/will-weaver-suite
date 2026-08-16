@@ -216,6 +216,27 @@ export function VoiceSearchManager() {
         rows = results || [];
       }
 
+      // Latest scorecard for this test (per-model-answer scoring).
+      const { data: analysisRow } = await supabase
+        .from('voice_search_analysis')
+        .select('presence_score, frequency_score, competitive_score, overall_score, competitor_data, optimization_suggestions')
+        .eq('test_id', testId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setAnalysis((analysisRow as unknown as TestAnalysis) ?? null);
+
+      // The firm's own name: questions containing it are branded queries and are
+      // excluded from the score by voice-search-analysis.
+      const { data: testRow } = await supabase
+        .from('voice_search_tests')
+        .select('settings')
+        .eq('id', testId)
+        .maybeSingle();
+      const businessName = String(
+        ((testRow?.settings || {}) as Record<string, unknown>).firmBusinessName || ''
+      ).trim();
+
       const mapped: QuestionResult[] = (queries || []).map((q: any) => {
         const matching = rows.filter((r) => r.query_id === q.id);
         const snippets = matching.flatMap((r) =>
@@ -240,12 +261,15 @@ export function VoiceSearchManager() {
           question: q.question,
           // ai_overview_text is only written when a mention was detected.
           mentioned: matching.some((r) => !!r.ai_overview_text),
+          branded: !!businessName &&
+            String(q.question || '').toLowerCase().includes(businessName.toLowerCase()),
           snippets,
           competitors,
         };
       });
 
       setQuestionResults(mapped);
+
     } catch (error) {
       console.error('Error loading results:', error);
       toast.error('Failed to load test results');
