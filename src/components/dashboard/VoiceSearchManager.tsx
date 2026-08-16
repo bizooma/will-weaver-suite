@@ -245,10 +245,11 @@ export function VoiceSearchManager() {
       <div className="flex items-center gap-3">
         <Mic className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">Voice Search Simulator</h1>
+          <h1 className="text-3xl font-bold">AI Search Visibility</h1>
           <p className="text-muted-foreground">
-            Test how Google, Bing, Siri, and Alexa respond to legal queries in your market
+            See whether ChatGPT and Gemini recommend your law firm when prospective clients ask legal questions in your market
           </p>
+
         </div>
       </div>
 
