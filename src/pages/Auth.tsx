@@ -219,42 +219,50 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    maxLength={SECURITY_CONFIG.INPUT_LIMITS.EMAIL_MAX_LENGTH}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <PasswordInput
-                    id="signin-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={SECURITY_CONFIG.INPUT_LIMITS.PASSWORD_MIN_LENGTH}
-                    required
-                  />
-                </div>
-                {/* Cloudflare Turnstile — token is required by Supabase Auth CAPTCHA protection */}
-                <TurnstileWidget onVerify={handleSignInVerify} resetSignal={signInReset} />
-                {signInCaptchaError && (
-                  <p className="text-sm text-destructive">
-                    The security check could not load. Please disable any ad blocker or privacy
-                    extension, check your connection, and reload the page to try again.
-                  </p>
-                )}
-                <Button type="submit" className="w-full" disabled={loading || !signInToken}>
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </form>
+              {/* Sign-in form is hidden while the "Forgot password?" panel is open so
+                  only one Turnstile widget is ever visible at a time. The forgot-password
+                  link/panel renders below in the same TabsContent. */}
+              {!showForgot && (
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      maxLength={SECURITY_CONFIG.INPUT_LIMITS.EMAIL_MAX_LENGTH}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">Password</Label>
+                    <PasswordInput
+                      id="signin-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      minLength={SECURITY_CONFIG.INPUT_LIMITS.PASSWORD_MIN_LENGTH}
+                      required
+                    />
+                  </div>
+                  {/* Cloudflare Turnstile — token is required by Supabase Auth CAPTCHA protection */}
+                  <TurnstileWidget onVerify={handleSignInVerify} resetSignal={signInReset} />
+                  {signInCaptchaError && (
+                    <p className="text-sm text-destructive">
+                      The security check could not load. Please disable any ad blocker or privacy
+                      extension, check your connection, and reload the page to try again.
+                    </p>
+                  )}
+                  <Button type="submit" className="w-full" disabled={loading || !signInToken}>
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </form>
+              )}
 
-              {/* Forgot password: reveals its own email field + its own Turnstile widget */}
+
+              {/* Forgot password: reveals its own email field + its own Turnstile widget.
+                  While open, the sign-in form (and its Turnstile widget) is hidden so
+                  only one security widget is visible at a time. */}
               <div className="mt-4 border-t pt-4">
                 {!showForgot ? (
                   <button
@@ -285,17 +293,23 @@ const Auth = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleForgotPassword} className="space-y-3">
+                    {/* Section heading — distinct from the field label below */}
+                    <h3 className="text-base font-semibold">Reset your password</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="reset-email">Reset your password</Label>
+                      <Label htmlFor="reset-email">Email address</Label>
                       <Input
                         id="reset-email"
                         type="email"
-                        placeholder="you@lawfirm.com"
+                        placeholder="name@example.com"
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         maxLength={SECURITY_CONFIG.INPUT_LIMITS.EMAIL_MAX_LENGTH}
                         required
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the email address you signed up with. We'll send a link to reset
+                        your password.
+                      </p>
                     </div>
                     {/* Independent token: Supabase CAPTCHA also gates the recovery endpoint */}
                     <TurnstileWidget onVerify={setResetToken} resetSignal={resetSignal} />
