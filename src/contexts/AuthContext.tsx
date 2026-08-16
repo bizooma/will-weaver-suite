@@ -232,7 +232,72 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  /**
+   * --- Reset Password (request) ---
+   * Sends a recovery link that lands on /reset-password. The response is
+   * intentionally uniform: callers must not learn whether the address exists.
+   */
+  const resetPassword = async (email: string, captchaToken?: string) => {
+    try {
+      const sanitizedEmail = sanitizeEmail(email);
+      const emailCheck = signInSchema.shape.email.safeParse(sanitizedEmail);
+      if (!emailCheck.success) {
+        const errorMessage = emailCheck.error.errors[0]?.message || 'Invalid email';
+        toast({ title: 'Validation Error', description: errorMessage, variant: 'destructive' });
+        return { error: new Error(errorMessage) };
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
+        // Must match the Supabase redirect allow-list entry exactly.
+        redirectTo: `${window.location.origin}/reset-password`,
+        // Single-use Turnstile token verified by Supabase Auth CAPTCHA protection.
+        captchaToken,
+      });
+
+      if (error) {
+        logger.warn('Password reset request failed', { error: error.message });
+      } else {
+        logger.info('Password reset email requested');
+      }
+      return { error };
+    } catch (error: any) {
+      logger.error('Unexpected password reset error', error);
+      return { error };
+    }
+  };
+
+  /**
+   * --- Update Password ---
+   * Used by /reset-password once the recovery session is active. Password rules
+   * are reused from the existing sign-up schema so they never drift apart.
+   */
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const passwordCheck = signUpSchema.shape.password.safeParse(newPassword);
+      if (!passwordCheck.success) {
+        const errorMessage = passwordCheck.error.errors[0]?.message || 'Invalid password';
+        toast({ title: 'Validation Error', description: errorMessage, variant: 'destructive' });
+        return { error: new Error(errorMessage) };
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        logger.warn('Password update failed', { error: error.message });
+        toast({ title: 'Could not update password', description: error.message, variant: 'destructive' });
+      } else {
+        logger.info('Password updated successfully');
+        toast({ title: 'Password updated', description: 'You can now use your new password.' });
+      }
+      return { error };
+    } catch (error: any) {
+      logger.error('Unexpected password update error', error);
+      toast({ title: 'An error occurred', description: 'Please try again later.', variant: 'destructive' });
+      return { error };
+    }
+  };
+
   // --- Sign Out ---
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
