@@ -126,9 +126,23 @@ serve(async (req) => {
       }
     }
 
-    const total = results.length;
-    const mention_count = results.filter((r) => r.hasMention).length;
-    const citation_count = results.filter((r) => r.isCitation).length;
+    /**
+     * BRANDED PROMPTS ARE EXCLUDED FROM SCORING — identical rule to
+     * voice-search-analysis, so the two stores can no longer disagree (50 vs 58).
+     * A prompt containing the firm's own name guarantees the name appears in the
+     * answer, which measures nothing. The result row is still returned/persisted;
+     * it just never enters any denominator.
+     */
+    const brandName = (businessName || "").trim().toLowerCase();
+    const isBranded = (prompt: string) =>
+      !!brandName && prompt.toLowerCase().includes(brandName);
+
+    const scored = results.filter((r) => !isBranded(r.prompt));
+    const excluded_branded = results.length - scored.length;
+
+    const total = scored.length;
+    const mention_count = scored.filter((r) => r.hasMention).length;
+    const citation_count = scored.filter((r) => r.isCitation).length;
     const overall_score = total > 0 ? Math.round((mention_count / total) * 100) : 0;
 
     // Analysis-only mode: return the findings without persisting anything.
@@ -140,6 +154,7 @@ serve(async (req) => {
         user_id: user.id, domain, prompts: limited,
         platforms: MODELS.map((m) => m.platform),
         total_checks: total, mention_count, citation_count, overall_score,
+        excluded_branded,
       }).select().single();
 
       if (runError) console.error("ai_visibility_runs insert failed:", runError);
