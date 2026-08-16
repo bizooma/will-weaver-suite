@@ -385,12 +385,25 @@ export function VoiceSearchManager() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label>Test Questions</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addTestQuestion}>
+                  <div>
+                    <Label>Test Questions</Label>
+                    {/* Runtime cap: 2 AI models per question, run sequentially. */}
+                    <p className="text-xs text-muted-foreground">
+                      Up to {MAX_QUESTIONS} questions per test
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addTestQuestion}
+                    disabled={formData.testQuestions.length >= MAX_QUESTIONS}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Question
                   </Button>
                 </div>
+
                 
                 {formData.testQuestions.map((question, index) => (
                   <Textarea
