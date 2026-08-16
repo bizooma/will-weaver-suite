@@ -219,10 +219,20 @@ export function VoiceSearchManager() {
     }, 2000);
   };
 
+  /**
+   * Hard cap on questions per test. ai-visibility-check runs each prompt
+   * sequentially against 2 models with a pacing delay, so more than 8 questions
+   * cannot complete inside the edge function time limit. The orchestrator
+   * enforces the same cap server-side.
+   */
+  const MAX_QUESTIONS = 8;
+
   const addTestQuestion = () => {
     setFormData(prev => ({
       ...prev,
-      testQuestions: [...prev.testQuestions, ""]
+      testQuestions: prev.testQuestions.length >= MAX_QUESTIONS
+        ? prev.testQuestions
+        : [...prev.testQuestions, ""]
     }));
   };
 
@@ -236,9 +246,12 @@ export function VoiceSearchManager() {
   const addSuggestedQuestion = (question: string) => {
     setFormData(prev => ({
       ...prev,
+      // Filtering blanks first keeps the empty starter row from eating a slot.
       testQuestions: [...prev.testQuestions.filter(q => q.trim()), question]
+        .slice(0, MAX_QUESTIONS)
     }));
   };
+
 
   return (
     <div className="p-6 space-y-6">
