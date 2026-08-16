@@ -253,7 +253,74 @@ const Auth = () => {
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
+
+              {/* Forgot password: reveals its own email field + its own Turnstile widget */}
+              <div className="mt-4 border-t pt-4">
+                {!showForgot ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgot(true)}
+                    className="text-sm text-primary underline underline-offset-4 hover:no-underline"
+                  >
+                    Forgot password?
+                  </button>
+                ) : resetSent ? (
+                  // Neutral message — deliberately does not confirm the account exists.
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      If an account exists for that email, we've sent a reset link. Please check
+                      your inbox and spam folder.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetSent(false);
+                        setShowForgot(false);
+                        setResetEmail('');
+                      }}
+                      className="text-sm text-primary underline underline-offset-4 hover:no-underline"
+                    >
+                      Back to sign in
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Reset your password</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="you@lawfirm.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        maxLength={SECURITY_CONFIG.INPUT_LIMITS.EMAIL_MAX_LENGTH}
+                        required
+                      />
+                    </div>
+                    {/* Independent token: Supabase CAPTCHA also gates the recovery endpoint */}
+                    <TurnstileWidget onVerify={setResetToken} resetSignal={resetSignal} />
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={resetSending || !resetToken}
+                      >
+                        {resetSending ? 'Sending…' : 'Send reset link'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setShowForgot(false)}
+                        disabled={resetSending}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </div>
             </TabsContent>
+
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
