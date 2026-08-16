@@ -276,9 +276,20 @@ serve(async (req) => {
 
           // ---- Single aggregate AI visibility run for the whole test ----
           if (allFindings.length > 0) {
-            const totalChecks = allFindings.length;
-            const mentionCount = allFindings.filter((r) => r.hasMention).length;
-            const citationCount = allFindings.filter((r) => r.isCitation).length;
+            // Branded prompts (those containing the firm's business name) are
+            // GUARANTEED to surface the name, so they inflate visibility. Use the
+            // identical rule voice-search-analysis uses: score over non-branded
+            // model answers only, while still storing every finding.
+            const nameLower = businessName.toLowerCase();
+            const isBranded = (r: any) =>
+              !!nameLower && String(r.prompt || '').toLowerCase().includes(nameLower);
+
+            const scored = allFindings.filter((r) => !isBranded(r));
+            const excludedBranded = allFindings.length - scored.length;
+
+            const totalChecks = scored.length;
+            const mentionCount = scored.filter((r) => r.hasMention).length;
+            const citationCount = scored.filter((r) => r.isCitation).length;
 
             const { data: runRow, error: runError } = await supabase
               .from('ai_visibility_runs')
