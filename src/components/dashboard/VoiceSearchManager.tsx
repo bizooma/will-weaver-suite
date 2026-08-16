@@ -1159,6 +1159,5 @@ export function VoiceSearchManager() {
       </AlertDialog>
     </div>
 
-    </div>
   );
 }
