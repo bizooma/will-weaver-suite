@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { signUpSchema, signInSchema, sanitizeEmail, sanitizeString } from '@/lib/validation';
+
 import { logger } from '@/lib/logger';
 import { getTierByProductId, SUBSCRIPTION_TIERS } from '@/lib/subscriptionTiers';
 
