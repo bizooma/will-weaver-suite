@@ -161,7 +161,7 @@ serve(async (req) => {
                 Authorization: authHeader,
                 apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
               },
-              body: JSON.stringify({ domain, prompts }),
+              body: JSON.stringify({ domain, businessName, prompts }),
             },
           );
 
