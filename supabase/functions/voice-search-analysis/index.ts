@@ -246,17 +246,18 @@ function extractCompetitors(result: any): string[] {
 }
 
 /**
- * How the firm stacks up against the most frequently surfaced real competitor.
- * Purely derived from the counts observed in this run.
+ * How the firm stacks up against the AVERAGE of the top 3 real competitors.
+ * Comparing only against the single top competitor made 100 trivially easy to
+ * hit (a bare tie scored 100) and inflated the composite. The 0.8 factor means
+ * matching the average earns 80, not a perfect score.
+ *
+ * No competitors detected => 0: we learned nothing, which is not dominance.
  */
 function calculateCompetitiveScore(firmMentions: number, topCompetitors: [string, number][]): number {
-  if (topCompetitors.length === 0) return firmMentions > 0 ? 100 : 0;
+  if (topCompetitors.length === 0) return 0;
 
-  const topCompetitorMentions = topCompetitors[0][1];
-  if (firmMentions >= topCompetitorMentions) return 100;
-  if (firmMentions === 0) return 0;
-
-  return Math.round((firmMentions / topCompetitorMentions) * 100);
+  const avg = topCompetitors.reduce((sum, [, c]) => sum + c, 0) / topCompetitors.length;
+  return Math.round(Math.min(100, (firmMentions / Math.max(1, avg)) * 80));
 }
 
 /**
