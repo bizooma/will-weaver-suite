@@ -38,13 +38,21 @@ serve(async (req) => {
         ).data?.map(q => q.id) || []
       );
 
-    if (!results) {
-      throw new Error('No results found for analysis');
+    /**
+     * Second line of defense: never analyze an empty result set. Scoring divides by
+     * results.length, which would yield NaN and persist meaningless numbers.
+     */
+    if (!results || results.length === 0) {
+      console.log(`No results for test ${testId}; skipping analysis`);
+      return new Response(JSON.stringify({ skipped: true, reason: 'no_results' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // Calculate presence score
     let presenceCount = 0;
     let totalQueries = results.length;
+
 
     // Calculate frequency score
     let mentionCount = 0;
