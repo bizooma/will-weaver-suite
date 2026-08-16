@@ -9,7 +9,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Target, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Target, TrendingUp, AlertCircle, Trash2 } from "lucide-react";
 import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
@@ -96,6 +106,11 @@ export function VoiceSearchManager() {
   // slow step still looks alive next to the percentage.
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Test History delete flow: the test awaiting confirmation, and in-flight flag.
+  const [testToDelete, setTestToDelete] = useState<VoiceSearchTest | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   // Tick the elapsed counter once a second while a run is in progress.
   useEffect(() => {
@@ -189,6 +204,48 @@ export function VoiceSearchManager() {
       toast.error('Failed to load voice search tests');
     }
   };
+
+  /**
+   * Permanently delete a test. Database foreign keys cascade the delete to the
+   * test's queries, their results and its analysis row, so one delete removes
+   * everything. A test that is still 'running' is never deletable.
+   */
+  const handleDeleteTest = async () => {
+    if (!testToDelete) return;
+    if (testToDelete.status === 'running') {
+      toast.error('This test is still running. Wait for it to finish before deleting.');
+      setTestToDelete(null);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('voice_search_tests')
+        .delete()
+        .eq('id', testToDelete.id);
+
+      // Surface the real reason rather than failing silently.
+      if (error) throw error;
+
+      // Clear any view still pointing at the deleted test.
+      if (currentTest?.id === testToDelete.id) {
+        setCurrentTest(null);
+        setQuestionResults([]);
+        setAnalysis(null);
+      }
+
+      toast.success(`Deleted "${testToDelete.name}" and all of its results.`);
+      setTestToDelete(null);
+      await loadTests();
+    } catch (error: any) {
+      console.error('Error deleting test:', error);
+      toast.error(error?.message || 'Failed to delete this test. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   /**
    * Load the per-question results for a finished test. Two plain queries
@@ -974,10 +1031,23 @@ export function VoiceSearchManager() {
                           {test.market_city}, {test.market_state} • {new Date(test.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge variant={test.status === 'completed' ? 'default' : test.status === 'running' ? 'secondary' : 'outline'}>
-                        {test.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={test.status === 'completed' ? 'default' : test.status === 'running' ? 'secondary' : 'outline'}>
+                          {test.status}
+                        </Badge>
+                        {/* Delete is blocked while a run is in progress. */}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Delete test ${test.name}`}
+                          disabled={test.status === 'running'}
+                          onClick={() => setTestToDelete(test)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
+
                     
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
@@ -1057,6 +1127,37 @@ export function VoiceSearchManager() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/*
+        Destructive-action confirmation. Names the test explicitly and states
+        that its results are permanently removed (the database cascade deletes
+        the test's questions, answers and analysis along with it).
+      */}
+      <AlertDialog open={!!testToDelete} onOpenChange={(open) => !open && setTestToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{testToDelete?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the test "{testToDelete?.name}" along with all of its
+              questions, AI assistant answers and analysis results. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                // Keep the dialog open until the delete resolves.
+                e.preventDefault();
+                handleDeleteTest();
+              }}
+            >
+              {isDeleting ? 'Deleting…' : 'Delete permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 }
