@@ -174,7 +174,7 @@ serve(async (req) => {
 
 
 
-    return new Response(JSON.stringify({ success: true, run_id: run?.id ?? null, domain, overall_score, total_checks: total, mention_count, citation_count, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, run_id: run?.id ?? null, domain, overall_score, total_checks: total, mention_count, citation_count, excluded_branded, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }

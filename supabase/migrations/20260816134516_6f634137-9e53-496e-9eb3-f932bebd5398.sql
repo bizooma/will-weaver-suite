@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_visibility_runs ADD COLUMN IF NOT EXISTS excluded_branded integer NOT NULL DEFAULT 0;

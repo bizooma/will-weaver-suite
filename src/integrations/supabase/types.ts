@@ -66,6 +66,7 @@ export type Database = {
           citation_count: number
           created_at: string
           domain: string
+          excluded_branded: number
           id: string
           mention_count: number
           overall_score: number
@@ -78,6 +79,7 @@ export type Database = {
           citation_count?: number
           created_at?: string
           domain: string
+          excluded_branded?: number
           id?: string
           mention_count?: number
           overall_score?: number
@@ -90,6 +92,7 @@ export type Database = {
           citation_count?: number
           created_at?: string
           domain?: string
+          excluded_branded?: number
           id?: string
           mention_count?: number
           overall_score?: number
