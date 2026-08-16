@@ -80,17 +80,22 @@ export function VoiceSearchManager() {
   /**
    * Selectable providers.
    *
+   * 'ai_assistants' is the default and only enabled option: it routes to the
+   * ai-visibility-check engine, which asks ChatGPT and Gemini the test questions
+   * live and detects real mentions, citations and competitors.
+   *
    * Siri and Alexa are intentionally absent: there is no public API that returns
-   * what those assistants would answer (SiriKit / Alexa Skills Kit only let you
-   * publish a skill), so they can never produce real data and must not be offered.
+   * what those assistants would answer, so they can never produce real data.
    *
    * Google and Bing remain listed but are disabled until a paid SERP data
    * provider is wired up — they are genuinely buildable later.
    */
   const assistantOptions = [
+    { id: "ai_assistants", name: "AI Assistants (ChatGPT, Gemini)", icon: MessageSquare, description: "Live answers from ChatGPT & Gemini — mentions, citations, competitors", available: true },
     { id: "google", name: "Google Search", icon: Search, description: "AI Overviews & Local Pack", available: false },
     { id: "bing", name: "Bing Copilot", icon: MessageSquare, description: "Chat Responses & Web Results", available: false }
   ];
+
 
 
   const suggestedQuestions = [
