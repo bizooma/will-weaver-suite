@@ -676,14 +676,17 @@ export function VoiceSearchManager() {
                 {currentTest.status === 'pending' && (
                   <Button 
                     onClick={() => startTest(currentTest.id)}
-                    disabled={isLoading}
+                    // Disabled while the start request is in flight or the test
+                    // is already running — prevents duplicate query row sets.
+                    disabled={isStarting || currentTest.status !== 'pending'}
                     className="w-full"
                     size="lg"
                   >
                     <Play className="h-5 w-5 mr-2" />
-                    {isLoading ? "Starting Test..." : "Start Voice Search Test"}
+                    {isStarting ? "Starting Test..." : "Start Voice Search Test"}
                   </Button>
                 )}
+
 
                 {currentTest.status === 'running' && (
                   <div className="text-center py-8">
