@@ -81,9 +81,31 @@ serve(async (req) => {
     if (test.user_id !== user.id) return json({ error: 'Forbidden' }, 403);
 
     if (action === 'start') {
-      // Cap the workload: ai-visibility-check queries 2 models per prompt with a
-      // pacing delay between calls, so more than 8 questions cannot finish inside
-      // the edge function time limit. Enforced here as well as in the UI.
+      // ---- 2a. Idempotency: never allow two concurrent/overlapping runs ----
+      // A double click used to insert a second full set of query rows (12 rows
+      // for 6 questions) and launch a second fan-out.
+      if (test.status === 'running') {
+        return json({ error: 'already_running', message: 'This test is already running.' }, 409);
+      }
+
+      // Re-run of a finished test: wipe the previous run's rows first so results
+      // from two different runs can never be mixed together.
+      if (['completed', 'failed', 'unavailable'].includes(test.status)) {
+        const { data: oldQueries } = await supabase
+          .from('voice_search_queries')
+          .select('id')
+          .eq('test_id', testId);
+        const oldIds = (oldQueries ?? []).map((q) => q.id);
+        if (oldIds.length > 0) {
+          // Results are deleted explicitly (no FK cascade is guaranteed here).
+          await supabase.from('voice_search_results').delete().in('query_id', oldIds);
+          await supabase.from('voice_search_queries').delete().in('id', oldIds);
+        }
+      }
+
+      // Cap the workload: each question is queried against 2 models with a pacing
+      // delay, so more than 8 questions cannot finish inside the edge function
+      // time limit. Enforced here as well as in the UI.
       const MAX_QUESTIONS = 8;
       const questions: string[] = (test.test_questions || [])
         .filter((q: string) => q?.trim())
@@ -147,87 +169,151 @@ serve(async (req) => {
             return;
           }
 
-          const prompts = [...new Set(aiQueries.map((q) => q.question))];
+          // Accumulates every platform-level finding across all questions so a
+          // SINGLE aggregate ai_visibility_runs row can be written at the end.
+          const allFindings: any[] = [];
 
-          // Forward the CALLER's Authorization header — ai-visibility-check
-          // authenticates the end user itself and must not be called with the
-          // service role key.
-          const res = await fetch(
-            `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visibility-check`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: authHeader,
-                apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-              },
-              body: JSON.stringify({ domain, businessName, prompts }),
-            },
-          );
+          /**
+           * ONE QUESTION AT A TIME. Previously every question was sent in one
+           * batch and all query rows flipped from 'pending' to 'completed'
+           * together, so the progress bar sat at 0% and then jumped to 100%.
+           * Processing per question lets the status endpoint report real
+           * incremental progress (1/6, 2/6, ...).
+           */
+          for (const q of aiQueries) {
+            try {
+              // Forward the CALLER's Authorization header — ai-visibility-check
+              // authenticates the end user itself and must not be called with the
+              // service role key. persist: false keeps it from writing one
+              // ai_visibility_runs row per question.
+              const res = await fetch(
+                `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-visibility-check`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: authHeader,
+                    apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+                  },
+                  body: JSON.stringify({
+                    domain,
+                    businessName,
+                    prompts: [q.question],
+                    persist: false,
+                  }),
+                },
+              );
 
-          if (!res.ok) {
-            const body = await res.text();
-            console.error('ai-visibility-check failed:', res.status, body);
-            for (const q of aiQueries) {
+              if (!res.ok) {
+                const body = await res.text();
+                console.error('ai-visibility-check failed:', res.status, body);
+                await supabase
+                  .from('voice_search_queries')
+                  .update({ status: 'failed' })
+                  .eq('id', q.id);
+                continue;
+              }
+
+              const payload = await res.json();
+              const matches = Array.isArray(payload?.results) ? payload.results : [];
+
+              if (matches.length === 0) {
+                await supabase
+                  .from('voice_search_queries')
+                  .update({ status: 'unavailable' })
+                  .eq('id', q.id);
+                continue;
+              }
+
+              allFindings.push(...matches);
+
+              const hasMention = matches.some((m: any) => m.hasMention);
+              // mention_text is the sentence containing the firm when mentioned,
+              // otherwise the assistant's answer — either way it is the snippet.
+              const snippetText = matches
+                .map((m: any) => `${m.platform}: ${m.mentionText || ''}`.trim())
+                .join('\n\n');
+              const competitors = [
+                ...new Set(matches.flatMap((m: any) => m.competitors || [])),
+              ] as string[];
+
+              const { error: insertError } = await supabase
+                .from('voice_search_results')
+                .insert({
+                  query_id: q.id,
+                  assistant: AI_ASSISTANTS,
+                  // Drives presence detection in voice-search-analysis: only include
+                  // the firm-bearing text when a mention was actually detected.
+                  ai_overview_text: hasMention ? snippetText : null,
+                  voice_transcript: snippetText,
+                  snippets: matches.map((m: any) => ({
+                    title: m.platform,
+                    snippet: m.mentionText || '',
+                    is_citation: !!m.isCitation,
+                    confidence: m.confidence ?? 0,
+                  })),
+                  // Competitor domains surfaced by the assistants.
+                  local_pack_results: competitors.map((c) => ({ name: c })),
+                  source_urls: [],
+                  raw_results: { platforms: matches },
+                });
+
+              // Mark this question terminal IMMEDIATELY so progress advances.
+              await supabase
+                .from('voice_search_queries')
+                .update({ status: insertError ? 'failed' : 'completed' })
+                .eq('id', q.id);
+
+              if (insertError) console.error('Result insert failed:', insertError);
+            } catch (e) {
+              console.error(`Question failed ("${q.question}"):`, e);
               await supabase
                 .from('voice_search_queries')
                 .update({ status: 'failed' })
                 .eq('id', q.id);
             }
-            return;
           }
 
-          const payload = await res.json();
-          const perPrompt = Array.isArray(payload?.results) ? payload.results : [];
+          // ---- Single aggregate AI visibility run for the whole test ----
+          if (allFindings.length > 0) {
+            const totalChecks = allFindings.length;
+            const mentionCount = allFindings.filter((r) => r.hasMention).length;
+            const citationCount = allFindings.filter((r) => r.isCitation).length;
 
-          for (const q of aiQueries) {
-            // All platform answers for this question (one per model).
-            const matches = perPrompt.filter((r: any) => r.prompt === q.question);
-            if (matches.length === 0) {
-              await supabase
-                .from('voice_search_queries')
-                .update({ status: 'unavailable' })
-                .eq('id', q.id);
-              continue;
-            }
-
-            const hasMention = matches.some((m: any) => m.hasMention);
-            // mention_text is the sentence containing the firm when mentioned,
-            // otherwise the assistant's answer — either way it is the snippet.
-            const snippetText = matches
-              .map((m: any) => `${m.platform}: ${m.mentionText || ''}`.trim())
-              .join('\n\n');
-            const competitors = [
-              ...new Set(matches.flatMap((m: any) => m.competitors || [])),
-            ] as string[];
-
-            const { error: insertError } = await supabase
-              .from('voice_search_results')
+            const { data: runRow, error: runError } = await supabase
+              .from('ai_visibility_runs')
               .insert({
-                query_id: q.id,
-                assistant: AI_ASSISTANTS,
-                // Drives presence detection in voice-search-analysis: only include
-                // the firm-bearing text when a mention was actually detected.
-                ai_overview_text: hasMention ? snippetText : null,
-                voice_transcript: snippetText,
-                snippets: matches.map((m: any) => ({
-                  title: m.platform,
-                  snippet: m.mentionText || '',
-                  is_citation: !!m.isCitation,
-                  confidence: m.confidence ?? 0,
-                })),
-                // Competitor domains surfaced by the assistants.
-                local_pack_results: competitors.map((c) => ({ name: c })),
-                source_urls: [],
-                raw_results: { platforms: matches },
-              });
+                user_id: user.id,
+                domain,
+                prompts: [...new Set(aiQueries.map((q) => q.question))],
+                platforms: [...new Set(allFindings.map((r) => r.platform))],
+                total_checks: totalChecks,
+                mention_count: mentionCount,
+                citation_count: citationCount,
+                overall_score: Math.round((mentionCount / totalChecks) * 100),
+              })
+              .select()
+              .single();
 
-            await supabase
-              .from('voice_search_queries')
-              .update({ status: insertError ? 'failed' : 'completed' })
-              .eq('id', q.id);
+            if (runError) console.error('ai_visibility_runs insert failed:', runError);
 
-            if (insertError) console.error('Result insert failed:', insertError);
+            if (runRow) {
+              const { error: resultsError } = await supabase
+                .from('ai_visibility_results')
+                .insert(
+                  allFindings.map((r) => ({
+                    run_id: runRow.id,
+                    platform: r.platform,
+                    prompt: r.prompt,
+                    has_mention: r.hasMention,
+                    is_citation: r.isCitation,
+                    confidence: r.confidence,
+                    mention_text: r.mentionText,
+                    competitors: r.competitors,
+                  })),
+                );
+              if (resultsError) console.error('ai_visibility_results insert failed:', resultsError);
+            }
           }
         })();
 
@@ -287,6 +373,7 @@ serve(async (req) => {
         queryCount: queries.length,
       });
     }
+
 
     if (action === 'status') {
       const { data: queries } = await supabase
