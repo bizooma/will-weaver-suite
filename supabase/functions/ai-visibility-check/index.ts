@@ -103,9 +103,15 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { domain, prompts, businessName } = await req.json();
+    // `persist` (default true) controls whether this call writes its own
+    // ai_visibility_runs / ai_visibility_results rows. The voice-search
+    // orchestrator now calls this function once PER QUESTION so progress can be
+    // reported incrementally, and passes persist: false so we don't create one
+    // run row per question — it writes a single aggregate run itself afterwards.
+    const { domain, prompts, businessName, persist = true } = await req.json();
     if (!domain || !Array.isArray(prompts) || prompts.length === 0) throw new Error("domain and prompts[] are required");
     const limited = prompts.slice(0, MAX_PROMPTS);
+
 
     const results = [];
     for (const p of limited) {
