@@ -65,6 +65,24 @@ export function VoiceSearchManager() {
   // Per-question results for the currently selected test (results tab).
   const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
+  // True while the 'start' request is in flight — blocks a double click.
+  const [isStarting, setIsStarting] = useState(false);
+  // Wall-clock start of the current run; drives the elapsed-time readout so a
+  // slow step still looks alive next to the percentage.
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Tick the elapsed counter once a second while a run is in progress.
+  useEffect(() => {
+    if (startedAt === null) return;
+    const t = setInterval(() => setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [startedAt]);
+
+  /** mm:ss formatting for the elapsed readout. */
+  const formatElapsed = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
 
   // Form state
   const [formData, setFormData] = useState({
