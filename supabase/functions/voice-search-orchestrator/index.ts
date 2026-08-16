@@ -296,8 +296,30 @@ serve(async (req) => {
       const failedQueries = queries?.filter((q) => q.status === 'failed').length || 0;
       const unavailableQueries = queries?.filter((q) => q.status === 'unavailable').length || 0;
 
+      /**
+       * Stall safety net: if the isolate died mid-run (or anything else stranded
+       * the test), a 'running' test would never reach a terminal status and the
+       * UI would poll forever. Anything still 'running' after 5 minutes is dead.
+       */
+      let reportedStatus = test.status;
+      const STALE_MS = 5 * 60 * 1000;
+      const updatedAt = test.updated_at ? new Date(test.updated_at).getTime() : NaN;
+      if (
+        reportedStatus === 'running' &&
+        Number.isFinite(updatedAt) &&
+        Date.now() - updatedAt > STALE_MS
+      ) {
+        console.log(`Test ${testId} stalled in 'running'; marking failed`);
+        await supabase
+          .from('voice_search_tests')
+          .update({ status: 'failed' })
+          .eq('id', testId);
+        reportedStatus = 'failed';
+      }
+
       return json({
-        status: test.status,
+        status: reportedStatus,
+
         progress: {
           total: totalQueries,
           completed: completedQueries,
