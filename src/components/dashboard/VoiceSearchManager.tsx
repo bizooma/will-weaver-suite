@@ -510,16 +510,30 @@ export function VoiceSearchManager() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-6">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
-              <p className="text-muted-foreground">
-                Detailed analysis and recommendations will appear here after your test completes.
-              </p>
-            </CardContent>
-          </Card>
+          {/* When a test ends as 'unavailable', no live provider data was collected.
+              We must never show scores, charts, or a results table in that case. */}
+          {currentTest?.status === 'unavailable' ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Live voice assistant data is not currently available. No results were generated for this test.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
+                <p className="text-muted-foreground">
+                  Detailed analysis and recommendations will appear here after your test completes.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
+
 
         <TabsContent value="history" className="space-y-6">
           {tests.length > 0 ? (
