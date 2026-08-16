@@ -147,6 +147,71 @@ export function VoiceSearchManager() {
     }
   };
 
+  /**
+   * Load the per-question results for a finished test. Two plain queries
+   * (queries, then their results) joined in JS — RLS scopes both to the owner.
+   */
+  const loadResults = async (testId: string) => {
+    setIsLoadingResults(true);
+    try {
+      const { data: queries, error: queriesError } = await supabase
+        .from('voice_search_queries')
+        .select('id, question, assistant')
+        .eq('test_id', testId)
+        .order('created_at', { ascending: true });
+
+      if (queriesError) throw queriesError;
+
+      const queryIds = (queries || []).map((q: any) => q.id);
+      let rows: any[] = [];
+      if (queryIds.length > 0) {
+        const { data: results, error: resultsError } = await supabase
+          .from('voice_search_results')
+          .select('*')
+          .in('query_id', queryIds);
+        if (resultsError) throw resultsError;
+        rows = results || [];
+      }
+
+      const mapped: QuestionResult[] = (queries || []).map((q: any) => {
+        const matching = rows.filter((r) => r.query_id === q.id);
+        const snippets = matching.flatMap((r) =>
+          (Array.isArray(r.snippets) ? r.snippets : []).map((s: any) => ({
+            // The orchestrator stores the answering platform in snippets[].title.
+            platform: String(s.title || r.assistant || 'unknown'),
+            snippet: String(s.snippet || ''),
+            isCitation: !!s.is_citation,
+          }))
+        );
+        const competitors = [
+          ...new Set(
+            matching.flatMap((r) =>
+              (Array.isArray(r.local_pack_results) ? r.local_pack_results : [])
+                .map((c: any) => String(c?.name || c?.business_name || ''))
+                .filter(Boolean)
+            )
+          ),
+        ];
+        return {
+          queryId: q.id,
+          question: q.question,
+          // ai_overview_text is only written when a mention was detected.
+          mentioned: matching.some((r) => !!r.ai_overview_text),
+          snippets,
+          competitors,
+        };
+      });
+
+      setQuestionResults(mapped);
+    } catch (error) {
+      console.error('Error loading results:', error);
+      toast.error('Failed to load test results');
+      setQuestionResults([]);
+    } finally {
+      setIsLoadingResults(false);
+    }
+  };
+
   const createTest = async () => {
     if (!user) return;
     
