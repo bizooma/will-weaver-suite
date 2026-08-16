@@ -1031,7 +1031,15 @@ export type Database = {
           test_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voice_search_analysis_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "voice_search_tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voice_search_queries: {
         Row: {
@@ -1058,7 +1066,15 @@ export type Database = {
           status?: string
           test_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voice_search_queries_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "voice_search_tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voice_search_reports: {
         Row: {
@@ -1127,7 +1143,15 @@ export type Database = {
           source_urls?: string[]
           voice_transcript?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voice_search_results_query_id_fkey"
+            columns: ["query_id"]
+            isOneToOne: false
+            referencedRelation: "voice_search_queries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voice_search_tests: {
         Row: {
