@@ -63,66 +63,102 @@ serve(async (req) => {
         .eq('test_id', testId)
         .eq('status', 'pending');
 
+      const market = `${test.market_city}, ${test.market_state}`;
+      const functionsBase = `${Deno.env.get('SUPABASE_URL')}/functions/v1`;
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+      /**
+       * Invoke a provider analyzer over HTTP so we can inspect the status code.
+       * A 501 means the provider has no live data source configured — we must NOT
+       * treat that as a completed query, otherwise the customer gets a report
+       * built from nothing.
+       */
+      const callProvider = async (fn: string, body: Record<string, unknown>) => {
+        const res = await fetch(`${functionsBase}/${fn}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify(body),
+        });
+        return res.status;
+      };
+
       // Process queries in parallel
       if (createdQueries) {
         const processPromises = createdQueries.map(async (query) => {
           try {
-            let result;
+            let status: number | undefined;
             switch (query.assistant) {
               case 'google':
-                result = await supabase.functions.invoke('google-search-analyzer', {
-                  body: { 
-                    queryId: query.id,
-                    question: query.question, 
-                    market: `${test.market_city}, ${test.market_state}` 
-                  }
+                status = await callProvider('google-search-analyzer', {
+                  queryId: query.id,
+                  question: query.question,
+                  market,
                 });
                 break;
               case 'bing':
-                result = await supabase.functions.invoke('bing-search-analyzer', {
-                  body: { 
-                    queryId: query.id,
-                    question: query.question, 
-                    market: `${test.market_city}, ${test.market_state}` 
-                  }
+                status = await callProvider('bing-search-analyzer', {
+                  queryId: query.id,
+                  question: query.question,
+                  market,
                 });
                 break;
               case 'siri':
               case 'alexa':
-                // Simulate responses for now
-                result = await supabase.functions.invoke('voice-assistant-simulator', {
-                  body: { 
-                    queryId: query.id,
-                    question: query.question, 
-                    assistant: query.assistant,
-                    market: `${test.market_city}, ${test.market_state}` 
-                  }
+                status = await callProvider('voice-assistant-simulator', {
+                  queryId: query.id,
+                  question: query.question,
+                  assistant: query.assistant,
+                  market,
                 });
                 break;
             }
 
+            // 501 = provider_unavailable: no data was produced for this query.
+            const queryStatus =
+              status === 501 || status === undefined
+                ? 'unavailable'
+                : status >= 200 && status < 300
+                ? 'completed'
+                : 'failed';
+
             await supabase
               .from('voice_search_queries')
-              .update({ status: 'completed' })
+              .update({ status: queryStatus })
               .eq('id', query.id);
 
+            return queryStatus;
           } catch (error) {
             console.error(`Error processing query ${query.id}:`, error);
             await supabase
               .from('voice_search_queries')
               .update({ status: 'failed' })
               .eq('id', query.id);
+            return 'failed';
           }
         });
 
-        // Don't await all promises, let them run in background
-        Promise.all(processPromises).then(async () => {
-          // When all queries complete, run analysis
+        // Don't await in the request path; finalize the test in the background.
+        Promise.all(processPromises).then(async (statuses) => {
+          const allUnavailable =
+            statuses.length > 0 && statuses.every((s) => s === 'unavailable');
+
+          if (allUnavailable) {
+            // Nothing real was collected — never score or report on empty data.
+            console.log(`Test ${testId} had no available providers; marking unavailable`);
+            await supabase
+              .from('voice_search_tests')
+              .update({ status: 'unavailable' })
+              .eq('id', testId);
+            return;
+          }
+
           await supabase.functions.invoke('voice-search-analysis', {
             body: { testId }
           });
 
-          // Update test status
           await supabase
             .from('voice_search_tests')
             .update({ status: 'completed' })
