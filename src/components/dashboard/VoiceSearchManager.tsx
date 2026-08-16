@@ -59,7 +59,9 @@ export function VoiceSearchManager() {
     practiceAreas: [] as string[],
     customPracticeArea: "",
     testQuestions: [""],
-    selectedAssistants: [] as string[],
+    // AI Assistants is the default (and only) provider that returns real data.
+    selectedAssistants: ["ai_assistants"] as string[],
+
     firmDomain: "",
     firmBusinessName: ""
   });
