@@ -40,6 +40,19 @@ interface TestProgress {
   percentage: number;
 }
 
+/**
+ * One row of the results view: a test question, whether the firm was mentioned
+ * in any assistant's answer, the evidence snippets (one per platform) and the
+ * competitor names the assistants surfaced instead.
+ */
+interface QuestionResult {
+  queryId: string;
+  question: string;
+  mentioned: boolean;
+  snippets: { platform: string; snippet: string; isCitation: boolean }[];
+  competitors: string[];
+}
+
 export function VoiceSearchManager() {
   const { user } = useAuth();
   const supabase = useDemoSupabase();
@@ -49,6 +62,9 @@ export function VoiceSearchManager() {
   const [currentTest, setCurrentTest] = useState<VoiceSearchTest | null>(null);
   const [testProgress, setTestProgress] = useState<TestProgress | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Per-question results for the currently selected test (results tab).
+  const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
+  const [isLoadingResults, setIsLoadingResults] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -128,6 +144,71 @@ export function VoiceSearchManager() {
     } catch (error) {
       console.error('Error loading tests:', error);
       toast.error('Failed to load voice search tests');
+    }
+  };
+
+  /**
+   * Load the per-question results for a finished test. Two plain queries
+   * (queries, then their results) joined in JS — RLS scopes both to the owner.
+   */
+  const loadResults = async (testId: string) => {
+    setIsLoadingResults(true);
+    try {
+      const { data: queries, error: queriesError } = await supabase
+        .from('voice_search_queries')
+        .select('id, question, assistant')
+        .eq('test_id', testId)
+        .order('created_at', { ascending: true });
+
+      if (queriesError) throw queriesError;
+
+      const queryIds = (queries || []).map((q: any) => q.id);
+      let rows: any[] = [];
+      if (queryIds.length > 0) {
+        const { data: results, error: resultsError } = await supabase
+          .from('voice_search_results')
+          .select('*')
+          .in('query_id', queryIds);
+        if (resultsError) throw resultsError;
+        rows = results || [];
+      }
+
+      const mapped: QuestionResult[] = (queries || []).map((q: any) => {
+        const matching = rows.filter((r) => r.query_id === q.id);
+        const snippets = matching.flatMap((r) =>
+          (Array.isArray(r.snippets) ? r.snippets : []).map((s: any) => ({
+            // The orchestrator stores the answering platform in snippets[].title.
+            platform: String(s.title || r.assistant || 'unknown'),
+            snippet: String(s.snippet || ''),
+            isCitation: !!s.is_citation,
+          }))
+        );
+        const competitors = [
+          ...new Set(
+            matching.flatMap((r) =>
+              (Array.isArray(r.local_pack_results) ? r.local_pack_results : [])
+                .map((c: any) => String(c?.name || c?.business_name || ''))
+                .filter(Boolean)
+            )
+          ),
+        ];
+        return {
+          queryId: q.id,
+          question: q.question,
+          // ai_overview_text is only written when a mention was detected.
+          mentioned: matching.some((r) => !!r.ai_overview_text),
+          snippets,
+          competitors,
+        };
+      });
+
+      setQuestionResults(mapped);
+    } catch (error) {
+      console.error('Error loading results:', error);
+      toast.error('Failed to load test results');
+      setQuestionResults([]);
+    } finally {
+      setIsLoadingResults(false);
     }
   };
 
@@ -211,6 +292,10 @@ export function VoiceSearchManager() {
           clearInterval(interval);
           setActiveTab("results");
           loadTests();
+          // Keep the final counts on screen (the results tab renders the same
+          // progress card) and load the per-question results.
+          setCurrentTest(prev => (prev ? { ...prev, status: data.status } : prev));
+          if (data.status !== 'unavailable') loadResults(testId);
         }
       } catch (error) {
         console.error('Error monitoring test progress:', error);
@@ -237,6 +322,19 @@ export function VoiceSearchManager() {
   };
 
   const updateTestQuestion = (index: number, value: string) => {
+    // Pasting a multi-line list should become multiple questions, not one blob.
+    if (/[\r\n]/.test(value)) {
+      const lines = value.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
+      setFormData(prev => {
+        const next = [...prev.testQuestions];
+        // First pasted line replaces the edited slot; the rest fill/append after
+        // it, all within the MAX_QUESTIONS cap.
+        next.splice(index, 1, ...lines);
+        return { ...prev, testQuestions: next.slice(0, MAX_QUESTIONS) };
+      });
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       testQuestions: prev.testQuestions.map((q, i) => i === index ? value : q)
@@ -571,6 +669,39 @@ export function VoiceSearchManager() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-6">
+          {/* The progress card stays visible here so the final counts
+              (total / completed / failed / unavailable) are not lost when the
+              poll flips the user over to this tab. */}
+          {testProgress && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Run Summary</CardTitle>
+                <CardDescription>Final query counts for this test</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Progress value={testProgress.percentage} className="w-full" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600">{testProgress.total}</div>
+                    <div className="text-sm text-muted-foreground">Total Queries</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">{testProgress.completed}</div>
+                    <div className="text-sm text-muted-foreground">Completed</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-red-600">{testProgress.failed}</div>
+                    <div className="text-sm text-muted-foreground">Failed</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-muted-foreground">{testProgress.unavailable ?? 0}</div>
+                    <div className="text-sm text-muted-foreground">Unavailable</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* When a test ends as 'unavailable', no live provider data was collected.
               We must never show scores, charts, or a results table in that case. */}
           {currentTest?.status === 'unavailable' ? (
@@ -582,13 +713,69 @@ export function VoiceSearchManager() {
                 </p>
               </CardContent>
             </Card>
+          ) : isLoadingResults ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                Loading results...
+              </CardContent>
+            </Card>
+          ) : questionResults && questionResults.length > 0 ? (
+            <div className="space-y-4">
+              {questionResults.map((qr) => (
+                <Card key={qr.queryId}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <CardTitle className="text-base leading-snug">{qr.question}</CardTitle>
+                      {/* Presence: was the firm named in any assistant answer? */}
+                      <Badge variant={qr.mentioned ? "default" : "secondary"}>
+                        {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Evidence snippets, one per answering platform. */}
+                    {qr.snippets.length > 0 ? (
+                      <div className="space-y-3">
+                        {qr.snippets.map((s, i) => (
+                          <div key={i} className="rounded-md border p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="capitalize">{s.platform}</Badge>
+                              {s.isCitation && <Badge variant="outline">Cited link</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {s.snippet || "No evidence text returned."}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No answer captured for this question.</p>
+                    )}
+
+                    {/* Competitors the assistants surfaced instead of the firm. */}
+                    <div>
+                      <Label className="text-sm">Competitors mentioned</Label>
+                      {qr.competitors.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {qr.competitors.map((c) => (
+                            <Badge key={c} variant="secondary">{c}</Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-1">None detected.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
+                <h3 className="text-lg font-semibold mb-2">No results yet</h3>
                 <p className="text-muted-foreground">
-                  Detailed analysis and recommendations will appear here after your test completes.
+                  Run a test to see which AI assistants recommend your firm.
                 </p>
               </CardContent>
             </Card>
@@ -646,7 +833,16 @@ export function VoiceSearchManager() {
 
                     {test.status === 'completed' && (
                       <div className="mt-4 flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            // Load this historical test's per-question results.
+                            setCurrentTest(test);
+                            setActiveTab("results");
+                            loadResults(test.id);
+                          }}
+                        >
                           <BarChart3 className="h-4 w-4 mr-2" />
                           View Results
                         </Button>

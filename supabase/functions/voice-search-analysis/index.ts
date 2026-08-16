@@ -20,34 +20,55 @@ serve(async (req) => {
 
     const { testId, firmDomain, firmBusinessName } = await req.json();
 
-    // Get all results for this test
-    const { data: results } = await supabase
-      .from('voice_search_results')
-      .select(`
-        *,
-        voice_search_queries (
-          question,
-          assistant
-        )
-      `)
-      .in('query_id', 
-        (await supabase
-          .from('voice_search_queries')
-          .select('id')
-          .eq('test_id', testId)
-        ).data?.map(q => q.id) || []
-      );
+    /**
+     * Two plain queries instead of a PostgREST embedded join. The embedded
+     * `voice_search_queries ( question, assistant )` select silently returned
+     * nothing (its error was previously discarded), which made every run look
+     * like "no results". Joining in JS is explicit and always works.
+     */
+    const { data: queryRows, error: queriesError } = await supabase
+      .from('voice_search_queries')
+      .select('id, question, assistant')
+      .eq('test_id', testId);
+
+    if (queriesError) {
+      console.error(`Error loading queries for test ${testId}:`, queriesError);
+      throw queriesError;
+    }
+
+    const queryIds = (queryRows ?? []).map((q) => q.id);
+    const queryById = new Map((queryRows ?? []).map((q) => [q.id, q]));
+
+    let results: any[] = [];
+    if (queryIds.length > 0) {
+      const { data: resultRows, error: resultsError } = await supabase
+        .from('voice_search_results')
+        .select('*')
+        .in('query_id', queryIds);
+
+      if (resultsError) {
+        console.error(`Error loading results for test ${testId}:`, resultsError);
+        throw resultsError;
+      }
+
+      // Attach the parent query so downstream scoring keeps its existing shape.
+      results = (resultRows ?? []).map((r) => ({
+        ...r,
+        voice_search_queries: queryById.get(r.query_id) ?? { question: '', assistant: r.assistant },
+      }));
+    }
 
     /**
      * Second line of defense: never analyze an empty result set. Scoring divides by
      * results.length, which would yield NaN and persist meaningless numbers.
      */
-    if (!results || results.length === 0) {
+    if (results.length === 0) {
       console.log(`No results for test ${testId}; skipping analysis`);
       return new Response(JSON.stringify({ skipped: true, reason: 'no_results' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
 
     // Calculate presence score
     let presenceCount = 0;
