@@ -63,82 +63,21 @@ serve(async (req) => {
         .eq('test_id', testId)
         .eq('status', 'pending');
 
-      const market = `${test.market_city}, ${test.market_state}`;
-      const functionsBase = `${Deno.env.get('SUPABASE_URL')}/functions/v1`;
-      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-
       /**
-       * Invoke a provider analyzer over HTTP so we can inspect the status code.
-       * A 501 means the provider has no live data source configured — we must NOT
-       * treat that as a completed query, otherwise the customer gets a report
-       * built from nothing.
+       * No provider analyzers exist anymore. The Siri/Alexa simulators were removed
+       * (no API can query those assistants) and the Google/Bing analyzers are gone
+       * until a paid SERP data provider is wired up. Until then every query is
+       * marked 'unavailable' and no result rows are ever written.
        */
-      const callProvider = async (fn: string, body: Record<string, unknown>) => {
-        const res = await fetch(`${functionsBase}/${fn}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${serviceKey}`,
-          },
-          body: JSON.stringify(body),
-        });
-        return res.status;
-      };
-
-      // Process queries in parallel
       if (createdQueries) {
         const processPromises = createdQueries.map(async (query) => {
-          try {
-            let status: number | undefined;
-            switch (query.assistant) {
-              case 'google':
-                status = await callProvider('google-search-analyzer', {
-                  queryId: query.id,
-                  question: query.question,
-                  market,
-                });
-                break;
-              case 'bing':
-                status = await callProvider('bing-search-analyzer', {
-                  queryId: query.id,
-                  question: query.question,
-                  market,
-                });
-                break;
-              case 'siri':
-              case 'alexa':
-                status = await callProvider('voice-assistant-simulator', {
-                  queryId: query.id,
-                  question: query.question,
-                  assistant: query.assistant,
-                  market,
-                });
-                break;
-            }
-
-            // 501 = provider_unavailable: no data was produced for this query.
-            const queryStatus =
-              status === 501 || status === undefined
-                ? 'unavailable'
-                : status >= 200 && status < 300
-                ? 'completed'
-                : 'failed';
-
-            await supabase
-              .from('voice_search_queries')
-              .update({ status: queryStatus })
-              .eq('id', query.id);
-
-            return queryStatus;
-          } catch (error) {
-            console.error(`Error processing query ${query.id}:`, error);
-            await supabase
-              .from('voice_search_queries')
-              .update({ status: 'failed' })
-              .eq('id', query.id);
-            return 'failed';
-          }
+          await supabase
+            .from('voice_search_queries')
+            .update({ status: 'unavailable' })
+            .eq('id', query.id);
+          return 'unavailable';
         });
+
 
         // Don't await in the request path; finalize the test in the background.
         Promise.all(processPromises).then(async () => {
