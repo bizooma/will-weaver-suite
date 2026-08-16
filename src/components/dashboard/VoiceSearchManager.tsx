@@ -9,7 +9,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Target, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Mic, Plus, Play, BarChart3, FileText, Search, MessageSquare, Target, TrendingUp, AlertCircle, Trash2 } from "lucide-react";
 import { useDemoSupabase } from "@/hooks/useDemoSupabase";
 import { useDemoEdgeFunctions } from "@/hooks/useDemoEdgeFunctions";
 import { useAuth } from "@/contexts/AuthContext";
