@@ -15,8 +15,9 @@ interface AuthContextType {
   subscriptionTier: string | null;
   subscriptionEnd: string | null;
   refreshSubscription: () => Promise<void>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  /** captchaToken is a single-use Cloudflare Turnstile token required by Supabase Auth CAPTCHA protection. */
+  signUp: (email: string, password: string, displayName?: string, captchaToken?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
