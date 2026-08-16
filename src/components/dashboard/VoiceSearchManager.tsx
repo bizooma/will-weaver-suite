@@ -49,9 +49,31 @@ interface QuestionResult {
   queryId: string;
   question: string;
   mentioned: boolean;
+  /** Question contains the firm's own name — shown but excluded from scoring. */
+  branded: boolean;
   snippets: { platform: string; snippet: string; isCitation: boolean }[];
   competitors: string[];
 }
+
+/**
+ * Scorecard written by voice-search-analysis. Scores are per MODEL ANSWER (same
+ * denominator as ai_visibility_runs) and exclude branded questions.
+ */
+interface TestAnalysis {
+  presence_score: number;
+  frequency_score: number;
+  competitive_score: number;
+  overall_score: number;
+  competitor_data: {
+    topCompetitors?: [string, number][];
+    platformBreakdown?: { platform: string; mentions: number; total: number; score: number }[];
+    scoredAnswers?: number;
+    mentionAnswers?: number;
+    brandedQuestionsExcluded?: number;
+  } | null;
+  optimization_suggestions: { priority: string; category: string; title: string; description: string; impact: number }[] | null;
+}
+
 
 export function VoiceSearchManager() {
   const { user } = useAuth();
@@ -65,6 +87,9 @@ export function VoiceSearchManager() {
   // Per-question results for the currently selected test (results tab).
   const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
+  // Scorecard for the selected test (per-model-answer scores + platform split).
+  const [analysis, setAnalysis] = useState<TestAnalysis | null>(null);
+
   // True while the 'start' request is in flight — blocks a double click.
   const [isStarting, setIsStarting] = useState(false);
   // Wall-clock start of the current run; drives the elapsed-time readout so a
@@ -191,6 +216,27 @@ export function VoiceSearchManager() {
         rows = results || [];
       }
 
+      // Latest scorecard for this test (per-model-answer scoring).
+      const { data: analysisRow } = await supabase
+        .from('voice_search_analysis')
+        .select('presence_score, frequency_score, competitive_score, overall_score, competitor_data, optimization_suggestions')
+        .eq('test_id', testId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setAnalysis((analysisRow as unknown as TestAnalysis) ?? null);
+
+      // The firm's own name: questions containing it are branded queries and are
+      // excluded from the score by voice-search-analysis.
+      const { data: testRow } = await supabase
+        .from('voice_search_tests')
+        .select('settings')
+        .eq('id', testId)
+        .maybeSingle();
+      const businessName = String(
+        ((testRow?.settings || {}) as Record<string, unknown>).firmBusinessName || ''
+      ).trim();
+
       const mapped: QuestionResult[] = (queries || []).map((q: any) => {
         const matching = rows.filter((r) => r.query_id === q.id);
         const snippets = matching.flatMap((r) =>
@@ -215,12 +261,15 @@ export function VoiceSearchManager() {
           question: q.question,
           // ai_overview_text is only written when a mention was detected.
           mentioned: matching.some((r) => !!r.ai_overview_text),
+          branded: !!businessName &&
+            String(q.question || '').toLowerCase().includes(businessName.toLowerCase()),
           snippets,
           competitors,
         };
       });
 
       setQuestionResults(mapped);
+
     } catch (error) {
       console.error('Error loading results:', error);
       toast.error('Failed to load test results');
@@ -766,17 +815,86 @@ export function VoiceSearchManager() {
             </Card>
           ) : questionResults && questionResults.length > 0 ? (
             <div className="space-y-4">
+              {/* Scorecard: one score, computed per MODEL ANSWER — the same
+                  denominator ai_visibility_runs uses — with the per-platform
+                  split, which is the most actionable number in the report. */}
+              {analysis && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">AI Search Visibility Score</CardTitle>
+                    <CardDescription>
+                      {analysis.competitor_data?.mentionAnswers ?? 0} of {analysis.competitor_data?.scoredAnswers ?? 0} AI model answers named your firm
+                      {(analysis.competitor_data?.brandedQuestionsExcluded ?? 0) > 0
+                        ? ` · ${analysis.competitor_data?.brandedQuestionsExcluded} branded question(s) excluded from scoring`
+                        : ''}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-3xl font-bold text-primary">{analysis.overall_score}%</div>
+                        <div className="text-sm text-muted-foreground">Overall</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold">{analysis.presence_score}%</div>
+                        <div className="text-sm text-muted-foreground">Presence</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold">{analysis.competitive_score}%</div>
+                        <div className="text-sm text-muted-foreground">Competitive</div>
+                      </div>
+                    </div>
+
+                    {(analysis.competitor_data?.platformBreakdown?.length ?? 0) > 0 && (
+                      <div>
+                        <Label className="text-sm">Per-platform breakdown</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {analysis.competitor_data!.platformBreakdown!.map((p) => (
+                            <Badge key={p.platform} variant="outline" className="capitalize">
+                              {p.platform} {p.mentions}/{p.total} ({p.score}%)
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(analysis.optimization_suggestions?.length ?? 0) > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm">Recommendations</Label>
+                        {analysis.optimization_suggestions!.map((s, i) => (
+                          <div key={i} className="rounded-md border p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="secondary" className="capitalize">{s.priority}</Badge>
+                              <span className="text-sm font-medium">{s.title}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{s.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {questionResults.map((qr) => (
                 <Card key={qr.queryId}>
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
                       <CardTitle className="text-base leading-snug">{qr.question}</CardTitle>
-                      {/* Presence: was the firm named in any assistant answer? */}
-                      <Badge variant={qr.mentioned ? "default" : "secondary"}>
-                        {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-2">
+                        {/* Presence: was the firm named in any assistant answer? */}
+                        <Badge variant={qr.mentioned ? "default" : "secondary"}>
+                          {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
+                        </Badge>
+                        {/* A question containing the firm's own name guarantees a
+                            mention, so it is shown but never scored. */}
+                        {qr.branded && (
+                          <Badge variant="outline">Branded query — excluded from score</Badge>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
+
                   <CardContent className="space-y-4">
                     {/* Evidence snippets, one per answering platform. */}
                     {qr.snippets.length > 0 ? (

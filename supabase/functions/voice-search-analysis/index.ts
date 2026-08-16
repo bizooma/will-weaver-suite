@@ -7,6 +7,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Domains that are directories, aggregators, or general-purpose sites. They are
+ * NOT law firms competing with the customer, so they must never be reported as
+ * "top competitors" (which previously produced advice like "your top competitor
+ * superlawyers.com appears frequently").
+ */
+const EXCLUDED_COMPETITOR_DOMAINS = [
+  'superlawyers.com', 'avvo.com', 'martindale.com', 'findlaw.com', 'justia.com',
+  'lawyers.com', 'nolo.com', 'yelp.com', 'google.com', 'wikipedia.org',
+  'lawinfo.com', 'legalzoom.com', 'bbb.org', 'facebook.com', 'linkedin.com',
+  'reddit.com', 'youtube.com', 'yellowpages.com', 'thumbtack.com',
+  'americanbar.org', 'usa.gov', 'nolo.co', 'quora.com', 'x.com', 'twitter.com',
+  'instagram.com', 'tiktok.com', 'trustpilot.com', 'mapquest.com',
+];
+
+/** True when a domain/name is a directory or otherwise not a real firm. */
+function isExcludedCompetitor(raw: string): boolean {
+  const d = raw.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
+  return EXCLUDED_COMPETITOR_DOMAINS.some((x) => d === x || d.endsWith(`.${x}`));
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,9 +43,8 @@ serve(async (req) => {
 
     /**
      * Two plain queries instead of a PostgREST embedded join. The embedded
-     * `voice_search_queries ( question, assistant )` select silently returned
-     * nothing (its error was previously discarded), which made every run look
-     * like "no results". Joining in JS is explicit and always works.
+     * select silently returned nothing, which made every run look like
+     * "no results". Joining in JS is explicit and always works.
      */
     const { data: queryRows, error: queriesError } = await supabase
       .from('voice_search_queries')
@@ -51,17 +71,13 @@ serve(async (req) => {
         throw resultsError;
       }
 
-      // Attach the parent query so downstream scoring keeps its existing shape.
       results = (resultRows ?? []).map((r) => ({
         ...r,
         voice_search_queries: queryById.get(r.query_id) ?? { question: '', assistant: r.assistant },
       }));
     }
 
-    /**
-     * Second line of defense: never analyze an empty result set. Scoring divides by
-     * results.length, which would yield NaN and persist meaningless numbers.
-     */
+    // Never analyze an empty result set — scoring would divide by zero.
     if (results.length === 0) {
       console.log(`No results for test ${testId}; skipping analysis`);
       return new Response(JSON.stringify({ skipped: true, reason: 'no_results' }), {
@@ -69,65 +85,100 @@ serve(async (req) => {
       });
     }
 
+    const businessName = String(firmBusinessName || '').trim();
+    const domain = String(firmDomain || '')
+      .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '')
+      .toLowerCase();
 
-    // Calculate presence score
-    let presenceCount = 0;
-    let totalQueries = results.length;
+    /**
+     * SCORING UNIT = ONE MODEL ANSWER, not one question. This is the same
+     * denominator ai-visibility-check uses, so voice_search_analysis and
+     * ai_visibility_runs can no longer disagree (100 vs 58 previously).
+     *
+     * Each voice_search_results row carries a `snippets` array where every
+     * entry is one platform's answer: { title: platform, snippet, confidence }.
+     */
+    type PlatformStat = { mentions: number; total: number };
+    const platformPerformance: Record<string, PlatformStat> = {};
+    const competitorFrequency: Record<string, number> = {};
 
+    let scoredAnswers = 0;       // model answers included in the score
+    let mentionAnswers = 0;      // of those, how many named the firm
+    let brandedQuestions = 0;    // questions skipped for containing the firm name
 
-    // Calculate frequency score
-    let mentionCount = 0;
-    const assistantPerformance: { [key: string]: { mentions: number, total: number } } = {};
+    for (const result of results) {
+      const question = String(result.voice_search_queries?.question || '');
 
-    // Analyze competitor data
-    const competitorFrequency: { [key: string]: number } = {};
+      /**
+       * BRANDED QUERIES ARE EXCLUDED. If the question itself contains the firm
+       * name, the answer is guaranteed to repeat it — that measures nothing and
+       * inflates presence. The row is still returned to the UI (which labels it),
+       * it simply does not count toward the score.
+       */
+      const isBranded = !!businessName &&
+        question.toLowerCase().includes(businessName.toLowerCase());
+      if (isBranded) brandedQuestions++;
 
-    results.forEach(result => {
-      const assistant = result.voice_search_queries.assistant;
-      
-      if (!assistantPerformance[assistant]) {
-        assistantPerformance[assistant] = { mentions: 0, total: 0 };
+      const snippets: any[] = Array.isArray(result.snippets) ? result.snippets : [];
+
+      for (const s of snippets) {
+        const platform = String(s?.title || result.assistant || 'unknown').toLowerCase();
+        const text = String(s?.snippet || '');
+        // A mention is asserted either by the stored confidence (>0, written by
+        // ai-visibility-check) or by the firm name/domain appearing in the text.
+        const hasMention =
+          Number(s?.confidence ?? 0) > 0 ||
+          (!!domain && text.toLowerCase().includes(domain)) ||
+          (!!businessName && text.toLowerCase().includes(businessName.toLowerCase()));
+
+        if (isBranded) continue; // never counted, in any denominator
+
+        platformPerformance[platform] ??= { mentions: 0, total: 0 };
+        platformPerformance[platform].total++;
+        scoredAnswers++;
+        if (hasMention) {
+          platformPerformance[platform].mentions++;
+          mentionAnswers++;
+        }
       }
-      assistantPerformance[assistant].total++;
 
-      // Check if firm appears in results
-      const firmMentioned = checkFirmMention(result, firmDomain, firmBusinessName);
-      if (firmMentioned) {
-        presenceCount++;
-        mentionCount++;
-        assistantPerformance[assistant].mentions++;
-      }
-
-      // Extract competitor information
-      const competitors = extractCompetitors(result);
-      competitors.forEach(comp => {
+      // Competitors: real firm domains only, directories filtered out.
+      for (const comp of extractCompetitors(result)) {
+        if (isExcludedCompetitor(comp)) continue;
+        if (domain && comp.toLowerCase().includes(domain)) continue;
         competitorFrequency[comp] = (competitorFrequency[comp] || 0) + 1;
-      });
-    });
+      }
+    }
 
-    // Calculate scores
-    const presenceScore = Math.round((presenceCount / totalQueries) * 100);
-    const frequencyScore = Math.round((mentionCount / totalQueries) * 100);
-    
-    // Calculate competitive score based on ranking vs competitors
+    // presence == frequency at answer granularity; both are kept for schema
+    // compatibility and are computed from the identical real denominator.
+    const presenceScore = scoredAnswers > 0
+      ? Math.round((mentionAnswers / scoredAnswers) * 100)
+      : 0;
+    const frequencyScore = presenceScore;
+
     const topCompetitors = Object.entries(competitorFrequency)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3);
-    
-    const competitiveScore = calculateCompetitiveScore(presenceCount, topCompetitors, totalQueries);
+
+    const competitiveScore = calculateCompetitiveScore(mentionAnswers, topCompetitors);
     const overallScore = Math.round((presenceScore + frequencyScore + competitiveScore) / 3);
 
-    // Generate optimization suggestions
+    // "Gemini 6/6, ChatGPT 0/6" — the split is the most useful number here.
+    const platformBreakdown = Object.entries(platformPerformance).map(([platform, s]) => ({
+      platform,
+      mentions: s.mentions,
+      total: s.total,
+      score: s.total > 0 ? Math.round((s.mentions / s.total) * 100) : 0,
+    }));
+
     const optimizationSuggestions = generateOptimizationSuggestions(
-      assistantPerformance,
+      platformBreakdown,
       topCompetitors,
-      presenceScore
+      presenceScore,
+      scoredAnswers,
     );
 
-    // Check compliance issues
-    const complianceIssues = checkComplianceIssues(results);
-
-    // Store analysis
     await supabase
       .from('voice_search_analysis')
       .insert({
@@ -140,21 +191,30 @@ serve(async (req) => {
         overall_score: overallScore,
         competitor_data: {
           topCompetitors,
-          assistantPerformance
+          platformBreakdown,
+          scoredAnswers,
+          mentionAnswers,
+          brandedQuestionsExcluded: brandedQuestions,
         },
         optimization_suggestions: optimizationSuggestions,
-        compliance_issues: complianceIssues
+        // Nothing in this codebase actually checks attorney advertising
+        // compliance, so we never fabricate findings here. Column kept, empty.
+        compliance_issues: []
       });
 
     console.log(`Analysis completed for test ${testId}`);
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       analysis: {
         presenceScore,
         frequencyScore,
         competitiveScore,
         overallScore,
+        platformBreakdown,
+        scoredAnswers,
+        mentionAnswers,
+        brandedQuestionsExcluded: brandedQuestions,
         topCompetitors,
         optimizationSuggestions
       }
@@ -164,137 +224,100 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in voice-search-analysis:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
 
-function checkFirmMention(result: any, firmDomain?: string, firmBusinessName?: string): boolean {
-  const searchTexts = [
-    result.ai_overview_text,
-    result.voice_transcript,
-    JSON.stringify(result.snippets),
-    JSON.stringify(result.local_pack_results)
-  ].filter(Boolean).join(' ').toLowerCase();
-
-  if (firmDomain) {
-    const domain = firmDomain.replace(/^https?:\/\//, '').toLowerCase();
-    if (searchTexts.includes(domain)) return true;
-  }
-
-  if (firmBusinessName) {
-    if (searchTexts.includes(firmBusinessName.toLowerCase())) return true;
-  }
-
-  return false;
-}
-
+/** Competitor names/domains surfaced by the assistants for one result row. */
 function extractCompetitors(result: any): string[] {
   const competitors = new Set<string>();
-  
-  // Extract from local pack results
+
   if (result.local_pack_results && Array.isArray(result.local_pack_results)) {
     result.local_pack_results.forEach((business: any) => {
-      if (business.business_name || business.name) {
-        competitors.add(business.business_name || business.name);
-      }
-    });
-  }
-
-  // Extract from snippets
-  if (result.snippets && Array.isArray(result.snippets)) {
-    result.snippets.forEach((snippet: any) => {
-      if (snippet.title?.includes('Law') || snippet.title?.includes('Attorney')) {
-        const title = snippet.title.split(' - ')[0];
-        competitors.add(title);
-      }
+      const name = business?.business_name || business?.name;
+      if (name) competitors.add(String(name));
     });
   }
 
   return Array.from(competitors);
 }
 
-function calculateCompetitiveScore(firmMentions: number, topCompetitors: [string, number][], totalQueries: number): number {
-  if (topCompetitors.length === 0) return 100;
-  
+/**
+ * How the firm stacks up against the most frequently surfaced real competitor.
+ * Purely derived from the counts observed in this run.
+ */
+function calculateCompetitiveScore(firmMentions: number, topCompetitors: [string, number][]): number {
+  if (topCompetitors.length === 0) return firmMentions > 0 ? 100 : 0;
+
   const topCompetitorMentions = topCompetitors[0][1];
   if (firmMentions >= topCompetitorMentions) return 100;
   if (firmMentions === 0) return 0;
-  
+
   return Math.round((firmMentions / topCompetitorMentions) * 100);
 }
 
+/**
+ * Every suggestion below is DERIVED FROM THIS RUN's numbers — no hardcoded
+ * advice, no invented impact scores. Suggestions about channels we do not
+ * measure (e.g. Siri / Apple Business Connect) were removed outright.
+ */
 function generateOptimizationSuggestions(
-  assistantPerformance: any,
+  platformBreakdown: { platform: string; mentions: number; total: number; score: number }[],
   topCompetitors: [string, number][],
-  presenceScore: number
+  presenceScore: number,
+  scoredAnswers: number,
 ): any {
-  const suggestions = [];
+  const suggestions: any[] = [];
 
-  if (presenceScore < 30) {
+  if (scoredAnswers === 0) return suggestions;
+
+  // Overall visibility gap: impact is the measured percentage of answers that
+  // failed to name the firm.
+  if (presenceScore < 100) {
     suggestions.push({
-      priority: 'high',
-      category: 'GBP Optimization',
-      title: 'Improve Google Business Profile',
-      description: 'Your firm has low visibility across voice assistants. Optimize your Google Business Profile with complete information, photos, and regular posts.',
-      impact: 85
+      priority: presenceScore < 30 ? 'high' : presenceScore < 70 ? 'medium' : 'low',
+      category: 'AI Visibility',
+      title: `Firm named in ${presenceScore}% of AI answers`,
+      description: `Your firm appeared in ${presenceScore}% of the ${scoredAnswers} AI assistant answers measured in this run. Publish authoritative, question-shaped content for the topics below so assistants have a reason to cite you.`,
+      impact: 100 - presenceScore,
     });
   }
 
-  if (assistantPerformance.google?.mentions === 0) {
-    suggestions.push({
-      priority: 'high', 
-      category: 'SEO',
-      title: 'Add FAQ Schema Markup',
-      description: 'Implement FAQ schema on your website to increase chances of appearing in Google AI Overviews.',
-      impact: 75
-    });
+  // Per-platform gaps, only for platforms actually queried.
+  for (const p of platformBreakdown) {
+    if (p.total > 0 && p.mentions === 0) {
+      suggestions.push({
+        priority: 'high',
+        category: 'Platform Gap',
+        title: `No mentions on ${p.platform}`,
+        description: `${p.platform} named your firm in 0 of ${p.total} answers, while your overall rate is ${presenceScore}%. Strengthen the sources this platform draws on: your own site's FAQ content, and your Google Business Profile.`,
+        impact: Math.round((p.total / Math.max(scoredAnswers, 1)) * 100),
+      });
+    } else if (p.total > 0 && p.score < presenceScore) {
+      suggestions.push({
+        priority: 'medium',
+        category: 'Platform Gap',
+        title: `${p.platform} lags at ${p.score}%`,
+        description: `${p.platform} named your firm in ${p.mentions} of ${p.total} answers (${p.score}%), below your ${presenceScore}% average.`,
+        impact: presenceScore - p.score,
+      });
+    }
   }
 
+  // Competitor pressure, using only real firm domains observed in this run.
   if (topCompetitors.length > 0) {
+    const [name, count] = topCompetitors[0];
     suggestions.push({
       priority: 'medium',
-      category: 'Reviews',
-      title: 'Review Acquisition Campaign',
-      description: `Your top competitor ${topCompetitors[0][0]} appears frequently. Focus on collecting more client reviews to improve local rankings.`,
-      impact: 65
+      category: 'Competitors',
+      title: `${name} surfaced ${count} time${count === 1 ? '' : 's'}`,
+      description: `${name} was recommended ${count} time${count === 1 ? '' : 's'} across the answers in this run. Review what that firm publishes on these topics and match or exceed its depth.`,
+      impact: Math.round((count / Math.max(scoredAnswers, 1)) * 100),
     });
   }
 
-  suggestions.push({
-    priority: 'medium',
-    category: 'Apple Business Connect',
-    title: 'Apple Business Connect Setup', 
-    description: 'Claim and optimize your Apple Business Connect listing to improve Siri responses.',
-    impact: 50
-  });
-
   return suggestions;
-}
-
-function checkComplianceIssues(results: any[]): any {
-  const issues = [];
-  
-  results.forEach(result => {
-    const content = [
-      result.ai_overview_text,
-      result.voice_transcript,
-      JSON.stringify(result.snippets)
-    ].filter(Boolean).join(' ');
-
-    // Check for attorney advertising compliance
-    if (content.includes('attorney') || content.includes('lawyer')) {
-      if (!content.includes('advertising') && !content.includes('disclaimer')) {
-        issues.push({
-          type: 'attorney_advertising',
-          description: 'Legal advertising disclaimers may be required',
-          severity: 'medium'
-        });
-      }
-    }
-  });
-
-  return issues;
 }
