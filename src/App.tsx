@@ -75,6 +75,9 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
+        {/* Public route: Supabase recovery links land here with a session in the URL fragment */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
           <Route path="/dashboard/*" element={
             <ProtectedRoute>
               <Dashboard />
