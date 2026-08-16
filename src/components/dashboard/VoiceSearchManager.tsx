@@ -87,6 +87,9 @@ export function VoiceSearchManager() {
   // Per-question results for the currently selected test (results tab).
   const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
+  // Scorecard for the selected test (per-model-answer scores + platform split).
+  const [analysis, setAnalysis] = useState<TestAnalysis | null>(null);
+
   // True while the 'start' request is in flight — blocks a double click.
   const [isStarting, setIsStarting] = useState(false);
   // Wall-clock start of the current run; drives the elapsed-time readout so a
