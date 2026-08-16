@@ -15,8 +15,9 @@ interface AuthContextType {
   subscriptionTier: string | null;
   subscriptionEnd: string | null;
   refreshSubscription: () => Promise<void>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  /** captchaToken is a single-use Cloudflare Turnstile token required by Supabase Auth CAPTCHA protection. */
+  signUp: (email: string, password: string, displayName?: string, captchaToken?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -141,7 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [user, refreshSubscription]);
 
   // --- Sign Up ---
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, displayName?: string, captchaToken?: string) => {
     try {
       const sanitizedEmail = sanitizeEmail(email);
       const sanitizedDisplayName = displayName ? sanitizeString(displayName) : undefined;
@@ -165,7 +166,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: sanitizedDisplayName ? { display_name: sanitizedDisplayName } : undefined
+          data: sanitizedDisplayName ? { display_name: sanitizedDisplayName } : undefined,
+          // Single-use Turnstile token verified by Supabase Auth CAPTCHA protection.
+          captchaToken,
         }
       });
       
@@ -186,7 +189,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // --- Sign In ---
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       const sanitizedEmail = sanitizeEmail(email);
       const validationResult = signInSchema.safeParse({ email: sanitizedEmail, password });
@@ -198,7 +201,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error: new Error(errorMessage) };
       }
 
-      const { error } = await supabase.auth.signInWithPassword({ email: sanitizedEmail, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password,
+        // Single-use Turnstile token verified by Supabase Auth CAPTCHA protection.
+        options: { captchaToken },
+      });
       
       if (error) {
         logger.warn('Sign in failed', { email: sanitizedEmail, error: error.message });
