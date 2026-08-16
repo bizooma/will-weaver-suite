@@ -19,7 +19,15 @@ interface AuthContextType {
   /** captchaToken is a single-use Cloudflare Turnstile token required by Supabase Auth CAPTCHA protection. */
   signUp: (email: string, password: string, displayName?: string, captchaToken?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: any }>;
+  /**
+   * Sends a password-recovery email. Supabase Auth CAPTCHA protection gates the
+   * recovery endpoint too, so a single-use Turnstile token is required.
+   */
+  resetPassword: (email: string, captchaToken?: string) => Promise<{ error: any }>;
+  /** Sets a new password for the currently authenticated (or recovery) session. */
+  updatePassword: (newPassword: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
