@@ -121,6 +121,22 @@ const Auth = () => {
     if (token) setSignUpCaptchaError(false);
   };
 
+  /**
+   * Request a password-recovery email. The confirmation shown is deliberately
+   * identical whether or not the address has an account (no user enumeration),
+   * and the single-use Turnstile token is always refreshed afterwards.
+   */
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetSending(true);
+    await resetPassword(resetEmail, resetToken ?? undefined);
+    setResetToken(null);
+    setResetSignal((n) => n + 1);
+    setResetSending(false);
+    setResetSent(true);
+  };
+
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
