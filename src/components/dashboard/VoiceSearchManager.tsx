@@ -669,6 +669,39 @@ export function VoiceSearchManager() {
         </TabsContent>
 
         <TabsContent value="results" className="space-y-6">
+          {/* The progress card stays visible here so the final counts
+              (total / completed / failed / unavailable) are not lost when the
+              poll flips the user over to this tab. */}
+          {testProgress && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Run Summary</CardTitle>
+                <CardDescription>Final query counts for this test</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Progress value={testProgress.percentage} className="w-full" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600">{testProgress.total}</div>
+                    <div className="text-sm text-muted-foreground">Total Queries</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">{testProgress.completed}</div>
+                    <div className="text-sm text-muted-foreground">Completed</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-red-600">{testProgress.failed}</div>
+                    <div className="text-sm text-muted-foreground">Failed</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-muted-foreground">{testProgress.unavailable ?? 0}</div>
+                    <div className="text-sm text-muted-foreground">Unavailable</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* When a test ends as 'unavailable', no live provider data was collected.
               We must never show scores, charts, or a results table in that case. */}
           {currentTest?.status === 'unavailable' ? (
@@ -680,13 +713,69 @@ export function VoiceSearchManager() {
                 </p>
               </CardContent>
             </Card>
+          ) : isLoadingResults ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                Loading results...
+              </CardContent>
+            </Card>
+          ) : questionResults && questionResults.length > 0 ? (
+            <div className="space-y-4">
+              {questionResults.map((qr) => (
+                <Card key={qr.queryId}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <CardTitle className="text-base leading-snug">{qr.question}</CardTitle>
+                      {/* Presence: was the firm named in any assistant answer? */}
+                      <Badge variant={qr.mentioned ? "default" : "secondary"}>
+                        {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Evidence snippets, one per answering platform. */}
+                    {qr.snippets.length > 0 ? (
+                      <div className="space-y-3">
+                        {qr.snippets.map((s, i) => (
+                          <div key={i} className="rounded-md border p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="capitalize">{s.platform}</Badge>
+                              {s.isCitation && <Badge variant="outline">Cited link</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {s.snippet || "No evidence text returned."}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No answer captured for this question.</p>
+                    )}
+
+                    {/* Competitors the assistants surfaced instead of the firm. */}
+                    <div>
+                      <Label className="text-sm">Competitors mentioned</Label>
+                      {qr.competitors.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {qr.competitors.map((c) => (
+                            <Badge key={c} variant="secondary">{c}</Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-1">None detected.</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Results Coming Soon</h3>
+                <h3 className="text-lg font-semibold mb-2">No results yet</h3>
                 <p className="text-muted-foreground">
-                  Detailed analysis and recommendations will appear here after your test completes.
+                  Run a test to see which AI assistants recommend your firm.
                 </p>
               </CardContent>
             </Card>
