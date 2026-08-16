@@ -35,6 +35,8 @@ interface TestProgress {
   total: number;
   completed: number;
   failed: number;
+  /** Queries whose provider has no live data source (edge function returned 501). */
+  unavailable: number;
   percentage: number;
 }
 
