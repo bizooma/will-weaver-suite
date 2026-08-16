@@ -189,7 +189,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // --- Sign In ---
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, captchaToken?: string) => {
     try {
       const sanitizedEmail = sanitizeEmail(email);
       const validationResult = signInSchema.safeParse({ email: sanitizedEmail, password });
