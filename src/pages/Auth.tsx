@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import SEOHead from '@/components/SEOHead';
+import TurnstileWidget from '@/components/TurnstileWidget';
 import { rateLimiter, SECURITY_CONFIG } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,12 +89,12 @@ const Auth = () => {
    */
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSignInCaptchaError((prev) => (signInToken ? false : true));
-      setSignUpCaptchaError((prev) => (signUpToken ? false : true));
+      setSignInCaptchaError(!signInToken);
+      setSignUpCaptchaError(!signUpToken);
     }, 12000);
     return () => clearTimeout(timer);
     // Re-armed whenever a widget resets so a fresh challenge gets its own grace period.
-  }, [signInReset, signUpReset]);
+  }, [signInReset, signUpReset, signInToken, signUpToken]);
 
   // Clear the "could not load" notice as soon as a token arrives.
   const handleSignInVerify = (token: string | null) => {
@@ -121,9 +122,11 @@ const Auth = () => {
     setLoading(true);
     setRateLimitMessage('');
     
-    const { error } = await signIn(email, password);
-    if (!error) {
-      // postAuthRedirect is triggered by the useEffect when `user` changes
+    const { error } = await signIn(email, password, signInToken ?? undefined);
+    if (error) {
+      // Turnstile tokens are single use — issue a fresh one so the user can retry.
+      setSignInToken(null);
+      setSignInReset((n) => n + 1);
     }
     setLoading(false);
   };
@@ -144,7 +147,12 @@ const Auth = () => {
     setLoading(true);
     setRateLimitMessage('');
     
-    const { error } = await signUp(email, password, displayName);
+    const { error } = await signUp(email, password, displayName, signUpToken ?? undefined);
+    if (error) {
+      // Turnstile tokens are single use — issue a fresh one so the user can retry.
+      setSignUpToken(null);
+      setSignUpReset((n) => n + 1);
+    }
     setLoading(false);
   };
 
@@ -202,7 +210,15 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                {/* Cloudflare Turnstile — token is required by Supabase Auth CAPTCHA protection */}
+                <TurnstileWidget onVerify={handleSignInVerify} resetSignal={signInReset} />
+                {signInCaptchaError && (
+                  <p className="text-sm text-destructive">
+                    The security check could not load. Please disable any ad blocker or privacy
+                    extension, check your connection, and reload the page to try again.
+                  </p>
+                )}
+                <Button type="submit" className="w-full" disabled={loading || !signInToken}>
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
@@ -241,7 +257,15 @@ const Auth = () => {
                     minLength={SECURITY_CONFIG.INPUT_LIMITS.PASSWORD_MIN_LENGTH}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                {/* Cloudflare Turnstile — token is required by Supabase Auth CAPTCHA protection */}
+                <TurnstileWidget onVerify={handleSignUpVerify} resetSignal={signUpReset} />
+                {signUpCaptchaError && (
+                  <p className="text-sm text-destructive">
+                    The security check could not load. Please disable any ad blocker or privacy
+                    extension, check your connection, and reload the page to try again.
+                  </p>
+                )}
+                <Button type="submit" className="w-full" disabled={loading || !signUpToken}>
                   {loading ? 'Creating account...' : 'Sign Up'}
                 </Button>
               </form>
