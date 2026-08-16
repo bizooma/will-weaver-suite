@@ -322,6 +322,19 @@ export function VoiceSearchManager() {
   };
 
   const updateTestQuestion = (index: number, value: string) => {
+    // Pasting a multi-line list should become multiple questions, not one blob.
+    if (/[\r\n]/.test(value)) {
+      const lines = value.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
+      setFormData(prev => {
+        const next = [...prev.testQuestions];
+        // First pasted line replaces the edited slot; the rest fill/append after
+        // it, all within the MAX_QUESTIONS cap.
+        next.splice(index, 1, ...lines);
+        return { ...prev, testQuestions: next.slice(0, MAX_QUESTIONS) };
+      });
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       testQuestions: prev.testQuestions.map((q, i) => i === index ? value : q)
