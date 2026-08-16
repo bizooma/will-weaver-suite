@@ -146,7 +146,7 @@ export function VoiceSearchManager() {
           market_zip: formData.marketZip || null,
           practice_areas: formData.practiceAreas,
           custom_practice_area: formData.customPracticeArea || null,
-          test_questions: formData.testQuestions.filter(q => q.trim()),
+          test_questions: formData.testQuestions.filter(q => q.trim()).slice(0, 8),
           selected_assistants: formData.selectedAssistants,
           settings: {
             firmDomain: formData.firmDomain,
