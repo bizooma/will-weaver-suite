@@ -191,6 +191,8 @@ serve(async (req) => {
       const totalQueries = queries?.length || 0;
       const completedQueries = queries?.filter(q => q.status === 'completed').length || 0;
       const failedQueries = queries?.filter(q => q.status === 'failed').length || 0;
+      // Queries whose provider has no live data source (edge function returned 501).
+      const unavailableQueries = queries?.filter(q => q.status === 'unavailable').length || 0;
 
       return new Response(JSON.stringify({ 
         status: test?.status,
@@ -198,6 +200,7 @@ serve(async (req) => {
           total: totalQueries,
           completed: completedQueries,
           failed: failedQueries,
+          unavailable: unavailableQueries,
           percentage: totalQueries > 0 ? Math.round((completedQueries + failedQueries) / totalQueries * 100) : 0
         }
       }), {
