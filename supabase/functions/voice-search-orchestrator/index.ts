@@ -132,6 +132,9 @@ serve(async (req) => {
 
           const settings = (test.settings || {}) as Record<string, unknown>;
           const domain = String(settings.firmDomain || '').trim();
+          // Models usually write the firm's NAME ("Phillips Law Group"), not its
+          // URL, so forward the business name as an extra mention signal.
+          const businessName = String(settings.firmBusinessName || '').trim();
 
           // Without a firm domain there is nothing to detect a mention of.
           if (!domain) {
