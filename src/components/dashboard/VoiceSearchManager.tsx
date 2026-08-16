@@ -815,17 +815,86 @@ export function VoiceSearchManager() {
             </Card>
           ) : questionResults && questionResults.length > 0 ? (
             <div className="space-y-4">
+              {/* Scorecard: one score, computed per MODEL ANSWER — the same
+                  denominator ai_visibility_runs uses — with the per-platform
+                  split, which is the most actionable number in the report. */}
+              {analysis && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">AI Search Visibility Score</CardTitle>
+                    <CardDescription>
+                      {analysis.competitor_data?.mentionAnswers ?? 0} of {analysis.competitor_data?.scoredAnswers ?? 0} AI model answers named your firm
+                      {(analysis.competitor_data?.brandedQuestionsExcluded ?? 0) > 0
+                        ? ` · ${analysis.competitor_data?.brandedQuestionsExcluded} branded question(s) excluded from scoring`
+                        : ''}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-3xl font-bold text-primary">{analysis.overall_score}%</div>
+                        <div className="text-sm text-muted-foreground">Overall</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold">{analysis.presence_score}%</div>
+                        <div className="text-sm text-muted-foreground">Presence</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold">{analysis.competitive_score}%</div>
+                        <div className="text-sm text-muted-foreground">Competitive</div>
+                      </div>
+                    </div>
+
+                    {(analysis.competitor_data?.platformBreakdown?.length ?? 0) > 0 && (
+                      <div>
+                        <Label className="text-sm">Per-platform breakdown</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {analysis.competitor_data!.platformBreakdown!.map((p) => (
+                            <Badge key={p.platform} variant="outline" className="capitalize">
+                              {p.platform} {p.mentions}/{p.total} ({p.score}%)
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(analysis.optimization_suggestions?.length ?? 0) > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-sm">Recommendations</Label>
+                        {analysis.optimization_suggestions!.map((s, i) => (
+                          <div key={i} className="rounded-md border p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="secondary" className="capitalize">{s.priority}</Badge>
+                              <span className="text-sm font-medium">{s.title}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{s.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {questionResults.map((qr) => (
                 <Card key={qr.queryId}>
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
                       <CardTitle className="text-base leading-snug">{qr.question}</CardTitle>
-                      {/* Presence: was the firm named in any assistant answer? */}
-                      <Badge variant={qr.mentioned ? "default" : "secondary"}>
-                        {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-2">
+                        {/* Presence: was the firm named in any assistant answer? */}
+                        <Badge variant={qr.mentioned ? "default" : "secondary"}>
+                          {qr.mentioned ? "Firm mentioned" : "Not mentioned"}
+                        </Badge>
+                        {/* A question containing the firm's own name guarantees a
+                            mention, so it is shown but never scored. */}
+                        {qr.branded && (
+                          <Badge variant="outline">Branded query — excluded from score</Badge>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
+
                   <CardContent className="space-y-4">
                     {/* Evidence snippets, one per answering platform. */}
                     {qr.snippets.length > 0 ? (
