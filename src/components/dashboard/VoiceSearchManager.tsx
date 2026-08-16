@@ -252,7 +252,17 @@ export function VoiceSearchManager() {
   };
 
   const startTest = async (testId: string) => {
-    setIsLoading(true);
+    // Guard the double click on the client too: the orchestrator answers 409 for
+    // an already-running test, but we should never even send the second request.
+    if (isStarting || currentTest?.status === 'running') return;
+    setIsStarting(true);
+    // Show the progress card immediately instead of waiting for the first poll.
+    setTestProgress({ total: 0, completed: 0, failed: 0, unavailable: 0, percentage: 0 });
+    setElapsedSeconds(0);
+    setStartedAt(Date.now());
+    setCurrentTest(prev => (prev ? { ...prev, status: 'running' } : prev));
+    setQuestionResults(null);
+
     try {
       const { data, error } = await invoke('voice-search-orchestrator', {
         body: {
@@ -263,13 +273,17 @@ export function VoiceSearchManager() {
 
       if (error) throw error;
 
-      toast.success('Voice search test started');
+      toast.success('AI search visibility test started');
       monitorTestProgress(testId);
     } catch (error) {
       console.error('Error starting test:', error);
-      toast.error('Failed to start voice search test');
+      toast.error('Failed to start test — it may already be running');
+      // Roll back the optimistic 'running' state so the button comes back.
+      setCurrentTest(prev => (prev ? { ...prev, status: 'pending' } : prev));
+      setTestProgress(null);
+      setStartedAt(null);
     } finally {
-      setIsLoading(false);
+      setIsStarting(false);
     }
   };
 
@@ -290,6 +304,7 @@ export function VoiceSearchManager() {
         // 'unavailable' means no provider returned live data — stop polling too.
         if (data.status === 'completed' || data.status === 'failed' || data.status === 'unavailable') {
           clearInterval(interval);
+          setStartedAt(null);
           setActiveTab("results");
           loadTests();
           // Keep the final counts on screen (the results tab renders the same
@@ -300,9 +315,11 @@ export function VoiceSearchManager() {
       } catch (error) {
         console.error('Error monitoring test progress:', error);
         clearInterval(interval);
+        setStartedAt(null);
       }
     }, 2000);
   };
+
 
   /**
    * Hard cap on questions per test. ai-visibility-check runs each prompt
