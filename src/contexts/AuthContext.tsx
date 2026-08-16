@@ -323,6 +323,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     refreshSubscription,
     signUp,
     signIn,
+    resetPassword,
+    updatePassword,
+
     signOut,
   };
 
