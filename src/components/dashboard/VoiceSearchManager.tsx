@@ -323,8 +323,9 @@ export function VoiceSearchManager() {
                 </div>
               </div>
 
+              {/* Required: mention detection needs a domain to look for. */}
               <div className="space-y-2">
-                <Label htmlFor="firmDomain">Firm Website (Optional)</Label>
+                <Label htmlFor="firmDomain">Firm Website</Label>
                 <Input
                   id="firmDomain"
                   value={formData.firmDomain}
@@ -332,6 +333,7 @@ export function VoiceSearchManager() {
                   placeholder="https://yourfirm.com"
                 />
               </div>
+
 
               <div className="space-y-4">
                 <Label>Practice Areas</Label>
