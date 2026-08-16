@@ -269,6 +269,13 @@ serve(async (req) => {
             .update({ status: 'completed' })
             .eq('id', testId);
         }).catch((e) => console.error('Finalize failed:', e));
+
+        // @ts-ignore - EdgeRuntime is provided by the Supabase edge runtime.
+        if (typeof EdgeRuntime !== 'undefined') {
+          // @ts-ignore
+          EdgeRuntime.waitUntil(finalize);
+        }
+
       }
 
       return json({
