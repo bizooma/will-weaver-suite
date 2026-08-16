@@ -524,7 +524,7 @@ export function VoiceSearchManager() {
                     <Mic className="h-12 w-12 mx-auto mb-4 text-primary animate-pulse" />
                     <h3 className="text-lg font-semibold mb-2">Test Running...</h3>
                     <p className="text-muted-foreground">
-                      Testing voice assistants across your selected questions. This may take a few minutes.
+                      Querying ChatGPT and Gemini with your selected questions. This may take a few minutes.
                     </p>
                   </div>
                 )}
