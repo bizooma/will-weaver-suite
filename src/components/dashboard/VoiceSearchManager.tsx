@@ -1127,6 +1127,38 @@ export function VoiceSearchManager() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/*
+        Destructive-action confirmation. Names the test explicitly and states
+        that its results are permanently removed (the database cascade deletes
+        the test's questions, answers and analysis along with it).
+      */}
+      <AlertDialog open={!!testToDelete} onOpenChange={(open) => !open && setTestToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{testToDelete?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the test "{testToDelete?.name}" along with all of its
+              questions, AI assistant answers and analysis results. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                // Keep the dialog open until the delete resolves.
+                e.preventDefault();
+                handleDeleteTest();
+              }}
+            >
+              {isDeleting ? 'Deleting…' : 'Delete permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+
     </div>
   );
 }
