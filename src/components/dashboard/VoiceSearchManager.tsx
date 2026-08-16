@@ -49,6 +49,9 @@ export function VoiceSearchManager() {
   const [currentTest, setCurrentTest] = useState<VoiceSearchTest | null>(null);
   const [testProgress, setTestProgress] = useState<TestProgress | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Per-question results for the currently selected test (results tab).
+  const [questionResults, setQuestionResults] = useState<QuestionResult[] | null>(null);
+  const [isLoadingResults, setIsLoadingResults] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
