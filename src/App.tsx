@@ -23,6 +23,8 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import CookiePolicy from "./pages/CookiePolicy";
