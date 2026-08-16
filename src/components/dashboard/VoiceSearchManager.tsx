@@ -264,9 +264,10 @@ export function VoiceSearchManager() {
         <TabsContent value="setup" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Voice Search Test</CardTitle>
+              <CardTitle>Create New AI Search Visibility Test</CardTitle>
               <CardDescription>
-                Configure your test parameters to analyze voice search performance across different assistants
+                Configure your test to measure how often AI assistants recommend your firm for these questions
+
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
