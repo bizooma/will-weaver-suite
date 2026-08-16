@@ -103,3 +103,9 @@ verify_jwt = false
 
 [functions.qr-backfill-geo]
 verify_jwt = false
+
+# AI Search Visibility orchestrator: requires a valid JWT at the gateway, and
+# additionally verifies test ownership inside the function.
+[functions.voice-search-orchestrator]
+verify_jwt = true
+

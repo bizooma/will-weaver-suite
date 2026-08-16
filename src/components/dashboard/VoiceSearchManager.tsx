@@ -59,7 +59,9 @@ export function VoiceSearchManager() {
     practiceAreas: [] as string[],
     customPracticeArea: "",
     testQuestions: [""],
-    selectedAssistants: [] as string[],
+    // AI Assistants is the default (and only) provider that returns real data.
+    selectedAssistants: ["ai_assistants"] as string[],
+
     firmDomain: "",
     firmBusinessName: ""
   });
@@ -80,17 +82,22 @@ export function VoiceSearchManager() {
   /**
    * Selectable providers.
    *
+   * 'ai_assistants' is the default and only enabled option: it routes to the
+   * ai-visibility-check engine, which asks ChatGPT and Gemini the test questions
+   * live and detects real mentions, citations and competitors.
+   *
    * Siri and Alexa are intentionally absent: there is no public API that returns
-   * what those assistants would answer (SiriKit / Alexa Skills Kit only let you
-   * publish a skill), so they can never produce real data and must not be offered.
+   * what those assistants would answer, so they can never produce real data.
    *
    * Google and Bing remain listed but are disabled until a paid SERP data
    * provider is wired up — they are genuinely buildable later.
    */
   const assistantOptions = [
+    { id: "ai_assistants", name: "AI Assistants (ChatGPT, Gemini)", icon: MessageSquare, description: "Live answers from ChatGPT & Gemini — mentions, citations, competitors", available: true },
     { id: "google", name: "Google Search", icon: Search, description: "AI Overviews & Local Pack", available: false },
     { id: "bing", name: "Bing Copilot", icon: MessageSquare, description: "Chat Responses & Web Results", available: false }
   ];
+
 
 
   const suggestedQuestions = [
@@ -238,10 +245,11 @@ export function VoiceSearchManager() {
       <div className="flex items-center gap-3">
         <Mic className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">Voice Search Simulator</h1>
+          <h1 className="text-3xl font-bold">AI Search Visibility</h1>
           <p className="text-muted-foreground">
-            Test how Google, Bing, Siri, and Alexa respond to legal queries in your market
+            See whether ChatGPT and Gemini recommend your law firm when prospective clients ask legal questions in your market
           </p>
+
         </div>
       </div>
 
@@ -256,9 +264,10 @@ export function VoiceSearchManager() {
         <TabsContent value="setup" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Create New Voice Search Test</CardTitle>
+              <CardTitle>Create New AI Search Visibility Test</CardTitle>
               <CardDescription>
-                Configure your test parameters to analyze voice search performance across different assistants
+                Configure your test to measure how often AI assistants recommend your firm for these questions
+
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -316,8 +325,9 @@ export function VoiceSearchManager() {
                 </div>
               </div>
 
+              {/* Required: mention detection needs a domain to look for. */}
               <div className="space-y-2">
-                <Label htmlFor="firmDomain">Firm Website (Optional)</Label>
+                <Label htmlFor="firmDomain">Firm Website</Label>
                 <Input
                   id="firmDomain"
                   value={formData.firmDomain}
@@ -325,6 +335,7 @@ export function VoiceSearchManager() {
                   placeholder="https://yourfirm.com"
                 />
               </div>
+
 
               <div className="space-y-4">
                 <Label>Practice Areas</Label>
@@ -398,36 +409,54 @@ export function VoiceSearchManager() {
               </div>
 
               <div className="space-y-4">
-                <Label>Voice Assistants</Label>
+                <Label>AI Assistants & Search Engines</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {assistantOptions.map((assistant) => (
-                    <Card key={assistant.id} className="p-4 opacity-60">
-                      <div className="flex items-center space-x-3">
-                        {/* Disabled until a SERP data provider is configured. */}
-                        <Checkbox id={assistant.id} checked={false} disabled />
-                        <assistant.icon className="h-6 w-6 text-muted-foreground" />
-                        <div>
-                          <Label htmlFor={assistant.id} className="font-medium">
-                            {assistant.name}
-                          </Label>
-                          <p className="text-sm text-muted-foreground">{assistant.description}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Coming soon — requires SERP data provider
-                          </p>
+                  {assistantOptions.map((assistant) => {
+                    const checked = formData.selectedAssistants.includes(assistant.id);
+                    return (
+                      <Card key={assistant.id} className={`p-4 ${assistant.available ? "" : "opacity-60"}`}>
+                        <div className="flex items-center space-x-3">
+                          {/* Unavailable providers stay visible but locked. */}
+                          <Checkbox
+                            id={assistant.id}
+                            checked={assistant.available ? checked : false}
+                            disabled={!assistant.available}
+                            onCheckedChange={(value) => {
+                              if (!assistant.available) return;
+                              setFormData(prev => ({
+                                ...prev,
+                                selectedAssistants: value
+                                  ? [...new Set([...prev.selectedAssistants, assistant.id])]
+                                  : prev.selectedAssistants.filter(a => a !== assistant.id),
+                              }));
+                            }}
+                          />
+                          <assistant.icon className={`h-6 w-6 ${assistant.available ? "text-primary" : "text-muted-foreground"}`} />
+                          <div>
+                            <Label htmlFor={assistant.id} className="font-medium">
+                              {assistant.name}
+                            </Label>
+                            <p className="text-sm text-muted-foreground">{assistant.description}</p>
+                            {!assistant.available && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Coming soon — requires SERP data provider
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
 
               <div className="flex justify-end">
                 <Button 
                   onClick={createTest}
-                  disabled={isLoading || !formData.name || !formData.marketCity || !formData.marketState || formData.selectedAssistants.length === 0}
+                  disabled={isLoading || !formData.name || !formData.marketCity || !formData.marketState || !formData.firmDomain.trim() || formData.selectedAssistants.length === 0}
                   className="min-w-[150px]"
                 >
+
                   {isLoading ? "Creating..." : "Create Test"}
                 </Button>
               </div>
@@ -495,7 +524,7 @@ export function VoiceSearchManager() {
                     <Mic className="h-12 w-12 mx-auto mb-4 text-primary animate-pulse" />
                     <h3 className="text-lg font-semibold mb-2">Test Running...</h3>
                     <p className="text-muted-foreground">
-                      Testing voice assistants across your selected questions. This may take a few minutes.
+                      Querying ChatGPT and Gemini with your selected questions. This may take a few minutes.
                     </p>
                   </div>
                 )}
