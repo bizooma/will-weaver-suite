@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Puppeteer Chromium cache used by the prerender step
+.cache

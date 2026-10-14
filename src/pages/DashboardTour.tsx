@@ -91,7 +91,7 @@ function DashboardTourContent() {
       <SEOHead
         title="Interactive Platform Tour | Amicus Edge"
         description="Explore Amicus Edge's legal marketing platform. Try chatbots, voice search, QR codes, and more — no signup required."
-        path="/tour"
+        path="/dashboard-tour"
         keywords={['legal marketing demo', 'law firm technology tour', 'legal chatbot demo', 'voice search for lawyers']}
       />
 
