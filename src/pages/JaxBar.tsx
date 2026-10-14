@@ -1,6 +1,6 @@
 /**
  * JaxBar — Exclusive 50%-off pricing page for JAXbar.org attorneys.
- * This page is NOT indexed (noindex, nofollow) since it's a private sponsorship offer.
+ * This page IS indexed and in the sitemap — Joe wants the JAX Bar member offer discoverable.
  * Mirrors the main PricingTable plans but displays halved prices.
  */
 
@@ -139,7 +139,7 @@ const JaxBar = () => {
 
   return (
     <main>
-      {/* noindex/nofollow — this page should NOT be crawled or indexed */}
+      {/* Indexable (no robots noindex) — page is listed in public/sitemap.xml */}
       <Helmet>
         <title>JAX Bar Exclusive Pricing | Amicus Edge</title>
         <meta name="description" content="Exclusive 50% off Amicus Edge pricing for Jacksonville Bar Association members." />
