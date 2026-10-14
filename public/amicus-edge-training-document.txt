@@ -128,7 +128,7 @@ are changing how potential clients find legal services. Our analyzer
 ensures your firm stays visible across all modern search channels.
 
 ===================================================
-SERVICE 5: CUSTOM ALEXA SKILLS
+SERVICE 4: CUSTOM ALEXA SKILLS
 ===================================================
 
 We create custom-branded Amazon Alexa skills for law firms, allowing
@@ -154,7 +154,7 @@ Why Your Firm Needs an Alexa Skill:
 Availability: Included in Pro PI and Pro Estate subscription plans.
 
 ===================================================
-SERVICE 6: BRANDED MOBILE APP
+SERVICE 5: BRANDED MOBILE APP
 ===================================================
 
 We design and develop fully customized mobile apps that carry your firm's
@@ -184,7 +184,7 @@ Benefits:
 Availability: Included in Pro PI and Pro Estate subscription plans.
 
 ===================================================
-SERVICE 7: INTERACTIVE WILL & TRUST CREATOR
+SERVICE 6: INTERACTIVE WILL & TRUST CREATOR
 ===================================================
 
 Transform your estate planning practice with our cutting-edge Interactive
@@ -215,7 +215,7 @@ Benefits:
 Availability: Included in Standard and Pro Estate subscription plans.
 
 ===================================================
-SERVICE 8: NONPROFIT FORMATION & 501(c)(3)
+SERVICE 7: NONPROFIT FORMATION & 501(c)(3)
 ===================================================
 
 Launch nonprofit organizations with confidence using our comprehensive
@@ -241,7 +241,7 @@ Benefits:
 - Professional review before submission
 
 ===================================================
-SERVICE 9: MARKETING CALENDAR
+SERVICE 8: MARKETING CALENDAR
 ===================================================
 
 A built-in marketing calendar with heritage months, legal awareness
@@ -256,7 +256,7 @@ Key Features:
 - Easy-to-use calendar interface
 
 ===================================================
-SERVICE 10: LIVE OPERATOR SUPPORT
+SERVICE 9: LIVE OPERATOR SUPPORT
 ===================================================
 
 Seamlessly transfer chatbot conversations to live human operators when
