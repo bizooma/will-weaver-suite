@@ -62,6 +62,8 @@ export default function VoiceSearchSimulator() {
         title="Voice Search Simulator for Law Firms | Amicus Edge"
         description="Test how Google, Bing, Siri, and Alexa respond to legal queries in your market. Get optimization recommendations."
         path="/voice-search-simulator"
+        // Not indexable until the voice feature works — remove to re-enable.
+        noindex
         keywords={['voice search optimization', 'legal marketing', 'Google AI Overviews', 'law firm SEO']}
       />
 

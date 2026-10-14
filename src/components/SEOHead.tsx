@@ -32,6 +32,12 @@ export interface SEOHeadProps {
   keywords?: string[];
   /** Optional JSON-LD structured data object */
   structuredData?: Record<string, unknown>;
+  /**
+   * When true, emits <meta name="robots" content="noindex, nofollow">.
+   * Used for pages that stay reachable by direct link but must not be indexed
+   * (e.g. the voice feature pages while the feature is unfinished).
+   */
+  noindex?: boolean;
 }
 
 /** Site-wide brand constants used in every social card */
@@ -57,6 +63,7 @@ const SEOHead = ({
   type = "website",
   keywords,
   structuredData,
+  noindex = false,
 }: SEOHeadProps) => {
   // Canonical/og:url/og:image are pinned to the production domain on purpose.
   // Deriving them from window.location.origin would let the *.lovable.app
@@ -75,6 +82,7 @@ const SEOHead = ({
         <meta name="keywords" content={keywords.join(", ")} />
       )}
       <link rel="canonical" href={canonicalUrl} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* ── Open Graph ──────────────────────────────────────── */}
       <meta property="og:title" content={title} />
