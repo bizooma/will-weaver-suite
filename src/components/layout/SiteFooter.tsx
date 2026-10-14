@@ -44,7 +44,7 @@ const SiteFooter = () => {
                 loading="lazy"
               />
               <p className="text-sm text-muted-foreground">
-                AI-powered marketing platform helping law firms grow with chatbots, SEO tools, voice search, QR codes, and branded mobile apps.
+                AI-powered marketing platform helping law firms grow with chatbots, SEO tools, QR codes, and branded mobile apps.
               </p>
               
               {/* App Download Buttons */}
