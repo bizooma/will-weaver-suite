@@ -18,7 +18,7 @@ marketing tools, client engagement features, and document automation — all
 from a single, easy-to-use dashboard.
 
 Our platform combines Video Chatbots, QR Code Generation, AIO/SEO Analysis,
-Voice Search Optimization, Custom Alexa Skills, Branded Mobile Apps,
+Custom Alexa Skills, Branded Mobile Apps,
 Interactive Will & Trust Creation, Nonprofit Formation tools, a Marketing
 Calendar, and Live Operator support into one comprehensive solution.
 
@@ -126,34 +126,6 @@ The digital landscape is evolving rapidly. Traditional SEO alone is no
 longer sufficient. AI-powered search, voice assistants, and AI overviews
 are changing how potential clients find legal services. Our analyzer
 ensures your firm stays visible across all modern search channels.
-
-===================================================
-SERVICE 4: VOICE SEARCH SIMULATOR
-===================================================
-
-The Voice Search Simulator tests how your law firm appears when potential
-clients ask voice assistants for legal help in your market.
-
-Key Features:
-- Multi-Platform Testing: Test how Google, Bing, Siri, and Alexa respond
-  to legal queries in your target market.
-- Market-Specific Analysis: Get location-based insights for your city,
-  state, or zip code to understand local voice search competition.
-- Performance Scoring: Receive detailed scores for presence, frequency,
-  and competitive performance across all voice assistants.
-- Competitor Intelligence: See which competing firms dominate voice search
-  results and understand why they're winning.
-- Optimization Engine: Get actionable recommendations with prioritized
-  action items and impact scores.
-- Compliance Monitoring: Ensure your voice search presence meets legal
-  advertising requirements by state.
-
-Benefits:
-- Understand your firm's voice search visibility
-- Identify gaps in your voice search strategy
-- Track improvements over time
-- Stay ahead of competitors in voice search
-- Ensure compliance with legal advertising rules
 
 ===================================================
 SERVICE 5: CUSTOM ALEXA SKILLS
@@ -330,7 +302,6 @@ Included Features:
 - Everything in Basic
 - Custom Alexa Skill
 - Branded Mobile App (iOS & Android)
-- Voice Search Optimization & Simulator
 - Advanced Analytics
 
 --- PRO ESTATE PLAN: $4,500/month ---
@@ -340,7 +311,6 @@ Included Features:
 - Everything in Standard (includes Will & Trust Creator)
 - Custom Alexa Skill
 - Branded Mobile App (iOS & Android)
-- Voice Search Optimization & Simulator
 - Custom Integrations
 - Dedicated Account Manager
 - 24/7 Phone Support
@@ -352,7 +322,7 @@ FREQUENTLY ASKED QUESTIONS
 Q: What is Amicus Edge?
 A: Amicus Edge is an all-in-one AI-powered marketing and technology
 platform built specifically for law firms. It combines chatbots, SEO
-tools, QR codes, voice search, mobile apps, and document automation
+tools, QR codes, mobile apps, and document automation
 into a single dashboard.
 
 Q: Who is Amicus Edge for?
@@ -385,12 +355,6 @@ across three dimensions: traditional SEO, Voice SEO, and AI Overview
 optimization. It provides actionable recommendations to improve your
 visibility in modern search.
 
-Q: What is the Voice Search Simulator?
-A: The Voice Search Simulator tests how your firm appears when people
-ask Google, Siri, Alexa, and Bing for legal services in your market.
-It provides scores and recommendations to improve your voice search
-visibility.
-
 Q: Do I need technical skills to use Amicus Edge?
 A: No. The platform is designed to be user-friendly with no coding
 required. The chatbot widget can be added to any website with a
@@ -412,7 +376,7 @@ specializing in AI-powered solutions for the legal industry.
 
 Q: What makes Amicus Edge different from other legal tech platforms?
 A: Amicus Edge is the only platform that combines AI chatbots, SEO
-analysis, voice search optimization, QR codes, Alexa skills, mobile
+analysis, QR codes, Alexa skills, mobile
 apps, and document automation into a single, affordable platform
 built specifically for law firms.
 

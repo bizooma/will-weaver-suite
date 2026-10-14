@@ -99,7 +99,7 @@ const AIOAnalyzer = () => {
               <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">2</div>
               <div>
                 <h3 className="font-semibold mb-2">Capture Voice Search Traffic</h3>
-                <p className="text-muted-foreground">Over 50% of adults use voice search daily. Optimize your content for the conversational queries people actually speak.</p>
+                <p className="text-muted-foreground">Optimize your content for the conversational queries people actually speak.</p>
               </div>
             </div>
             <div className="flex items-start gap-4">

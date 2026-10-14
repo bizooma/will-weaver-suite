@@ -242,29 +242,6 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="container pb-24">
-        <h2 className="text-3xl mb-6">Testimonials</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground relative">
-            "As a solo practitioner, I was drowning in administrative tasks. The will creator and automated document drafting tools gave me my weekends back. My clients love the professional video chatbot experience on my website."
-            <div className="mt-3 text-foreground font-medium">Michael</div>
-            <div className="absolute bottom-3 right-3 flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-          </blockquote>
-          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground relative">
-            "The SEO analyzer identified issues I never would have found on my own. Our organic traffic increased 300% in just six months. The QR code system for client documents is brilliant - so much more professional than email attachments."
-            <div className="mt-3 text-foreground font-medium">Jennifer</div>
-            <div className="absolute bottom-3 right-3 flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-          </blockquote>
-        </div>
-      </section>
 
       <section id="pricing" className="relative pt-16 pb-24">
         <div 
