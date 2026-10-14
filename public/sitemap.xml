@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public marketing routes only. scripts/prerender.mjs reads this list, so
+     adding a <loc> here also prerenders it. No lastmod on purpose (no invented dates).
+     Voice-search pages and authenticated routes are excluded deliberately. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://amicusedge.com/</loc></url>
+  <url><loc>https://amicusedge.com/about</loc></url>
+  <url><loc>https://amicusedge.com/contact</loc></url>
+  <url><loc>https://amicusedge.com/blog</loc></url>
+  <url><loc>https://amicusedge.com/jax-bar</loc></url>
+  <url><loc>https://amicusedge.com/will-trust</loc></url>
+  <url><loc>https://amicusedge.com/nonprofit-formation-info</loc></url>
+  <url><loc>https://amicusedge.com/mobile-app</loc></url>
+  <url><loc>https://amicusedge.com/video-chatbots</loc></url>
+  <url><loc>https://amicusedge.com/qr-codes</loc></url>
+  <url><loc>https://amicusedge.com/aio-analyzer</loc></url>
+  <url><loc>https://amicusedge.com/privacy</loc></url>
+  <url><loc>https://amicusedge.com/terms</loc></url>
+  <url><loc>https://amicusedge.com/cookies</loc></url>
+</urlset>
