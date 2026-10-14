@@ -145,6 +145,8 @@ const JaxBar = () => {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
         <meta name="description" content="Exclusive 50% off Amicus Edge pricing for Jacksonville Bar Association members." />
+        {/* Self-referencing canonical, pinned to production (matches SEOHead behaviour) */}
+        <link rel="canonical" href="https://amicusedge.com/jax-bar" />
       </Helmet>
 
       {/* Hero banner with background image — only used on JAX Bar page */}
