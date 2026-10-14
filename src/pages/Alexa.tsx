@@ -9,6 +9,8 @@ const Alexa = () => {
         title="Custom Alexa Skills for Law Firms | Amicus Edge"
         description="Create branded Alexa skills so clients can ask legal questions, schedule consultations, and access firm resources hands-free."
         path="/alexa"
+        // Not indexable until the voice feature works — remove to re-enable.
+        noindex
         keywords={['Alexa skills', 'law firm voice assistant', 'legal voice search', 'smart speaker legal']}
       />
       

@@ -71,7 +71,7 @@ const Index = () => {
         title="AI-Powered Legal Tech for Law Firms | Amicus Edge"
         description="Grow your law firm with AI chatbots, SEO tools, QR codes, and branded mobile apps — all in one platform."
         path="/"
-        keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO', 'voice search for lawyers']}
+        keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO']}
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
@@ -93,7 +93,7 @@ const Index = () => {
           <div>
             <h1 className="text-4xl md:text-6xl mb-4">Modernize Your Law Firm with AI-Powered Legal Solutions</h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Video Chatbots, QR Code Generator, AIO/SEO Analyzer, Voice Search Simulator | One Marketing Platform
+              Video Chatbots, QR Code Generator, AIO/SEO Analyzer | One Marketing Platform
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {user ? (
@@ -171,7 +171,7 @@ const Index = () => {
             </article>
             <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
               <h3 className="text-xl font-serifBrand mb-2">AIO SEO Analyzer</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Get a comprehensive analysis of your website's SEO performance, including voice search and AI overview optimization. Our AIO SEO Analyzer identifies opportunities for improvement and provides actionable recommendations to help you rank higher in search results. Attract more qualified leads and grow your firm with a powerful, data-driven SEO strategy.</p>
+              <p className="text-sm text-muted-foreground mb-4 flex-grow">Get a comprehensive analysis of your website's SEO performance, including AI overview optimization. Our AIO SEO Analyzer identifies opportunities for improvement and provides actionable recommendations to help you rank higher in search results. Attract more qualified leads and grow your firm with a powerful, data-driven SEO strategy.</p>
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/aio-analyzer">Learn More</Link>
@@ -184,15 +184,6 @@ const Index = () => {
               <div className="mt-auto flex justify-center">
                 <Button asChild variant="outline" size="sm">
                   <Link to="/video-chatbots">Learn More</Link>
-                </Button>
-              </div>
-            </article>
-            <article className="glass-card-featured rounded-xl p-5 flex flex-col h-full">
-              <h3 className="text-xl font-serifBrand mb-2">Voice Search Simulator</h3>
-              <p className="text-sm text-muted-foreground mb-4 flex-grow">Test how your firm shows up when people ask Google, Siri, Alexa, or Bing for legal help. The Voice Search Simulator reveals exactly what answers clients hear—and gives you tailored optimization suggestions to ensure your firm is the one they call.</p>
-              <div className="mt-auto flex justify-center">
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/voice-search-simulator">Learn More</Link>
                 </Button>
               </div>
             </article>
@@ -254,15 +245,6 @@ const Index = () => {
       <section className="container pb-24">
         <h2 className="text-3xl mb-6">Testimonials</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground relative">
-            "The AI-powered chatbot has revolutionized our client intake process. We're capturing leads 24/7 and converting them at twice the rate we used to. The voice search simulator helped us optimize for exactly how our clients search for legal help."
-            <div className="mt-3 text-foreground font-medium">Sarah</div>
-            <div className="absolute bottom-3 right-3 flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-          </blockquote>
           <blockquote className="rounded-lg border p-5 bg-card text-sm text-muted-foreground relative">
             "As a solo practitioner, I was drowning in administrative tasks. The will creator and automated document drafting tools gave me my weekends back. My clients love the professional video chatbot experience on my website."
             <div className="mt-3 text-foreground font-medium">Michael</div>
@@ -586,7 +568,7 @@ const Index = () => {
               <li>Showcase your brand with a clean, professional look.</li>
               <li>Drive results with optimized intake forms, chatbots, and lead funnels.</li>
               <li>Perform everywhere with responsive layouts for desktop, tablet, and mobile.</li>
-              <li>Rank higher through SEO, AEO, and Voice Search optimization.</li>
+              <li>Rank higher through SEO and AEO optimization.</li>
               <li>Integrate seamlessly with the full Amicus Edge toolset.</li>
             </ul>
             <p>

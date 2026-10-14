@@ -12,7 +12,7 @@ const Blog = () => {
       {/* Branded OG/Twitter meta tags for the Blog page */}
       <SEOHead
         title="Legal Marketing Resources | Amicus Edge Blog"
-        description="Expert tips on law firm marketing, SEO, voice search, and AI-powered client engagement strategies."
+        description="Expert tips on law firm marketing, SEO, and AI-powered client engagement strategies."
         path="/blog"
         keywords={['law firm marketing', 'legal SEO blog', 'attorney marketing tips']}
         structuredData={{
