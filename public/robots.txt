@@ -10,5 +10,29 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# Authenticated / transactional surface — serves an empty app shell, keep out of indexes.
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /dashboard-tour
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /settings
+Disallow: /users
+Disallow: /analytics
+Disallow: /new
+Disallow: /edit
+Disallow: /drafts
+Disallow: /production-dashboard
+Disallow: /system-messages
+Disallow: /subscription-success
+Disallow: /training
+Disallow: /marketing-calendar
+Disallow: /ai-copilot
+Disallow: /ai-generate-clause
+Disallow: /ai-review-will
+Disallow: /chatbot-response
+Disallow: /chatbots
+Disallow: /404
+
+Sitemap: https://amicusedge.com/sitemap.xml

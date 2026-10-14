@@ -69,7 +69,7 @@ const Index = () => {
       {/* Branded OG/Twitter meta tags for the homepage */}
       <SEOHead
         title="AI-Powered Legal Tech for Law Firms | Amicus Edge"
-        description="Grow your law firm with AI chatbots, SEO tools, QR codes, voice search, and branded mobile apps — all in one platform."
+        description="Grow your law firm with AI chatbots, SEO tools, QR codes, and branded mobile apps — all in one platform."
         path="/"
         keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO', 'voice search for lawyers']}
         structuredData={{

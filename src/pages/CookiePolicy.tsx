@@ -7,7 +7,7 @@ const CookiePolicy = () => {
       <SEOHead
         title="Cookie Policy | Amicus Edge"
         description="Learn how Amicus Edge uses cookies and similar technologies to improve your law firm marketing experience."
-        path="/cookie-policy"
+        path="/cookies"
         keywords={['cookie policy', 'data privacy', 'law firm platform cookies']}
       />
       

@@ -45,6 +45,9 @@ const BRAND = {
   imageHeight: "630",
 } as const;
 
+/** Production origin used for every absolute SEO URL (never the preview host). */
+export const SITE_ORIGIN = "https://amicusedge.com";
+
 const SEOHead = ({
   title,
   description,
@@ -55,9 +58,10 @@ const SEOHead = ({
   keywords,
   structuredData,
 }: SEOHeadProps) => {
-  // Build absolute URLs so crawlers always get full paths
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
+  // Canonical/og:url/og:image are pinned to the production domain on purpose.
+  // Deriving them from window.location.origin would let the *.lovable.app
+  // preview copy declare ITSELF canonical and split ranking signals.
+  const origin = SITE_ORIGIN;
   const canonicalUrl = `${origin}${path}`;
   const imageUrl = `${origin}${image || BRAND.defaultImage}`;
   const altText = imageAlt || BRAND.defaultImageAlt;
