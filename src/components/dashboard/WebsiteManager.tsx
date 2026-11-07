@@ -49,7 +49,7 @@ import type { FirmSite, FirmSitePage } from "./website/types";
 type TabKey = "pages" | "brand" | "publish";
 
 export function WebsiteManager() {
-  const { user, loading: authLoading } = useAuth() as ReturnType<typeof useAuth> & { loading?: boolean };
+  const { user, loading: authLoading } = useAuth();
   const [site, setSite] = useState<FirmSite | null>(null);
   const [pages, setPages] = useState<FirmSitePage[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
