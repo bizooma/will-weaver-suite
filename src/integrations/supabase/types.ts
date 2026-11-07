@@ -246,6 +246,231 @@ export type Database = {
         }
         Relationships: []
       }
+      firm_site_leads: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_read: boolean
+          message: string | null
+          name: string | null
+          page_id: string | null
+          phone: string | null
+          site_id: string
+          source_ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          name?: string | null
+          page_id?: string | null
+          phone?: string | null
+          site_id: string
+          source_ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          name?: string | null
+          page_id?: string | null
+          phone?: string | null
+          site_id?: string
+          source_ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_site_leads_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "firm_site_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "firm_site_leads_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "firm_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firm_site_pages: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_home: boolean
+          is_published: boolean
+          meta_description: string | null
+          site_id: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_home?: boolean
+          is_published?: boolean
+          meta_description?: string | null
+          site_id: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_home?: boolean
+          is_published?: boolean
+          meta_description?: string | null
+          site_id?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_site_pages_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "firm_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firm_site_publishes: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          published_by: string | null
+          site_id: string
+          snapshot: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          published_by?: string | null
+          site_id: string
+          snapshot: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          published_by?: string | null
+          site_id?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_site_publishes_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "firm_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firm_site_sections: {
+        Row: {
+          content: Json
+          created_at: string
+          display_order: number
+          id: string
+          is_visible: boolean
+          page_id: string
+          section_type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          page_id: string
+          section_type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          page_id?: string
+          section_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_site_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "firm_site_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firm_sites: {
+        Row: {
+          brand: Json
+          created_at: string
+          custom_domain: string | null
+          custom_domain_token: string
+          custom_domain_verified_at: string | null
+          firm_name: string
+          id: string
+          is_published: boolean
+          published_at: string | null
+          subdomain: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: Json
+          created_at?: string
+          custom_domain?: string | null
+          custom_domain_token?: string
+          custom_domain_verified_at?: string | null
+          firm_name: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          subdomain: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: Json
+          created_at?: string
+          custom_domain?: string | null
+          custom_domain_token?: string
+          custom_domain_verified_at?: string | null
+          firm_name?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          subdomain?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       form_submission_log: {
         Row: {
           created_at: string
