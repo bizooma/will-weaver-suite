@@ -18,6 +18,7 @@ import { SystemMessages } from "./SystemMessages";
 import { MarketingCalendar } from "./MarketingCalendar";
 import { TrainingManager } from "./TrainingManager";
 import { TrainingAdminManager } from "./TrainingAdminManager";
+import { WebsiteManager } from "./WebsiteManager";
 import { ProtectedContent } from "@/components/ProtectedContent";
 import LiveOperators from "@/pages/LiveOperators";
 import NonprofitFormation from "@/pages/NonprofitFormation";
@@ -68,6 +69,9 @@ export function DashboardContent() {
           </ProtectedContent>
         } />
         <Route path="/marketing-calendar" element={<MarketingCalendar />} />
+
+        {/* --- Website Manager — free for every account (no ProtectedContent) --- */}
+        <Route path="/website" element={<WebsiteManager />} />
 
         {/* --- Standard tier features --- */}
         <Route path="/wills" element={
