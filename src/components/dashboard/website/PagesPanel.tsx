@@ -135,25 +135,24 @@ export function PagesPanel({ site, pages, onPagesChange, selectedPageId, onSelec
 
   /* ------------------------------ home page ----------------------------- */
 
+  /**
+   * Moves the home flag via set_firm_site_home_page (migration
+   * 20261107120000). Clearing the old home page and setting the new one are two
+   * statements — the partial unique index firm_site_pages_one_home permits only
+   * one is_home row per site and cannot be deferred — so they run inside that
+   * function's transaction. Doing it from here with two requests left a window
+   * where the site had NO home page, and the public renderer resolves "/" by
+   * is_home, so a failure between them served the firm a 404 homepage.
+   *
+   * The function runs as the caller, so RLS still enforces ownership, and it
+   * raises rather than returning quietly if the flag did not move.
+   */
   const makeHome = async (page: FirmSitePage) => {
     if (page.is_home) return;
-    const currentHome = pages.find((p) => p.is_home);
     setBusy(true);
 
-    // Step 1: clear the existing home page (the unique index allows only one).
-    if (currentHome) {
-      const { error } = await supabase.from("firm_site_pages").update({ is_home: false }).eq("id", currentHome.id);
-      if (error) {
-        setBusy(false);
-        toast.error(`Couldn't change home page: ${error.message}`);
-        return;
-      }
-    }
-
-    // Step 2: set the new home page; roll step 1 back if this fails.
-    const { error } = await supabase.from("firm_site_pages").update({ is_home: true }).eq("id", page.id);
+    const { error } = await supabase.rpc("set_firm_site_home_page", { p_page_id: page.id });
     if (error) {
-      if (currentHome) await supabase.from("firm_site_pages").update({ is_home: true }).eq("id", currentHome.id);
       setBusy(false);
       toast.error(`Couldn't change home page: ${error.message}`);
       return;

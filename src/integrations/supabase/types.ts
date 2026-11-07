@@ -1579,6 +1579,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_firm_site_home_page: {
+        Args: { p_page_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "free"
