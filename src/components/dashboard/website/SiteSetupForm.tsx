@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Globe, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { defaultContent } from "./sectionContent";
-import { isCheckViolation, isUniqueViolation, liveSiteUrl, suggestSubdomain, validateSubdomain } from "./siteRules";
+import { SITE_BASE_DOMAIN, isCheckViolation, isUniqueViolation, liveSiteUrl, suggestSubdomain, validateSubdomain } from "./siteRules";
 import type { FirmSite, FirmSitePage } from "./types";
 
 interface SiteSetupFormProps {
@@ -138,7 +138,7 @@ export function SiteSetupForm({ userId, onCreated }: SiteSetupFormProps) {
                   setSubdomainError(null);
                 }}
               />
-              <span className="shrink-0 pr-3 font-mono text-xs text-muted-foreground sm:text-sm">.sites.amicusedge.com</span>
+              <span className="shrink-0 pr-3 font-mono text-xs text-muted-foreground sm:text-sm">.{SITE_BASE_DOMAIN}</span>
             </div>
             <p className="text-xs text-muted-foreground">
               3–50 characters: lowercase letters, numbers and hyphens, not starting or ending with a hyphen.

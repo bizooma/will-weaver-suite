@@ -1,6 +1,7 @@
 /**
  * WebsiteManager — Dashboard tool a law firm uses to build and publish its own
- * marketing website (served at https://{subdomain}.sites.amicusedge.com).
+ * marketing website (served at the zone in siteRules.SITE_BASE_DOMAIN, via
+ * liveSiteUrl() — never build that URL by hand).
  *
  * Route: /dashboard/website (free for every account — NOT wrapped in ProtectedContent).
  *

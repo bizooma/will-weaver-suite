@@ -51,9 +51,21 @@ export function suggestSubdomain(firmName: string): string {
     .replace(/-+$/g, "");
 }
 
+/**
+ * The zone published firm sites are served from, as `<subdomain>.<this>`.
+ *
+ * Declared once here and imported everywhere it is shown, so changing the zone
+ * is a one-line edit rather than a hunt through the UI. It MUST stay in step
+ * with SITE_BASE_DOMAIN in the firm-site-renderer Worker
+ * (bizooma/firm-site-renderer, wrangler.toml), which is what actually resolves
+ * a hostname to a site — a mismatch means the editor advertises a URL that
+ * serves nothing.
+ */
+export const SITE_BASE_DOMAIN = "sites.amicusedge.com";
+
 /** Public URL a published firm site is served from. */
 export function liveSiteUrl(subdomain: string): string {
-  return `https://${subdomain}.sites.amicusedge.com`;
+  return `https://${subdomain}.${SITE_BASE_DOMAIN}`;
 }
 
 /* -------------------------------------------------------------------------- */
