@@ -1,5 +1,5 @@
 /**
- * Website Manager rules — run with `bun test tests/`.
+ * Website Manager rules — run with `bun test ./tests/website-manager-rules.test.ts`.
  *
  * Lives outside src/ because it uses Bun's built-in test runner (no npm
  * package needed) and src/ is type-checked without Bun's types.
