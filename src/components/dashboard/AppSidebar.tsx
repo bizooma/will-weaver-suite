@@ -19,7 +19,8 @@ import {
   Building2,
   GraduationCap,
   Sparkles,
-  Lock
+  Lock,
+  Globe
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +63,8 @@ const items: { title: string; url: string; icon: any; end?: boolean; requiredTie
   { title: "Voice Search", url: "/dashboard/voice-search", icon: MicIcon, requiredTier: "pro_pi" },
   { title: "QR Codes", url: "/dashboard/qr-codes", icon: QrCode, requiredTier: "basic" },
   { title: "Marketing Calendar", url: "/dashboard/marketing-calendar", icon: Calendar },
+  // Website Manager — free for every account, so no requiredTier.
+  { title: "Website", url: "/dashboard/website", icon: Globe },
 ];
 
 const growthToolsItems: { title: string; url: string; icon: any; requiredTier?: TierKey }[] = [
