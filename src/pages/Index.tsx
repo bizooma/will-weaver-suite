@@ -544,7 +544,7 @@ const Index = () => {
               Every Amicus Edge account includes a website builder. Add your pages, set your colors, and publish when you are ready. No developer, no design retainer, and no extra charge on any plan.
             </p>
             <p className="mb-4">
-              Our team blends modern design with legal-industry expertise to deliver sites that:
+              Every site you build includes:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-6 text-left max-w-2xl mx-auto">
               <li>Build page by page. Hero, practice areas, attorney bios, testimonials, FAQs and contact — arranged how you want them, with no code.</li>
@@ -553,11 +553,14 @@ const Index = () => {
               <li>Structured data is built in. Every site includes LegalService and FAQ markup automatically — the same schema our AIO SEO Analyzer looks for.</li>
               <li>Your brand throughout. Set your colors, fonts and logo once and every page follows them.</li>
             </ul>
+            {/* Separate, optional offer: done-for-you website build (booked via the Calendly widget below).
+                Kept under its own heading so it never reads as part of the self-serve builder above. */}
+            <h3 className="text-2xl mt-12 mb-3">Prefer to hand it off?</h3>
             <p>
-              Whether you're rebranding, expanding, or building from the ground up, we'll create a website that doesn't just look good—it works hard for your firm 24/7.
+              The builder is free and yours to use whenever you want it. If you would rather not build it yourself, we also design and build firm websites for you — a rebrand, an expansion, or starting from scratch.
             </p>
             <p className="mt-4">
-              Click on a date and time below to schedule a meeting to discuss your new website or redesign of a current site.
+              Pick a time below and we’ll talk through what your firm needs.
             </p>
           </div>
           
