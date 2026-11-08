@@ -167,7 +167,7 @@ export function LeadsPanel({ site, onUnreadCountChange }: LeadsPanelProps) {
 
     if (error || !data || data.length === 0) {
       toast.error(`This lead could not be deleted${error ? `: ${error.message}` : "."}`);
-      return; // keep the dialog open state cleared below? No — leave the lead in the list.
+      return; // leave the lead in the list and the dialog open so the firm can retry or cancel
     }
     setLeads((prev) => prev.filter((l) => l.id !== lead.id));
     setPendingDelete(null);

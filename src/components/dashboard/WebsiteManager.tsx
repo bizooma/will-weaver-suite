@@ -11,6 +11,7 @@
  *      Pages & sections → <PagesPanel> + <SectionEditor> for the selected page
  *      Brand            → <BrandPanel>
  *      Publish          → <PublishPanel>
+ *      Leads            → <LeadsPanel> (contact-form enquiries; unread count badge)
  *
  * Data: tables firm_sites / firm_site_pages / firm_site_sections /
  * firm_site_publishes (schema owned by migration 20261107000000_firm_site_cms.sql;
@@ -44,10 +45,11 @@ import { PagesPanel } from "./website/PagesPanel";
 import { SectionEditor } from "./website/SectionEditor";
 import { BrandPanel } from "./website/BrandPanel";
 import { PublishPanel } from "./website/PublishPanel";
+import { LeadsPanel } from "./website/LeadsPanel";
 import { liveSiteUrl } from "./website/siteRules";
 import type { FirmSite, FirmSitePage } from "./website/types";
 
-type TabKey = "pages" | "brand" | "publish";
+type TabKey = "pages" | "brand" | "publish" | "leads";
 
 export function WebsiteManager() {
   const { user, loading: authLoading } = useAuth();
@@ -58,6 +60,8 @@ export function WebsiteManager() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("pages");
   const [dirtyCount, setDirtyCount] = useState(0);
+  /** Unread lead count reported by <LeadsPanel>; shown as a badge on the Leads tab. */
+  const [unreadLeads, setUnreadLeads] = useState(0);
   /** Page the firm tried to switch to while sections had unsaved edits. */
   const [pendingPageId, setPendingPageId] = useState<string | null>(null);
 
@@ -215,10 +219,19 @@ export function WebsiteManager() {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)}>
-        <TabsList className="grid w-full grid-cols-3 sm:inline-grid sm:w-auto">
+        <TabsList className="grid w-full grid-cols-4 sm:inline-grid sm:w-auto">
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="brand">Brand</TabsTrigger>
           <TabsTrigger value="publish">Publish</TabsTrigger>
+          <TabsTrigger value="leads" className="gap-1.5">
+            Leads
+            {/* Unread badge sits beside the label, never replaces it. */}
+            {unreadLeads > 0 && (
+              <Badge className="h-5 min-w-5 justify-center px-1.5 text-[10px]" aria-label={`${unreadLeads} unread`}>
+                {unreadLeads > 99 ? "99+" : unreadLeads}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pages" forceMount className="data-[state=inactive]:hidden">
@@ -251,6 +264,10 @@ export function WebsiteManager() {
             dirtyCount={dirtyCount}
             active={tab === "publish"}
           />
+        </TabsContent>
+
+        <TabsContent value="leads" forceMount className="data-[state=inactive]:hidden">
+          <LeadsPanel site={site} onUnreadCountChange={setUnreadLeads} />
         </TabsContent>
       </Tabs>
 
