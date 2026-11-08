@@ -560,7 +560,7 @@ const Index = () => {
               The builder is free and yours to use whenever you want it. If you would rather not build it yourself, we also design and build firm websites for you — a rebrand, an expansion, or starting from scratch.
             </p>
             <p className="mt-4">
-              Pick a time below and we’ll talk through what your firm needs.
+              Pick a time below and we'll talk through what your firm needs.
             </p>
           </div>
           
