@@ -67,10 +67,12 @@ const Index = () => {
     <main>
       {/* Branded OG/Twitter meta tags for the homepage */}
       <SEOHead
-        title="AI-Powered Legal Tech for Law Firms | Amicus Edge"
-        description="Grow your law firm with AI chatbots, SEO tools, QR codes, and branded mobile apps — all in one platform."
+        // Title/description lead with the website builder (free on every plan),
+        // which is now the headline feature; the AI tools follow.
+        title="Law Firm Website Builder & AI Legal Marketing | Amicus Edge"
+        description="Build your law firm's website free, then grow it with AI chatbots, SEO tools and QR codes. Server-rendered pages so AI assistants read real content."
         path="/"
-        keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO']}
+        keywords={['legal tech', 'law firm marketing', 'AI chatbots', 'legal SEO', 'law firm website builder', 'AEO']}
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
@@ -106,7 +108,8 @@ const Index = () => {
             </div>
             {!user && (
               <p className="mt-4 text-sm text-muted-foreground">
-                ✨ <strong>See how leading law firms use Amicus Edge</strong> – explore our full platform in under 5 minutes with live demo data
+                {/* No customer-usage claims here: the tour runs on demo data only. */}
+                ✨ <strong>Explore the full platform with demo data</strong> – no signup, under 5 minutes
               </p>
             )}
           </div>
@@ -251,6 +254,8 @@ const Index = () => {
         <div className="mb-12">
           <h2 className="text-3xl mb-4">Choose Your Plan</h2>
           <p className="text-lg text-black">We offer flexible pricing plans designed to fit the needs of any law firm, from solo practitioners to large enterprises. Choose the package that's right for you and start modernizing your practice today.</p>
+          {/* The Website Manager is not gated by tier — say so, so the tier table doesn't imply it is. */}
+          <p className="text-lg text-black">The website builder is included on every plan at no extra cost.</p>
         </div>
         
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
@@ -532,20 +537,21 @@ const Index = () => {
 
       <section className="container py-16">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl mb-6">Custom Website Development</h2>
+          {/* Self-serve website builder (dashboard → Website). Copy describes only shipped behaviour. */}
+          <h2 className="text-3xl mb-6">Your Firm's Website, Built In Minutes</h2>
           <div className="prose prose-lg text-muted-foreground">
             <p className="mb-4">
-              Your website is more than an online brochure—it's the foundation of your firm's digital strategy. At Amicus Edge, we build custom law firm websites that are fast, secure, and designed to convert visitors into clients.
+              Every Amicus Edge account includes a website builder. Add your pages, set your colors, and publish when you are ready. No developer, no design retainer, and no extra charge on any plan.
             </p>
             <p className="mb-4">
               Our team blends modern design with legal-industry expertise to deliver sites that:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-6 text-left max-w-2xl mx-auto">
-              <li>Showcase your brand with a clean, professional look.</li>
-              <li>Drive results with optimized intake forms, chatbots, and lead funnels.</li>
-              <li>Perform everywhere with responsive layouts for desktop, tablet, and mobile.</li>
-              <li>Rank higher through SEO and AEO optimization.</li>
-              <li>Integrate seamlessly with the full Amicus Edge toolset.</li>
+              <li>Build page by page. Hero, practice areas, attorney bios, testimonials, FAQs and contact — arranged how you want them, with no code.</li>
+              <li>Publishing works like a deploy. Your edits stay private until you publish, and every publish is saved, so what visitors see is always a version you chose.</li>
+              <li>Read by AI, not just browsers. Pages are rendered on the server, so search engines and AI assistants receive your real practice-area text instead of an empty page.</li>
+              <li>Structured data is built in. Every site includes LegalService and FAQ markup automatically — the same schema our AIO SEO Analyzer looks for.</li>
+              <li>Your brand throughout. Set your colors, fonts and logo once and every page follows them.</li>
             </ul>
             <p>
               Whether you're rebranding, expanding, or building from the ground up, we'll create a website that doesn't just look good—it works hard for your firm 24/7.
