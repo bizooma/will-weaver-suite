@@ -19,6 +19,8 @@ export type FirmSite = Tables<"firm_sites">;
 export type FirmSitePage = Tables<"firm_site_pages">;
 export type FirmSiteSection = Tables<"firm_site_sections">;
 export type FirmSitePublish = Tables<"firm_site_publishes">;
+/** Contact-form enquiry written by the public renderer (service role); read-only to the client except is_read / delete. */
+export type FirmSiteLead = Tables<"firm_site_leads">;
 
 /* -------------------------------------------------------------------------- */
 /* Section content contract                                                   */
